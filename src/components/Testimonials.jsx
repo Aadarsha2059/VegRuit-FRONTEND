@@ -1,79 +1,70 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import '../styles/Testimonials.css'
 
 const Testimonials = () => {
-  const [currentSlide, setCurrentSlide] = useState(0)
-
   const testimonials = [
     {
       id: 1,
-      name: 'Anita Sharma',
-      location: 'Thamel, Kathmandu',
+      name: 'Priya Sharma',
+      location: 'Kathmandu, Nepal',
       rating: 5,
-      comment: 'VegRuit has transformed my cooking experience! The vegetables are always fresh and the fruits are incredibly sweet. I love supporting local farmers while getting premium quality produce.',
-      avatar: '👩‍🦰',
-      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face'
+      comment: 'VegRuit has completely transformed my shopping experience! The fresh produce is always top-quality and the delivery is incredibly fast. I love supporting local farmers while getting the best fruits and vegetables.',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+      date: '2024-01-15'
     },
     {
       id: 2,
       name: 'Rajesh Kumar',
-      location: 'Baneshwor, Kathmandu',
+      location: 'Lalitpur, Nepal',
       rating: 5,
-      comment: 'As a restaurant owner, I need the freshest ingredients daily. VegRuit never disappoints. Their delivery is prompt and the quality is consistently excellent.',
-      avatar: '👨‍🍳',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
+      comment: 'As a health-conscious person, I appreciate the organic quality of VegRuit products. The customer service is excellent and the prices are very reasonable. Highly recommended!',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+      date: '2024-01-12'
     },
     {
       id: 3,
-      name: 'Priya Tamang',
-      location: 'Lalitpur, Kathmandu',
+      name: 'Sita Thapa',
+      location: 'Bhaktapur, Nepal',
       rating: 5,
-      comment: 'I appreciate how VegRuit connects us directly with local farmers. The produce tastes amazing and I feel good knowing I\'m supporting our community.',
-      avatar: '👩‍🌾',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face'
+      comment: 'The convenience of ordering fresh produce online and having it delivered to my doorstep is amazing. VegRuit makes healthy eating so much easier for busy families like mine.',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+      date: '2024-01-10'
     },
     {
       id: 4,
-      name: 'Bikash Thapa',
-      location: 'Bhaktapur, Kathmandu',
+      name: 'Bikash Tamang',
+      location: 'Kathmandu, Nepal',
       rating: 5,
-      comment: 'The best online grocery service in Kathmandu! Fresh, affordable, and reliable. My family loves the variety of fruits and vegetables available.',
-      avatar: '👨‍👩‍👧‍👦',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+      comment: 'I\'ve been a loyal customer for months now. The quality is consistently excellent and I love knowing that I\'m supporting local farmers. VegRuit is my go-to for all fresh produce needs.',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+      date: '2024-01-08'
     },
     {
       id: 5,
-      name: 'Sunita Gurung',
-      location: 'Kirtipur, Kathmandu',
+      name: 'Anita Gurung',
+      location: 'Kirtipur, Nepal',
       rating: 5,
-      comment: 'Amazing service! The fruits are so fresh and the delivery is super fast. I love the personal touch and attention to quality.',
-      avatar: '👩‍💼',
-      image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face'
+      comment: 'The seasonal specials are fantastic! I love trying new fruits and vegetables that I wouldn\'t normally find. VegRuit has expanded my culinary horizons.',
+      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
+      date: '2024-01-05'
+    },
+    {
+      id: 6,
+      name: 'Mohan Singh',
+      location: 'Kathmandu, Nepal',
+      rating: 5,
+      comment: 'Fast delivery, fresh produce, and excellent customer service. What more could you ask for? VegRuit has made grocery shopping enjoyable again.',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+      date: '2024-01-03'
     }
   ]
 
   const renderStars = (rating) => {
-    return '⭐'.repeat(rating)
-  }
-
-  // Auto-slide functionality
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % testimonials.length)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [testimonials.length])
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % testimonials.length)
-  }
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + testimonials.length) % testimonials.length)
-  }
-
-  const goToSlide = (index) => {
-    setCurrentSlide(index)
+    return Array.from({ length: 5 }, (_, index) => (
+      <span key={index} className="star">
+        {index < rating ? '★' : '☆'}
+      </span>
+    ))
   }
 
   return (
@@ -81,87 +72,47 @@ const Testimonials = () => {
       <div className="container">
         <div className="section-header">
           <h2>What Our Customers Say</h2>
-          <p>Real feedback from satisfied customers across Kathmandu</p>
+          <p>Real feedback from satisfied customers across Kathmandu Valley</p>
         </div>
 
-        {/* Testimonials Slider */}
-        <div className="testimonials-slider">
-          <div className="slider-container">
-            <div 
-              className="slider-track" 
-              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-            >
-              {testimonials.map((testimonial) => (
-                <div key={testimonial.id} className="testimonial-slide">
-                  <div className="testimonial-card">
-                    <div className="testimonial-header">
-                      <div className="avatar">
-                        <img src={testimonial.image} alt={testimonial.name} />
-                      </div>
-                      <div className="customer-info">
-                        <h4>{testimonial.name}</h4>
-                        <p className="location">{testimonial.location}</p>
-                        <div className="rating">{renderStars(testimonial.rating)}</div>
-                      </div>
-                    </div>
-                    <div className="testimonial-content">
-                      <p>"{testimonial.comment}"</p>
-                    </div>
-                    <div className="testimonial-footer">
-                      <span className="quote-icon">❝</span>
-                    </div>
+        <div className="testimonials-grid">
+          {testimonials.map((testimonial) => (
+            <div key={testimonial.id} className="testimonial-card">
+              <div className="testimonial-header">
+                <img 
+                  src={testimonial.avatar} 
+                  alt={testimonial.name} 
+                  className="avatar"
+                />
+                <div className="customer-info">
+                  <h4>{testimonial.name}</h4>
+                  <p className="location">{testimonial.location}</p>
+                  <div className="rating">
+                    {renderStars(testimonial.rating)}
                   </div>
                 </div>
-              ))}
+              </div>
+              
+              <div className="testimonial-content">
+                <p>"{testimonial.comment}"</p>
+              </div>
+              
+              <div className="testimonial-footer">
+                <span className="quote-icon">💬</span>
+                <span className="testimonial-date">
+                  {new Date(testimonial.date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </span>
+              </div>
             </div>
-          </div>
-
-          {/* Slider Navigation */}
-          <div className="slider-navigation">
-            <button className="nav-btn prev-btn" onClick={prevSlide}>
-              <span>‹</span>
-            </button>
-            <button className="nav-btn next-btn" onClick={nextSlide}>
-              <span>›</span>
-            </button>
-          </div>
-
-          {/* Slider Dots */}
-          <div className="slider-dots">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                className={`dot ${index === currentSlide ? 'active' : ''}`}
-                onClick={() => goToSlide(index)}
-              />
-            ))}
-          </div>
+          ))}
         </div>
 
-        {/* Statistics Section */}
-        <div className="testimonials-stats">
-          <div className="stat-item">
-            <div className="stat-number">4.9</div>
-            <div className="stat-label">Average Rating</div>
-            <div className="stat-stars">⭐⭐⭐⭐⭐</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-number">500+</div>
-            <div className="stat-label">Happy Customers</div>
-            <div className="stat-icon">😊</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-number">98%</div>
-            <div className="stat-label">Satisfaction Rate</div>
-            <div className="stat-icon">🎯</div>
-          </div>
-        </div>
-
-        {/* Call to Action */}
-        <div className="cta-section">
-          <h3>Join Our Happy Customers</h3>
-          <p>Experience the difference of fresh, local produce today!</p>
-          <button className="btn btn-primary">Start Shopping Now</button>
+        <div className="progress-bar">
+          <div className="progress-fill"></div>
         </div>
       </div>
     </section>

@@ -6,6 +6,8 @@ import Hero from './components/Hero'
 import Products from './components/Products'
 import Farmers from './components/Farmers'
 import Testimonials from './components/Testimonials'
+import Explore from './components/Explore'
+import About from './components/About'
 import Footer from './components/Footer'
 import Login from './components/Login'
 import SignUp from './components/SignUp'
@@ -18,7 +20,6 @@ function App() {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    // Check if user is already logged in
     const userData = localStorage.getItem('vegruit_user')
     if (userData) {
       setUser(JSON.parse(userData))
@@ -82,6 +83,8 @@ function App() {
               <Products />
               <Farmers />
               <Testimonials />
+              <Explore />
+              <About />
             </main>
           } />
           <Route path="/dashboard" element={
