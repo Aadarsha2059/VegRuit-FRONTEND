@@ -27,6 +27,42 @@
   animation: slideInUp 0.4s ease-out;
 }
 
+/* Signup Modal Specific Styles */
+.signup-modal {
+  max-height: 95vh;
+}
+
+.signup-card {
+  overflow-y: auto;
+  max-height: 80vh;
+  padding-right: 10px;
+}
+
+.signup-form {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Custom Scrollbar for Signup Form */
+.signup-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.signup-form::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.signup-form::-webkit-scrollbar-thumb {
+  background: #4caf50;
+  border-radius: 10px;
+}
+
+.signup-form::-webkit-scrollbar-thumb:hover {
+  background: #45a049;
+}
+
 .modal-close-btn {
   position: absolute;
   top: 20px;
@@ -358,6 +394,36 @@
   transform: none;
 }
 
+/* Signup Submit Button Specific Styles */
+.signup-submit-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 18px 30px;
+  font-size: 1.2rem;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+}
+
+.signup-submit-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+  background: linear-gradient(135deg, #45a049 0%, #2e7d32 100%);
+}
+
+.signup-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .loading-spinner {
   animation: spin 1s linear infinite;
 }
@@ -518,6 +584,17 @@
   
   .auth-logo h2 {
     font-size: 1.5rem;
+  }
+  
+  /* Make signup form scrollable on mobile */
+  .signup-card {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .signup-form {
+    max-height: 50vh;
+    overflow-y: auto;
   }
 }
 

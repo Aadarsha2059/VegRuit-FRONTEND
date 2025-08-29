@@ -107,7 +107,7 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
 
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="form-group">
-                <label htmlFor="username">Username</label>
+                <label htmlFor="username">Username or Email</label>
                 <div className="input-wrapper">
                   <span className="input-icon">👤</span>
                   <input
@@ -116,7 +116,7 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
                     name="username"
                     value={formData.username}
                     onChange={handleChange}
-                    placeholder="Enter your username"
+                    placeholder="Enter your username or email"
                     required
                     className="form-input"
                   />

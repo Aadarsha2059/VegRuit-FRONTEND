@@ -138,13 +138,13 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
 
   return (
     <div className="auth-modal-overlay" onClick={handleBackdropClick}>
-      <div className="auth-modal">
+      <div className="auth-modal signup-modal">
         <button className="modal-close-btn" onClick={onClose}>
           ✕
         </button>
         
         <div className="auth-container">
-          <div className="auth-card">
+          <div className="auth-card signup-card">
             <div className="auth-header">
               <div className="auth-logo">
                 <h2>VegRuit</h2>
@@ -171,7 +171,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
               <p>Join VegRuit as a {userType === USER_TYPES.BUYER ? 'buyer' : 'seller'} and start your fresh produce journey</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="auth-form">
+            <form onSubmit={handleSubmit} className="auth-form signup-form">
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="firstName">First Name</label>
@@ -183,7 +183,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      placeholder="First name"
+                      placeholder="Enter your first name"
                       required
                       className="form-input"
                     />
@@ -200,7 +200,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleChange}
-                      placeholder="Last name"
+                      placeholder="Enter your last name"
                       required
                       className="form-input"
                     />
@@ -210,7 +210,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="email">Email</label>
+                  <label htmlFor="email">Email Address</label>
                   <div className="input-wrapper">
                     <span className="input-icon">📧</span>
                     <input
@@ -219,7 +219,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="your@email.com"
+                      placeholder="your.email@example.com"
                       required
                       className="form-input"
                     />
@@ -227,7 +227,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="phone">Phone</label>
+                  <label htmlFor="phone">Phone Number</label>
                   <div className="input-wrapper">
                     <span className="input-icon">📱</span>
                     <input
@@ -254,7 +254,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
                     name="username"
                     value={formData.username}
                     onChange={handleChange}
-                    placeholder="Choose a username"
+                    placeholder="Choose a unique username"
                     required
                     className="form-input"
                   />
@@ -272,7 +272,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      placeholder="Create a password"
+                      placeholder="Create a strong password"
                       required
                       className="form-input"
                     />
@@ -296,7 +296,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      placeholder="Confirm password"
+                      placeholder="Confirm your password"
                       required
                       className="form-input"
                     />
@@ -323,7 +323,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
-                    placeholder={userType === USER_TYPES.BUYER ? 'Street address, ward number' : 'Farm location, ward number'}
+                    placeholder={userType === USER_TYPES.BUYER ? 'Enter your delivery address' : 'Enter your farm location'}
                     required
                     className="form-input"
                   />
@@ -370,7 +370,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TY
 
               <button
                 type="submit"
-                className="auth-btn primary"
+                className="auth-btn primary signup-submit-btn"
                 disabled={isLoading}
               >
                 {isLoading ? (
