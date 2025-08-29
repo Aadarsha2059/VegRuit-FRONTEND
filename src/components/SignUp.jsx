@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
+import { authAPI, USER_TYPES, STORAGE_KEYS } from '../services/authAPI'
 import '../styles/Auth.css'
 
-const SignUp = ({ onClose, onSuccess, onSwitchToLogin }) => {
+const SignUp = ({ onClose, onSuccess, onSwitchToLogin, defaultUserType = USER_TYPES.BUYER }) => {
   const navigate = useNavigate()
+  const [userType, setUserType] = useState(defaultUserType)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -13,7 +15,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin }) => {
     username: '',
     password: '',
     confirmPassword: '',
-    deliveryAddress: '',
+    address: '',
     city: 'Kathmandu'
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -54,7 +56,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin }) => {
   const validateForm = () => {
     if (!formData.firstName || !formData.lastName || !formData.email || 
         !formData.phone || !formData.username || !formData.password || 
-        !formData.confirmPassword || !formData.deliveryAddress || !formData.city) {
+        !formData.confirmPassword || !formData.address || !formData.city) {
       toast.error('Please fill in all fields')
       return false
     }
@@ -85,28 +87,42 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin }) => {
     setIsLoading(true)
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500))
-
-      // Create user data
       const userData = {
-        username: formData.username,
-        name: `${formData.firstName} ${formData.lastName}`,
-        fullName: `${formData.firstName} ${formData.lastName}`,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
-        deliveryAddress: formData.deliveryAddress,
-        city: formData.city,
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        isAuthenticated: true,
-        signupTime: new Date().toISOString()
+        username: formData.username,
+        password: formData.password,
+        address: formData.address,
+        city: formData.city
       }
-      
-      localStorage.setItem('vegruit_user', JSON.stringify(userData))
-      
-      toast.success('Account created successfully! Welcome to VegRuit!')
-      onSuccess(userData)
-      navigate('/dashboard')
+
+      let response
+      if (userType === USER_TYPES.BUYER) {
+        response = await authAPI.registerBuyer(userData)
+      } else {
+        response = await authAPI.registerSeller(userData)
+      }
+
+      if (response.success) {
+        // Store user data and token
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(response.user))
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.token)
+        localStorage.setItem(STORAGE_KEYS.USER_TYPE, userType)
+        
+        toast.success(`${userType === USER_TYPES.BUYER ? 'Buyer' : 'Seller'} account created successfully! Welcome to VegRuit!`)
+        onSuccess(response.user)
+        
+        // Redirect based on user type
+        if (userType === USER_TYPES.BUYER) {
+          navigate('/dashboard')
+        } else {
+          navigate('/seller-dashboard')
+        }
+      } else {
+        toast.error(response.message || 'Registration failed. Please try again.')
+      }
     } catch (error) {
       toast.error('Registration failed. Please try again.')
     } finally {
@@ -134,8 +150,25 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin }) => {
                 <h2>VegRuit</h2>
                 <p>Fresh from Kathmandu</p>
               </div>
+              
+              {/* User Type Toggle */}
+              <div className="user-type-toggle">
+                <button 
+                  className={`toggle-btn ${userType === USER_TYPES.BUYER ? 'active' : ''}`}
+                  onClick={() => setUserType(USER_TYPES.BUYER)}
+                >
+                  🛒 Buyer Sign Up
+                </button>
+                <button 
+                  className={`toggle-btn ${userType === USER_TYPES.SELLER ? 'active' : ''}`}
+                  onClick={() => setUserType(USER_TYPES.SELLER)}
+                >
+                  👨‍🌾 Seller Sign Up
+                </button>
+              </div>
+
               <h1>Create Account</h1>
-              <p>Join VegRuit and start your fresh produce journey</p>
+              <p>Join VegRuit as a {userType === USER_TYPES.BUYER ? 'buyer' : 'seller'} and start your fresh produce journey</p>
             </div>
 
             <form onSubmit={handleSubmit} className="auth-form">
@@ -279,16 +312,18 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin }) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="deliveryAddress">Delivery Address</label>
+                <label htmlFor="address">
+                  {userType === USER_TYPES.BUYER ? 'Delivery Address' : 'Farm Address'}
+                </label>
                 <div className="input-wrapper">
                   <span className="input-icon">📍</span>
                   <input
                     type="text"
-                    id="deliveryAddress"
-                    name="deliveryAddress"
-                    value={formData.deliveryAddress}
+                    id="address"
+                    name="address"
+                    value={formData.address}
                     onChange={handleChange}
-                    placeholder="Street address, ward number"
+                    placeholder={userType === USER_TYPES.BUYER ? 'Street address, ward number' : 'Farm location, ward number'}
                     required
                     className="form-input"
                   />
@@ -341,7 +376,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin }) => {
                 {isLoading ? (
                   <span className="loading-spinner">⏳</span>
                 ) : (
-                  'Create Account'
+                  `Create ${userType === USER_TYPES.BUYER ? 'Buyer' : 'Seller'} Account`
                 )}
               </button>
             </form>
@@ -367,7 +402,7 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin }) => {
                 <button 
                   type="button"
                   className="auth-link"
-                  onClick={onSwitchToLogin}
+                  onClick={() => onSwitchToLogin(userType)}
                 >
                   Sign in here
                 </button>
@@ -377,8 +412,8 @@ const SignUp = ({ onClose, onSuccess, onSwitchToLogin }) => {
 
           <div className="auth-image">
             <div className="image-overlay">
-              <h2>Join VegRuit</h2>
-              <p>Connect with local farmers and get fresh produce</p>
+              <h2>{userType === USER_TYPES.BUYER ? 'Join VegRuit' : 'Start Selling'}</h2>
+              <p>{userType === USER_TYPES.BUYER ? 'Connect with local farmers and get fresh produce' : 'Connect with local buyers and grow your business'}</p>
             </div>
           </div>
         </div>

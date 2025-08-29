@@ -9,36 +9,43 @@ import Testimonials from './components/Testimonials'
 import Explore from './components/Explore'
 import About from './components/About'
 import Footer from './components/Footer'
-import Login from './components/Login'
-import SignUp from './components/SignUp'
+import Auth from './components/auth/Auth'
 import Dashboard from './pages/Dashboard'
+import { STORAGE_KEYS } from './services/authAPI'
 import './App.css'
 
 function App() {
-  const [showLoginModal, setShowLoginModal] = useState(false)
-  const [showSignUpModal, setShowSignUpModal] = useState(false)
   const [user, setUser] = useState(null)
+  const [showAuth, setShowAuth] = useState(false)
 
   useEffect(() => {
-    const userData = localStorage.getItem('vegruit_user')
-    if (userData) {
+    // Check for existing user data and token
+    const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA)
+    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+    
+    if (userData && token) {
       setUser(JSON.parse(userData))
     }
   }, [])
 
-  const handleLoginSuccess = (userData) => {
+  const handleAuthSuccess = (userData) => {
     setUser(userData)
-    setShowLoginModal(false)
-  }
-
-  const handleSignUpSuccess = (userData) => {
-    setUser(userData)
-    setShowSignUpModal(false)
+    setShowAuth(false)
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('vegruit_user')
+    localStorage.removeItem(STORAGE_KEYS.USER_DATA)
+    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.USER_TYPE)
     setUser(null)
+  }
+
+  const handleAuthClick = () => {
+    setShowAuth(true)
+  }
+
+  const handleCloseAuth = () => {
+    setShowAuth(false)
   }
 
   return (
@@ -70,10 +77,9 @@ function App() {
         />
         
         <Header 
-          user={user}
-          onLogout={handleLogout}
-          onLoginClick={() => setShowLoginModal(true)}
-          onSignUpClick={() => setShowSignUpModal(true)}
+          user={user} 
+          onLogout={handleLogout} 
+          onAuthClick={handleAuthClick}
         />
         
         <Routes>
@@ -88,33 +94,24 @@ function App() {
             </main>
           } />
           <Route path="/dashboard" element={
-            user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/" />
+            user && user.userType === 'buyer' ? 
+              <Dashboard user={user} onLogout={handleLogout} /> : 
+              <Navigate to="/" />
+          } />
+          <Route path="/seller-dashboard" element={
+            user && user.userType === 'seller' ? 
+              <Dashboard user={user} onLogout={handleLogout} /> : 
+              <Navigate to="/" />
           } />
         </Routes>
         
         <Footer />
 
-        {/* Login Modal */}
-        {showLoginModal && (
-          <Login 
-            onClose={() => setShowLoginModal(false)}
-            onSuccess={handleLoginSuccess}
-            onSwitchToSignUp={() => {
-              setShowLoginModal(false)
-              setShowSignUpModal(true)
-            }}
-          />
-        )}
-
-        {/* Sign Up Modal */}
-        {showSignUpModal && (
-          <SignUp 
-            onClose={() => setShowSignUpModal(false)}
-            onSuccess={handleSignUpSuccess}
-            onSwitchToLogin={() => {
-              setShowSignUpModal(false)
-              setShowLoginModal(true)
-            }}
+        {/* Auth Modal */}
+        {showAuth && (
+          <Auth
+            onClose={handleCloseAuth}
+            onSuccess={handleAuthSuccess}
           />
         )}
       </div>

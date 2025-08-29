@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
+import { authAPI, USER_TYPES, STORAGE_KEYS } from '../services/authAPI'
 import '../styles/Auth.css'
 
 const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
   const navigate = useNavigate()
+  const [userType, setUserType] = useState(USER_TYPES.BUYER) // Default to buyer
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -30,28 +32,30 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
     setIsLoading(true)
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Check credentials (hardcoded for demo)
-      if (formData.username === 'aadarsha123' && formData.password === 'password') {
-        // Store user data in localStorage
-        const userData = {
-          username: formData.username,
-          name: 'Aadarsha Babu Dhakal',
-          email: 'aadarsha@vegruit.com',
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-          isAuthenticated: true,
-          loginTime: new Date().toISOString()
-        }
-        
-        localStorage.setItem('vegruit_user', JSON.stringify(userData))
-        
-        toast.success('Login successful! Welcome back!')
-        onSuccess(userData)
-        navigate('/dashboard')
+      let response
+      if (userType === USER_TYPES.BUYER) {
+        response = await authAPI.loginBuyer(formData)
       } else {
-        toast.error('Invalid credentials. Please try again.')
+        response = await authAPI.loginSeller(formData)
+      }
+
+      if (response.success) {
+        // Store user data and token
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(response.user))
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.token)
+        localStorage.setItem(STORAGE_KEYS.USER_TYPE, userType)
+        
+        toast.success(`${userType === USER_TYPES.BUYER ? 'Buyer' : 'Seller'} login successful! Welcome back!`)
+        onSuccess(response.user)
+        
+        // Redirect based on user type
+        if (userType === USER_TYPES.BUYER) {
+          navigate('/dashboard')
+        } else {
+          navigate('/seller-dashboard')
+        }
+      } else {
+        toast.error(response.message || 'Login failed. Please try again.')
       }
     } catch (error) {
       toast.error('Login failed. Please try again.')
@@ -80,8 +84,25 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
                 <h2>VegRuit</h2>
                 <p>Fresh from Kathmandu</p>
               </div>
+              
+              {/* User Type Toggle */}
+              <div className="user-type-toggle">
+                <button 
+                  className={`toggle-btn ${userType === USER_TYPES.BUYER ? 'active' : ''}`}
+                  onClick={() => setUserType(USER_TYPES.BUYER)}
+                >
+                  🛒 Buyer Login
+                </button>
+                <button 
+                  className={`toggle-btn ${userType === USER_TYPES.SELLER ? 'active' : ''}`}
+                  onClick={() => setUserType(USER_TYPES.SELLER)}
+                >
+                  👨‍🌾 Seller Login
+                </button>
+              </div>
+
               <h1>Welcome Back</h1>
-              <p>Sign in to your account to continue shopping</p>
+              <p>Sign in to your {userType === USER_TYPES.BUYER ? 'buyer' : 'seller'} account to continue</p>
             </div>
 
             <form onSubmit={handleSubmit} className="auth-form">
@@ -145,7 +166,7 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
                 {isLoading ? (
                   <span className="loading-spinner">⏳</span>
                 ) : (
-                  'Sign In'
+                  `Sign In as ${userType === USER_TYPES.BUYER ? 'Buyer' : 'Seller'}`
                 )}
               </button>
             </form>
@@ -171,7 +192,7 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
                 <button 
                   type="button"
                   className="auth-link"
-                  onClick={onSwitchToSignUp}
+                  onClick={() => onSwitchToSignUp(userType)}
                 >
                   Sign up here
                 </button>
@@ -181,8 +202,8 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
 
           <div className="auth-image">
             <div className="image-overlay">
-              <h2>Fresh Produce</h2>
-              <p>From local farmers to your table</p>
+              <h2>{userType === USER_TYPES.BUYER ? 'Fresh Produce' : 'Local Farming'}</h2>
+              <p>{userType === USER_TYPES.BUYER ? 'From local farmers to your table' : 'Connect with local buyers'}</p>
             </div>
           </div>
         </div>
