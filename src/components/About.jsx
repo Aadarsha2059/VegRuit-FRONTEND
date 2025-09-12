@@ -1,5 +1,6 @@
 import React from 'react'
 import '../styles/About.css'
+import aadarshaImage from '../assets/aadarsha.png'
 
 const About = () => {
   const stats = [
@@ -95,7 +96,7 @@ const About = () => {
             <div className="team-grid">
               <div className="team-member">
                 <div className="member-avatar">
-                  <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" alt="Aadarsha Babu Dhakal" />
+                  <img src={aadarshaImage} alt="Aadarsha Babu Dhakal" />
                 </div>
                 <h4>Aadarsha Babu Dhakal</h4>
                 <p>Founder & CEO</p>
@@ -103,6 +104,10 @@ const About = () => {
                   Passionate about connecting farmers with consumers and promoting sustainable agriculture. 
                   Leading VegRuit's mission to revolutionize fresh produce delivery in Kathmandu Valley.
                 </p>
+                <div className="member-social">
+                  <a href="#" className="social-link">💼 LinkedIn</a>
+                  <a href="#" className="social-link">📧 Email</a>
+                </div>
               </div>
             </div>
           </div>

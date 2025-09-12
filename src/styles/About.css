@@ -251,6 +251,29 @@
   font-weight: normal !important;
 }
 
+.member-social {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.social-link {
+  color: #4caf50;
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #4caf50;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.social-link:hover {
+  background: #4caf50;
+  color: white;
+  transform: translateY(-2px);
+}
+
 /* Mission Section */
 .mission-section {
   background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);

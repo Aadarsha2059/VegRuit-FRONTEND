@@ -10,8 +10,11 @@ import Explore from './components/Explore'
 import About from './components/About'
 import Footer from './components/Footer'
 import Auth from './components/auth/Auth'
-import Dashboard from './pages/Dashboard'
-import { STORAGE_KEYS } from './services/authAPI'
+import ProtectedRoute from './components/ProtectedRoute'
+import AuthTest from './components/AuthTest'
+import BuyerDashboard from './pages/BuyerDashboard'
+import SellerDashboard from './pages/SellerDashboard'
+import { STORAGE_KEYS, USER_TYPES } from './services/authAPI'
 import './App.css'
 
 function App() {
@@ -22,14 +25,26 @@ function App() {
     // Check for existing user data and token
     const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA)
     const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+    const userType = localStorage.getItem(STORAGE_KEYS.USER_TYPE)
     
     if (userData && token) {
-      setUser(JSON.parse(userData))
+      const parsedUser = JSON.parse(userData)
+      // Ensure userType is set correctly
+      const userWithType = {
+        ...parsedUser,
+        userType: parsedUser.userType || userType
+      }
+      setUser(userWithType)
     }
   }, [])
 
   const handleAuthSuccess = (userData) => {
-    setUser(userData)
+    // Ensure userType is set correctly
+    const userWithType = {
+      ...userData,
+      userType: userData.userType || localStorage.getItem(STORAGE_KEYS.USER_TYPE)
+    }
+    setUser(userWithType)
     setShowAuth(false)
   }
 
@@ -93,15 +108,15 @@ function App() {
               <About />
             </main>
           } />
-          <Route path="/dashboard" element={
-            user && user.userType === 'buyer' ? 
-              <Dashboard user={user} onLogout={handleLogout} /> : 
-              <Navigate to="/" />
+          <Route path="/buyer-dashboard" element={
+            <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER}>
+              <BuyerDashboard user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
           } />
           <Route path="/seller-dashboard" element={
-            user && user.userType === 'seller' ? 
-              <Dashboard user={user} onLogout={handleLogout} /> : 
-              <Navigate to="/" />
+            <ProtectedRoute user={user} requiredUserType={USER_TYPES.SELLER}>
+              <SellerDashboard user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
           } />
         </Routes>
         
@@ -114,6 +129,9 @@ function App() {
             onSuccess={handleAuthSuccess}
           />
         )}
+
+        {/* Auth Test Panel - Remove in production */}
+        {process.env.NODE_ENV === 'development' && <AuthTest />}
       </div>
     </Router>
   )

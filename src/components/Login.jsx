@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { authAPI, USER_TYPES, STORAGE_KEYS } from '../services/authAPI'
+import { navigateToDashboard, getUserTypeDisplayName } from '../utils/navigation'
 import '../styles/Auth.css'
 
 const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
@@ -13,52 +14,145 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [userTypeSuggestion, setUserTypeSuggestion] = useState(null)
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [isCheckingUser, setIsCheckingUser] = useState(false)
 
   const handleChange = (e) => {
+    const { name, value } = e.target
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     })
+    
+    // Clear field errors when user types
+    if (fieldErrors[name]) {
+      setFieldErrors({
+        ...fieldErrors,
+        [name]: null
+      })
+    }
+    
+    // Clear user type suggestion when user types
+    if (userTypeSuggestion) {
+      setUserTypeSuggestion(null)
+    }
+  }
+
+  const checkUserType = async (username) => {
+    if (username.length < 3) {
+      setUserTypeSuggestion(null)
+      return
+    }
+    
+    setIsCheckingUser(true)
+    try {
+      const result = await authAPI.checkUserExists(username, username.includes('@') ? username : null)
+      if (result.success && result.exists) {
+        setUserTypeSuggestion({
+          suggestedType: result.userType,
+          message: result.message,
+          suggestion: result.suggestion
+        })
+        
+        // Auto-switch to correct user type if different
+        if (result.userType !== userType) {
+          setTimeout(() => {
+            toast.info(`💡 This account is registered as a ${getUserTypeDisplayName(result.userType)}`)
+          }, 500)
+        }
+      } else {
+        setUserTypeSuggestion(null)
+      }
+    } catch (error) {
+      // Silently handle errors for user type checking
+      setUserTypeSuggestion(null)
+    } finally {
+      setIsCheckingUser(false)
+    }
+  }
+
+  const handleUsernameBlur = () => {
+    if (formData.username) {
+      checkUserType(formData.username)
+    }
+  }
+
+  const validateForm = () => {
+    const errors = {}
+    
+    if (!formData.username.trim()) {
+      errors.username = 'Username or email is required'
+    }
+    
+    if (!formData.password) {
+      errors.password = 'Password is required'
+    }
+    
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.username || !formData.password) {
-      toast.error('Please fill in all fields')
+    if (!validateForm()) {
+      toast.error('Please fill in all required fields')
       return
     }
 
     setIsLoading(true)
 
     try {
-      let response
-      if (userType === USER_TYPES.BUYER) {
-        response = await authAPI.loginBuyer(formData)
-      } else {
-        response = await authAPI.loginSeller(formData)
-      }
+      // Use the universal login endpoint
+      const response = await authAPI.loginBuyer(formData) // This actually calls the universal login
 
       if (response.success) {
         // Store user data and token
         localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(response.user))
         localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.token)
-        localStorage.setItem(STORAGE_KEYS.USER_TYPE, userType)
+        localStorage.setItem(STORAGE_KEYS.USER_TYPE, response.userType || response.user.userType)
         
-        toast.success(`${userType === USER_TYPES.BUYER ? 'Buyer' : 'Seller'} login successful! Welcome back!`)
-        onSuccess(response.user)
+        const actualUserType = response.userType || response.user.userType
         
-        // Redirect based on user type
-        if (userType === USER_TYPES.BUYER) {
-          navigate('/dashboard')
-        } else {
-          navigate('/seller-dashboard')
-        }
+        // Show success message
+        toast.success(`🎉 ${response.message}`, {
+          duration: 2000,
+          icon: '✅'
+        })
+        
+        // Update user object with userType to ensure consistency
+        const userWithType = { ...response.user, userType: actualUserType }
+        onSuccess(userWithType)
+        
+        // Redirect based on actual user type from backend
+        setTimeout(() => {
+          toast.success(`🚀 Redirecting to your ${getUserTypeDisplayName(actualUserType)} dashboard...`)
+          setTimeout(() => {
+            navigateToDashboard(navigate, actualUserType)
+          }, 1000)
+        }, 1500)
       } else {
-        toast.error(response.message || 'Login failed. Please try again.')
+        // Handle specific error cases with better UX
+        if (response.field === 'username') {
+          setFieldErrors({ username: response.message })
+          toast.error(`❌ ${response.message}`)
+          if (response.suggestion) {
+            setTimeout(() => toast.error(`💡 ${response.suggestion}`), 1000)
+          }
+        } else if (response.field === 'password') {
+          setFieldErrors({ password: response.message })
+          toast.error(`❌ ${response.message}`)
+          if (response.suggestion) {
+            setTimeout(() => toast.error(`💡 ${response.suggestion}`), 1000)
+          }
+        } else {
+          toast.error(`❌ ${response.message || 'Login failed. Please try again.'}`)
+        }
       }
     } catch (error) {
-      toast.error('Login failed. Please try again.')
+      console.error('Login error:', error)
+      toast.error('🌐 Network error. Please check your connection and try again.')
     } finally {
       setIsLoading(false)
     }
@@ -68,6 +162,11 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
     if (e.target === e.currentTarget) {
       onClose()
     }
+  }
+
+  const handleUserTypeChange = (newUserType) => {
+    setUserType(newUserType)
+    setUserTypeSuggestion(null) // Clear suggestion when user changes type
   }
 
   return (
@@ -81,33 +180,55 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
           <div className="auth-card">
             <div className="auth-header">
               <div className="auth-logo">
-                <h2>VegRuit</h2>
-                <p>Fresh from Kathmandu</p>
+                <h2>🥬 VegRuit</h2>
+                <p>Fresh from Kathmandu Valley</p>
               </div>
               
               {/* User Type Toggle */}
               <div className="user-type-toggle">
                 <button 
                   className={`toggle-btn ${userType === USER_TYPES.BUYER ? 'active' : ''}`}
-                  onClick={() => setUserType(USER_TYPES.BUYER)}
+                  onClick={() => handleUserTypeChange(USER_TYPES.BUYER)}
+                  disabled={isLoading}
                 >
-                  🛒 Buyer Login
+                  <span className="toggle-icon">🛒</span>
+                  <span className="toggle-text">Buyer Login</span>
                 </button>
                 <button 
                   className={`toggle-btn ${userType === USER_TYPES.SELLER ? 'active' : ''}`}
-                  onClick={() => setUserType(USER_TYPES.SELLER)}
+                  onClick={() => handleUserTypeChange(USER_TYPES.SELLER)}
+                  disabled={isLoading}
                 >
-                  👨‍🌾 Seller Login
+                  <span className="toggle-icon">👨‍🌾</span>
+                  <span className="toggle-text">Seller Login</span>
                 </button>
               </div>
 
-              <h1>Welcome Back</h1>
-              <p>Sign in to your {userType === USER_TYPES.BUYER ? 'buyer' : 'seller'} account to continue</p>
+              <h1>Welcome Back! 👋</h1>
+              <p>Sign in to your {userType === USER_TYPES.BUYER ? 'buyer' : 'seller'} account and continue your fresh produce journey</p>
             </div>
+
+            {/* User Type Suggestion */}
+            {userTypeSuggestion && (
+              <div className={`user-type-suggestion ${userTypeSuggestion.suggestedType === userType ? 'correct' : 'incorrect'}`}>
+                <p>{userTypeSuggestion.message}</p>
+                {userTypeSuggestion.suggestedType !== userType && (
+                  <button 
+                    className="suggestion-btn"
+                    onClick={() => handleUserTypeChange(userTypeSuggestion.suggestedType)}
+                  >
+                    Switch to {userTypeSuggestion.suggestedType === USER_TYPES.BUYER ? 'Buyer' : 'Seller'} Login
+                  </button>
+                )}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="form-group">
-                <label htmlFor="username">Username or Email</label>
+                <label htmlFor="username">
+                  <span className="label-text">Username or Email</span>
+                  <span className="label-required">*</span>
+                </label>
                 <div className="input-wrapper">
                   <span className="input-icon">👤</span>
                   <input
@@ -116,15 +237,22 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
                     name="username"
                     value={formData.username}
                     onChange={handleChange}
+                    onBlur={handleUsernameBlur}
                     placeholder="Enter your username or email"
                     required
-                    className="form-input"
+                    disabled={isLoading}
+                    className={`form-input ${fieldErrors.username ? 'error' : ''}`}
                   />
+                  {isCheckingUser && <span className="checking-indicator">⏳</span>}
                 </div>
+                {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
               </div>
 
               <div className="form-group">
-                <label htmlFor="password">Password</label>
+                <label htmlFor="password">
+                  <span className="label-text">Password</span>
+                  <span className="label-required">*</span>
+                </label>
                 <div className="input-wrapper">
                   <span className="input-icon">🔒</span>
                   <input
@@ -135,38 +263,47 @@ const Login = ({ onClose, onSuccess, onSwitchToSignUp }) => {
                     onChange={handleChange}
                     placeholder="Enter your password"
                     required
-                    className="form-input"
+                    disabled={isLoading}
+                    className={`form-input ${fieldErrors.password ? 'error' : ''}`}
                   />
                   <button
                     type="button"
                     className="password-toggle"
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
                   >
                     {showPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
                 </div>
+                {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
               </div>
 
               <div className="form-options">
                 <label className="checkbox-wrapper">
-                  <input type="checkbox" />
+                  <input type="checkbox" disabled={isLoading} />
                   <span className="checkmark"></span>
-                  Remember me
+                  <span className="checkbox-text">Remember me for 7 days</span>
                 </label>
-                <button type="button" className="forgot-link">
-                  Forgot password?
+                <button type="button" className="forgot-link" disabled={isLoading}>
+                  Forgot password? 🔑
                 </button>
               </div>
 
               <button
                 type="submit"
-                className="auth-btn primary"
+                className={`auth-btn primary ${isLoading ? 'loading' : ''}`}
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <span className="loading-spinner">⏳</span>
+                  <>
+                    <span className="loading-spinner">⏳</span>
+                    <span>Signing In...</span>
+                  </>
                 ) : (
-                  `Sign In as ${userType === USER_TYPES.BUYER ? 'Buyer' : 'Seller'}`
+                  <>
+                    <span className="btn-icon">{userType === USER_TYPES.BUYER ? '🛒' : '👨‍🌾'}</span>
+                    <span>Sign In as {userType === USER_TYPES.BUYER ? 'Buyer' : 'Seller'}</span>
+                  </>
                 )}
               </button>
             </form>
