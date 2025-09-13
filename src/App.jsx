@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import Header from './components/Header'
 import Hero from './components/Hero'
@@ -16,6 +16,26 @@ import BuyerDashboard from './pages/BuyerDashboard'
 import SellerDashboard from './pages/SellerDashboard'
 import { STORAGE_KEYS, USER_TYPES } from './services/authAPI'
 import './App.css'
+
+// Component to conditionally render header and footer
+const ConditionalLayout = ({ user, onLogout, onAuthClick, children }) => {
+  const location = useLocation()
+  const isDashboard = location.pathname.includes('dashboard')
+  
+  return (
+    <>
+      {!isDashboard && (
+        <Header 
+          user={user} 
+          onLogout={onLogout} 
+          onAuthClick={onAuthClick}
+        />
+      )}
+      {children}
+      {!isDashboard && <Footer />}
+    </>
+  )
+}
 
 function App() {
   const [user, setUser] = useState(null)
@@ -91,36 +111,34 @@ function App() {
           }}
         />
         
-        <Header 
-          user={user} 
-          onLogout={handleLogout} 
+        <ConditionalLayout
+          user={user}
+          onLogout={handleLogout}
           onAuthClick={handleAuthClick}
-        />
-        
-        <Routes>
-          <Route path="/" element={
-            <main>
-              <Hero />
-              <Products />
-              <Farmers />
-              <Testimonials />
-              <Explore />
-              <About />
-            </main>
-          } />
-          <Route path="/buyer-dashboard" element={
-            <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER}>
-              <BuyerDashboard user={user} onLogout={handleLogout} />
-            </ProtectedRoute>
-          } />
-          <Route path="/seller-dashboard" element={
-            <ProtectedRoute user={user} requiredUserType={USER_TYPES.SELLER}>
-              <SellerDashboard user={user} onLogout={handleLogout} />
-            </ProtectedRoute>
-          } />
-        </Routes>
-        
-        <Footer />
+        >
+          <Routes>
+            <Route path="/" element={
+              <main>
+                <Hero />
+                <Products />
+                <Farmers />
+                <Testimonials />
+                <Explore />
+                <About />
+              </main>
+            } />
+            <Route path="/buyer-dashboard" element={
+              <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER}>
+                <BuyerDashboard user={user} onLogout={handleLogout} />
+              </ProtectedRoute>
+            } />
+            <Route path="/seller-dashboard" element={
+              <ProtectedRoute user={user} requiredUserType={USER_TYPES.SELLER}>
+                <SellerDashboard user={user} onLogout={handleLogout} />
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </ConditionalLayout>
 
         {/* Auth Modal */}
         {showAuth && (

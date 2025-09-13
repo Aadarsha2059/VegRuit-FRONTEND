@@ -1,11 +1,23 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-hot-toast'
-import DashboardLayout from '../components/dashboard/DashboardLayout'
-import StatCard from '../components/dashboard/StatCard'
-import LoadingSpinner from '../components/dashboard/LoadingSpinner'
-import { useSellerDashboard, useSellerProducts, useSellerOrders } from '../hooks/useDashboard'
-import '../styles/Dashboard.css'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import DashboardLayout from '../components/dashboard/DashboardLayout';
+import ProductForm from '../components/ProductForm';
+import toast from 'react-hot-toast';
+import { 
+  getCategories, 
+  createCategory, 
+  updateCategory, 
+  deleteCategory, 
+  getCategoryStats 
+} from '../services/categoryAPI';
+import {
+  getSellerProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getProductStats
+} from '../services/productAPI';
+import '../styles/SellerDashboard.css';
 
 const SellerDashboard = ({ user, onLogout }) => {
   const navigate = useNavigate()
@@ -346,96 +358,77 @@ const ProductCard = ({ product, onEdit, onDelete }) => (
   </div>
 )
 
-const ProductForm = ({ product, onSubmit, onCancel }) => {
+const CategoryForm = ({ category, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: product?.name || '',
-    category: product?.category || 'Fruits',
-    price: product?.price || '',
-    stock: product?.stock || '',
-    unit: product?.unit || 'kg',
-    description: product?.description || '',
-    status: product?.status || 'active'
+    name: category?.name || '',
+    description: category?.description || '',
+    isActive: category?.isActive !== undefined ? category.isActive : true
   })
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState(category?.image || '')
+  const [uploading, setUploading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSubmit(formData)
+    setUploading(true)
+    
+    try {
+      const submitData = new FormData()
+      submitData.append('name', formData.name)
+      submitData.append('description', formData.description)
+      submitData.append('isActive', formData.isActive)
+      
+      if (imageFile) {
+        submitData.append('image', imageFile)
+      }
+      
+      await onSubmit(submitData)
+    } catch (error) {
+      console.error('Form submission error:', error)
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleChange = (e) => {
+    const { name, value, type, checked } = e.target
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: type === 'checkbox' ? checked : value
     })
   }
 
-  return (
-    <form onSubmit={handleSubmit} className="product-form">
-      <h4>{product ? 'Edit Product' : 'Add New Product'}</h4>
-      
-      <div className="form-row">
-        <div className="form-group">
-          <label>Product Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Category</label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            required
-          >
-            <option value="Fruits">Fruits</option>
-            <option value="Vegetables">Vegetables</option>
-            <option value="Leafy Greens">Leafy Greens</option>
-          </select>
-        </div>
-      </div>
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
-      <div className="form-row">
-        <div className="form-group">
-          <label>Price</label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            min="0"
-            step="0.01"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Stock</label>
-          <input
-            type="number"
-            name="stock"
-            value={formData.stock}
-            onChange={handleChange}
-            min="0"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Unit</label>
-          <select
-            name="unit"
-            value={formData.unit}
-            onChange={handleChange}
-            required
-          >
-            <option value="kg">kg</option>
-            <option value="piece">piece</option>
-            <option value="bunch">bunch</option>
-          </select>
-        </div>
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview('')
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="category-form">
+      <h4>{category ? 'Edit Category' : 'Add New Category'}</h4>
+      
+      <div className="form-group">
+        <label>Category Name *</label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+          disabled={uploading}
+        />
       </div>
 
       <div className="form-group">
@@ -445,14 +438,49 @@ const ProductForm = ({ product, onSubmit, onCancel }) => {
           value={formData.description}
           onChange={handleChange}
           rows="3"
+          disabled={uploading}
         />
       </div>
 
+      <div className="form-group">
+        <label>Category Image</label>
+        <div className="image-upload-container">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            disabled={uploading}
+            className="image-input"
+          />
+          {imagePreview && (
+            <div className="image-preview">
+              <img src={imagePreview} alt="Category preview" />
+              <button type="button" onClick={removeImage} className="remove-image-btn">
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            name="isActive"
+            checked={formData.isActive}
+            onChange={handleChange}
+            disabled={uploading}
+          />
+          Active Category
+        </label>
+      </div>
+
       <div className="form-actions">
-        <button type="submit" className="btn btn-primary">
-          {product ? 'Update Product' : 'Add Product'}
+        <button type="submit" className="btn btn-primary" disabled={uploading}>
+          {uploading ? 'Saving...' : (category ? 'Update Category' : 'Add Category')}
         </button>
-        <button type="button" className="btn btn-outline" onClick={onCancel}>
+        <button type="button" className="btn btn-outline" onClick={onCancel} disabled={uploading}>
           Cancel
         </button>
       </div>

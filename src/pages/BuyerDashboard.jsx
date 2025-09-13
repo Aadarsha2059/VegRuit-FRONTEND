@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
@@ -6,6 +6,7 @@ import StatCard from '../components/dashboard/StatCard'
 import LoadingSpinner from '../components/dashboard/LoadingSpinner'
 import { useBuyerDashboard, useBuyerOrders } from '../hooks/useDashboard'
 import '../styles/Dashboard.css'
+import '../styles/BuyerDashboard.css'
 
 const BuyerDashboard = ({ user, onLogout }) => {
   const navigate = useNavigate()
@@ -20,25 +21,29 @@ const BuyerDashboard = ({ user, onLogout }) => {
   }
 
   const sidebarItems = [
-    { key: 'overview', label: 'Overview', icon: '📊' },
-    { key: 'orders', label: 'My Orders', icon: '📦' },
-    { key: 'favorites', label: 'Favorites', icon: '❤️' },
-    { key: 'products', label: 'Products', icon: '🍎' },
-    { key: 'payments', label: 'Payments', icon: '💳' },
-    { key: 'delivery', label: 'Delivery', icon: '📍' },
-    { key: 'reviews', label: 'Reviews', icon: '⭐' },
-    { key: 'settings', label: 'Settings', icon: '⚙️' }
+    { key: 'overview', label: 'Overview', icon: '' },
+    { key: 'products', label: 'Browse Products', icon: '' },
+    { key: 'cart', label: 'Shopping Cart', icon: '' },
+    { key: 'orders', label: 'My Orders', icon: '' },
+    { key: 'favorites', label: 'Favorites', icon: '' },
+    { key: 'payments', label: 'Payments', icon: '' },
+    { key: 'delivery', label: 'Delivery', icon: '' },
+    { key: 'reviews', label: 'Reviews', icon: '' },
+    { key: 'profile', label: 'Profile', icon: '' },
+    { key: 'settings', label: 'Settings', icon: '' }
   ]
 
   const getTabTitle = (tab) => {
     const titles = {
-      overview: 'Buyer Dashboard Overview',
-      orders: 'My Orders',
+      overview: 'Dashboard Overview',
+      products: 'Browse Fresh Products',
+      cart: 'Shopping Cart',
+      orders: 'Order History',
       favorites: 'Favorite Items',
-      products: 'Available Products',
       payments: 'Payment Methods',
       delivery: 'Delivery Addresses',
-      reviews: 'My Reviews',
+      reviews: 'My Reviews & Ratings',
+      profile: 'My Profile',
       settings: 'Account Settings'
     }
     return titles[tab] || 'Buyer Dashboard'
@@ -52,18 +57,22 @@ const BuyerDashboard = ({ user, onLogout }) => {
     switch (activeTab) {
       case 'overview':
         return <BuyerOverviewTab user={user} data={dashboardData} />
+      case 'products':
+        return <BuyerProductsTab />
+      case 'cart':
+        return <BuyerCartTab />
       case 'orders':
         return <BuyerOrdersTab orders={orders} loading={ordersLoading} />
       case 'favorites':
         return <BuyerFavoritesTab favorites={dashboardData?.favoriteItems || []} />
-      case 'products':
-        return <BuyerProductsTab products={dashboardData?.recentProducts || []} />
       case 'payments':
         return <BuyerPaymentsTab />
       case 'delivery':
         return <BuyerDeliveryTab user={user} />
       case 'reviews':
         return <BuyerReviewsTab />
+      case 'profile':
+        return <BuyerProfileTab user={user} />
       case 'settings':
         return <BuyerSettingsTab user={user} />
       default:
@@ -85,105 +94,152 @@ const BuyerDashboard = ({ user, onLogout }) => {
   )
 }
 
-// Buyer-specific tab components
+// Enhanced Overview Tab with Professional Design
 const BuyerOverviewTab = ({ user, data }) => {
   if (!data) return <LoadingSpinner message="Loading overview..." />
 
   const { overview, recentOrders = [], favoriteItems = [], recentProducts = [] } = data
 
   return (
-    <div className="overview-tab">
-      <div className="overview-stats">
-        <StatCard
-          title="Total Orders"
-          value={overview?.totalOrders || 0}
-          label="This month"
-          icon="📦"
-        />
-        <StatCard
-          title="Favorite Items"
-          value={overview?.favoriteItems || 0}
-          label="Saved items"
-          icon="❤️"
-        />
-        <StatCard
-          title="Total Spent"
-          value={`Rs. ${overview?.totalSpent || 0}`}
-          label="This month"
-          icon="💰"
-        />
-        <StatCard
-          title="Delivery Address"
-          value={user.address || 'Not set'}
-          label={user.city}
-          icon="📍"
-        />
+    <div className="buyer-overview">
+      {/* Welcome Section */}
+      <div className="welcome-section">
+        <div className="welcome-content">
+          <h2>Welcome back, {user.firstName}! </h2>
+          <p>Ready to discover fresh, organic produce from local farmers?</p>
+        </div>
+        <div className="quick-actions">
+          <button className="quick-action-btn primary">
+            <span className="icon"> </span>
+            Browse Products
+          </button>
+          <button className="quick-action-btn secondary">
+            <span className="icon"> </span>
+            Track Orders
+          </button>
+        </div>
       </div>
 
-      <div className="overview-sections">
-        <div className="recent-orders">
-          <h3>Recent Orders</h3>
+      {/* Stats Grid */}
+      <div className="stats-grid">
+        <div className="stat-card orders">
+          <div className="stat-icon"> </div>
+          <div className="stat-content">
+            <h3>{overview?.totalOrders || 0}</h3>
+            <p>Total Orders</p>
+            <span className="stat-trend">+2 this month</span>
+          </div>
+        </div>
+        <div className="stat-card favorites">
+          <div className="stat-icon"> </div>
+          <div className="stat-content">
+            <h3>{overview?.favoriteItems || 0}</h3>
+            <p>Favorite Items</p>
+            <span className="stat-trend">5 new items</span>
+          </div>
+        </div>
+        <div className="stat-card spending">
+          <div className="stat-icon"> </div>
+          <div className="stat-content">
+            <h3>Rs. {overview?.totalSpent || 0}</h3>
+            <p>Total Spent</p>
+            <span className="stat-trend">This month</span>
+          </div>
+        </div>
+        <div className="stat-card savings">
+          <div className="stat-icon"> </div>
+          <div className="stat-content">
+            <h3>Rs. 450</h3>
+            <p>Money Saved</p>
+            <span className="stat-trend">vs market price</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Dashboard Sections */}
+      <div className="dashboard-sections">
+        {/* Recent Orders */}
+        <div className="dashboard-section">
+          <div className="section-header">
+            <h3>Recent Orders</h3>
+            <button className="view-all-btn">View All</button>
+          </div>
           <div className="orders-preview">
             {recentOrders.length > 0 ? (
-              recentOrders.map((order) => (
-                <div key={order.id} className="order-preview-item">
-                  <div className="order-preview-header">
-                    <span className="order-id">#{order.id}</span>
-                    <span className={`order-status ${order.status.toLowerCase()}`}>
+              recentOrders.slice(0, 3).map((order) => (
+                <div key={order.id} className="order-preview-card">
+                  <div className="order-info">
+                    <h4>Order #{order.id}</h4>
+                    <p>{order.items?.length || 0} items • Rs. {order.total}</p>
+                    <span className={`status ${order.status.toLowerCase()}`}>
                       {order.status}
                     </span>
                   </div>
-                  <p className="order-summary">
-                    {order.items?.length || 0} items • Rs. {order.total}
-                  </p>
-                  <small>{new Date(order.date).toLocaleDateString()}</small>
+                  <div className="order-date">
+                    {new Date(order.date).toLocaleDateString()}
+                  </div>
                 </div>
               ))
             ) : (
-              <p className="no-data">No recent orders</p>
+              <div className="empty-state">
+                <div className="empty-icon"> </div>
+                <p>No orders yet</p>
+                <button className="start-shopping-btn">Start Shopping</button>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="favorite-items">
-          <h3>Favorite Items</h3>
+        {/* Favorite Products */}
+        <div className="dashboard-section">
+          <div className="section-header">
+            <h3>Your Favorites</h3>
+            <button className="view-all-btn">View All</button>
+          </div>
           <div className="favorites-preview">
             {favoriteItems.length > 0 ? (
-              favoriteItems.map((item) => (
-                <div key={item.id} className="favorite-preview-item">
-                  <span className="favorite-icon">{item.image}</span>
-                  <div className="favorite-info">
-                    <h4>{item.name}</h4>
-                    <p>{item.price}</p>
-                    <small>{item.farmer}</small>
-                  </div>
+              favoriteItems.slice(0, 4).map((item) => (
+                <div key={item.id} className="favorite-card">
+                  <div className="product-image"> </div>
+                  <h4>{item.name}</h4>
+                  <p className="price">{item.price}</p>
+                  <button className="add-to-cart-btn">Add to Cart</button>
                 </div>
               ))
             ) : (
-              <p className="no-data">No favorite items</p>
+              <div className="empty-state">
+                <div className="empty-icon"> </div>
+                <p>No favorites yet</p>
+                <button className="browse-btn">Browse Products</button>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="recent-products">
-          <h3>Available Products</h3>
-          <div className="products-preview">
-            {recentProducts.length > 0 ? (
-              recentProducts.map((product) => (
-                <div key={product.id} className="product-preview-item">
-                  <div className="product-info">
-                    <h4>{product.name}</h4>
-                    <p className="product-price">{product.price}</p>
-                    <small>Farmer: {product.farmer}</small>
-                  </div>
+        {/* Recommended Products */}
+        <div className="dashboard-section full-width">
+          <div className="section-header">
+            <h3>Recommended for You</h3>
+            <button className="view-all-btn">View All</button>
+          </div>
+          <div className="products-grid">
+            {[1,2,3,4,5,6].map((i) => (
+              <div key={i} className="product-card">
+                <div className="product-image"> </div>
+                <div className="product-info">
+                  <h4>Fresh Lettuce</h4>
+                  <p className="farmer">By Ram Farmer</p>
                   <div className="product-rating">
-                    {'⭐'.repeat(Math.floor(product.rating || 0))} ({product.rating || 0})
+                    
                   </div>
+                  <div className="product-price">Rs. 80/kg</div>
                 </div>
-              ))
-            ) : (
-              <p className="no-data">No products available</p>
-            )}
+                <div className="product-actions">
+                  <button className="favorite-btn"> </button>
+                  <button className="add-cart-btn">Add to Cart</button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -288,7 +344,7 @@ const BuyerFavoritesTab = ({ favorites }) => {
               <small>Farmer: {item.farmer}</small>
               {item.rating && (
                 <div className="item-rating">
-                  {'⭐'.repeat(Math.floor(item.rating))} ({item.rating})
+                  
                 </div>
               )}
               <div className="item-actions">
@@ -302,7 +358,7 @@ const BuyerFavoritesTab = ({ favorites }) => {
                   className="btn btn-outline remove-btn"
                   onClick={() => handleRemoveFromFavorites(item)}
                 >
-                  ❤️
+                  
                 </button>
               </div>
             </div>
@@ -363,8 +419,7 @@ const BuyerProductsTab = ({ products }) => {
                   <span className="product-category">{product.category}</span>
                 )}
                 <div className="product-rating">
-                  {'⭐'.repeat(Math.floor(product.rating || 0))}
-                  <span>({product.rating || 0})</span>
+                  
                 </div>
               </div>
               <div className="product-actions">
@@ -378,7 +433,7 @@ const BuyerProductsTab = ({ products }) => {
                   className="btn btn-outline"
                   onClick={() => handleAddToFavorites(product)}
                 >
-                  ❤️
+                  
                 </button>
               </div>
             </div>
