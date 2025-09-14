@@ -76,39 +76,16 @@ const Header = ({ user, onLogout, onAuthClick }) => {
                 Contact
               </Link>
             </li>
-            {user ? (
-              <li>
-                <Link 
-                  to={user.userType === 'seller' ? '/seller-dashboard' : '/dashboard'} 
-                  className={`nav-link dashboard-link ${isActive('/dashboard') || isActive('/seller-dashboard') ? 'active' : ''}`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-              </li>
-            ) : null}
           </ul>
         </nav>
         
         <div className="auth-buttons">
-          {user ? (
-            <div className="user-menu">
-              <span className="user-name">Welcome, {user.firstName || user.username}</span>
-              {/* Only show logout in header for buyers, sellers use dashboard logout */}
-              {user.userType === 'buyer' && (
-                <button className="nav-link logout-btn" onClick={handleLogout}>
-                  Logout
-                </button>
-              )}
-            </div>
-          ) : (
-            <button
-              className="nav-link login-btn"
-              onClick={handleAuthClick}
-            >
-              Login / Sign Up
-            </button>
-          )}
+          <button
+            className="nav-link login-btn"
+            onClick={handleAuthClick}
+          >
+            Login / Sign Up
+          </button>
         </div>
         
         <div className="mobile-menu-btn" onClick={toggleMenu}>
