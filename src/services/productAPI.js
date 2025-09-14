@@ -2,7 +2,7 @@ const API_BASE_URL = 'http://localhost:5000/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
-  return localStorage.getItem('token');
+  return localStorage.getItem('vegruit_token');
 };
 
 // Create headers with auth token

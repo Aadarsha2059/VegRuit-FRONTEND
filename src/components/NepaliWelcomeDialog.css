@@ -1,0 +1,443 @@
+/* Enhanced Nepali Welcome Dialog Styles */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&display=swap');
+
+.nepali-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nepali-dialog-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.nepali-dialog-overlay.fade-in {
+  animation: fadeInOverlay 0.4s ease-out forwards;
+}
+
+.nepali-dialog-overlay.fade-out {
+  animation: fadeOutOverlay 0.3s ease-in forwards;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@keyframes fadeOutOverlay {
+  from {
+    opacity: 1;
+    visibility: visible;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.nepali-dialog-container {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 24px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.8);
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow: hidden;
+  transform: scale(0.8) translateY(40px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.nepali-dialog-overlay.visible .nepali-dialog-container {
+  transform: scale(1) translateY(0);
+}
+
+.nepali-dialog-overlay.fade-in.active .nepali-dialog-container {
+  animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: scale(0.8) translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.nepali-dialog-header {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: white;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.nepali-dialog-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+.dialog-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.progress-bar {
+  width: 120px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+}
+
+.step-indicator {
+  font-weight: 600;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dialog-controls {
+  display: flex;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.skip-session-btn,
+.close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.skip-session-btn:hover,
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.nepali-dialog-content {
+  padding: 32px 24px;
+  text-align: center;
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.step-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.step-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 20px;
+  line-height: 1.3;
+  animation: fadeInUp 0.5s ease-out 0.2s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step-content {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #4b5563;
+  animation: fadeInUp 0.5s ease-out 0.4s both;
+}
+
+.step-content p {
+  margin-bottom: 12px;
+}
+
+.step-content p:last-child {
+  margin-bottom: 0;
+}
+
+.nepali-dialog-footer {
+  padding: 20px 24px 24px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.step-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.step-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #d1d5db;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.step-dot:hover {
+  transform: scale(1.2);
+}
+
+.step-dot.active {
+  background: linear-gradient(135deg, #059669, #10b981);
+  transform: scale(1.3);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+}
+
+.step-dot.completed {
+  background: #10b981;
+}
+
+.step-dot.completed::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.final-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.3);
+  flex: 1;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px 0 rgba(16, 185, 129, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  flex: 1;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+  color: #4b5563;
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nepali-dialog-container {
+    width: 95%;
+    max-height: 90vh;
+    border-radius: 16px;
+  }
+
+  .nepali-dialog-header {
+    padding: 16px 20px;
+  }
+
+  .nepali-dialog-content {
+    padding: 24px 20px;
+    min-height: 240px;
+  }
+
+  .step-title {
+    font-size: 24px;
+  }
+
+  .step-content {
+    font-size: 16px;
+  }
+
+  .nepali-dialog-footer {
+    padding: 16px 20px 20px;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+  }
+
+  .final-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    padding: 14px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nepali-dialog-container {
+    width: 98%;
+    margin: 10px;
+  }
+
+  .step-icon {
+    font-size: 40px;
+  }
+
+  .step-title {
+    font-size: 20px;
+  }
+
+  .step-content {
+    font-size: 15px;
+  }
+
+  .progress-bar {
+    width: 80px;
+  }
+}
+
+/* Animation for content changes */
+.step-content {
+  animation: contentSlideIn 0.4s ease-out;
+}
+
+@keyframes contentSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Accessibility improvements */
+.nepali-dialog-container:focus-within {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+.step-dot:focus {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+.btn-primary:focus,
+.btn-secondary:focus,
+.skip-session-btn:focus,
+.close-btn:focus {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}

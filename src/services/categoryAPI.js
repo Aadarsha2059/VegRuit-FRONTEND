@@ -2,7 +2,7 @@ const API_BASE_URL = 'http://localhost:5000/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
-  return localStorage.getItem('token');
+  return localStorage.getItem('vegruit_token');
 };
 
 // Create headers with auth token
@@ -65,32 +65,53 @@ export const createCategory = async (categoryData) => {
   try {
     const formData = new FormData();
     
-    // Append text fields
-    formData.append('name', categoryData.name);
-    formData.append('description', categoryData.description || '');
-    formData.append('isActive', categoryData.isActive);
-    
-    // Append image if provided
-    if (categoryData.image) {
-      formData.append('image', categoryData.image);
+    // Handle both FormData input and regular object input
+    if (categoryData instanceof FormData) {
+      // If it's already FormData, use it directly
+      const response = await fetch(`${API_BASE_URL}/categories`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`
+          // Don't set Content-Type for FormData, let browser set it with boundary
+        },
+        body: categoryData
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create category');
+      }
+
+      return data;
+    } else {
+      // Convert object to FormData
+      formData.append('name', categoryData.name);
+      formData.append('description', categoryData.description || '');
+      formData.append('isActive', categoryData.isActive !== undefined ? categoryData.isActive : true);
+      
+      // Append image if provided
+      if (categoryData.image) {
+        formData.append('image', categoryData.image);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/categories`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`
+          // Don't set Content-Type for FormData, let browser set it with boundary
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create category');
+      }
+
+      return data;
     }
-
-    const response = await fetch(`${API_BASE_URL}/categories`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${getAuthToken()}`
-        // Don't set Content-Type for FormData, let browser set it with boundary
-      },
-      body: formData
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to create category');
-    }
-
-    return data;
   } catch (error) {
     console.error('Error creating category:', error);
     throw error;

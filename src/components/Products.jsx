@@ -18,7 +18,11 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       const response = await getProducts({ limit: 6, isActive: true });
-      setProducts(response.products || []);
+      if (response.success) {
+        setProducts(response.data.products || []);
+      } else {
+        setProducts(response.products || []);
+      }
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
@@ -28,7 +32,11 @@ const Products = () => {
   const fetchFeaturedProducts = async () => {
     try {
       const response = await getFeaturedProducts(3);
-      setFeaturedProducts(response.products || []);
+      if (response.success) {
+        setFeaturedProducts(response.data.products || []);
+      } else {
+        setFeaturedProducts(response.products || []);
+      }
     } catch (error) {
       console.error('Error fetching featured products:', error);
     } finally {

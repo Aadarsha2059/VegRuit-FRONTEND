@@ -8,7 +8,9 @@ const DashboardLayout = ({
   onLogout, 
   children, 
   sidebarItems,
-  headerTitle 
+  headerTitle,
+  onHelpClick,
+  onCalendarClick
 }) => {
   return (
     <div className="dashboard-container">
@@ -59,7 +61,18 @@ const DashboardLayout = ({
             <button className="notification-btn" title="Notifications">
               🔔
             </button>
-            <button className="help-btn" title="Help">
+            <button 
+              className="calendar-btn large-icon" 
+              title={user.userType === 'seller' ? "नेपाली क्यालेन्डर (Nepali Calendar)" : "Calendar"}
+              onClick={onCalendarClick}
+            >
+              📅
+            </button>
+            <button 
+              className="help-btn large-icon" 
+              title={user.userType === 'seller' ? "किसान गाइड (Farmer Guide)" : "Help"}
+              onClick={onHelpClick}
+            >
               ❓
             </button>
           </div>

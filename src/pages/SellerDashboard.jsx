@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
 import ProductForm from '../components/ProductForm';
 import toast from 'react-hot-toast';
+import { useSellerDashboard, useSellerProducts, useSellerOrders } from '../hooks/useDashboard';
 import { 
   getCategories, 
   createCategory, 
@@ -17,14 +18,32 @@ import {
   deleteProduct,
   getProductStats
 } from '../services/productAPI';
+import NepaliWelcomeDialog from '../components/NepaliWelcomeDialog';
+import NepaliCalendar from '../components/NepaliCalendar';
 import '../styles/SellerDashboard.css';
 
 const SellerDashboard = ({ user, onLogout }) => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('overview')
+  const [showNepaliWelcome, setShowNepaliWelcome] = useState(true)
+  const [showNepaliCalendar, setShowNepaliCalendar] = useState(false)
+  const [dialogAnimationClass, setDialogAnimationClass] = useState('fade-in')
   const { data: dashboardData, loading: dashboardLoading } = useSellerDashboard()
   const { products, loading: productsLoading, addProduct, updateProduct, deleteProduct } = useSellerProducts()
   const { orders, loading: ordersLoading, updateOrderStatus } = useSellerOrders()
+
+  useEffect(() => {
+    // Show Nepali welcome dialog every time dashboard loads
+    if (user) {
+      setShowNepaliWelcome(true)
+      setDialogAnimationClass('fade-in')
+      
+      // Add a slight delay for smooth entrance animation
+      setTimeout(() => {
+        setDialogAnimationClass('fade-in active')
+      }, 100)
+    }
+  }, [user])
 
   const handleLogout = () => {
     onLogout()
@@ -32,8 +51,47 @@ const SellerDashboard = ({ user, onLogout }) => {
     toast.success('Logged out successfully!')
   }
 
+  const handleCloseNepaliWelcome = () => {
+    // Add smooth exit animation before hiding
+    setDialogAnimationClass('fade-out')
+    setTimeout(() => {
+      setShowNepaliWelcome(false)
+    }, 300)
+  }
+
+  const handleSkipForSession = () => {
+    // Skip dialog for current session only
+    sessionStorage.setItem('skipNepaliDialog', 'true')
+    handleCloseNepaliWelcome()
+  }
+
+  const handleShowNepaliWelcome = () => {
+    setShowNepaliWelcome(true)
+    setDialogAnimationClass('fade-in')
+    setTimeout(() => {
+      setDialogAnimationClass('fade-in active')
+    }, 100)
+  }
+
+  const handleShowNepaliCalendar = () => {
+    setShowNepaliCalendar(true);
+  };
+
+  const handleCloseNepaliCalendar = () => {
+    setShowNepaliCalendar(false);
+  };
+
+  // Check if user wants to skip dialog for current session
+  useEffect(() => {
+    const skipDialog = sessionStorage.getItem('skipNepaliDialog')
+    if (skipDialog === 'true') {
+      setShowNepaliWelcome(false)
+    }
+  }, [])
+
   const sidebarItems = [
     { key: 'overview', label: 'Overview', icon: '📊' },
+    { key: 'categories', label: 'Categories', icon: '📂' },
     { key: 'products', label: 'Products', icon: '🍎' },
     { key: 'orders', label: 'Orders', icon: '📦' },
     { key: 'earnings', label: 'Earnings', icon: '💰' },
@@ -46,6 +104,7 @@ const SellerDashboard = ({ user, onLogout }) => {
   const getTabTitle = (tab) => {
     const titles = {
       overview: 'Farm Dashboard Overview',
+      categories: 'Category Management',
       products: 'Product Management',
       orders: 'Order Management',
       earnings: 'Earnings & Analytics',
@@ -65,6 +124,8 @@ const SellerDashboard = ({ user, onLogout }) => {
     switch (activeTab) {
       case 'overview':
         return <SellerOverviewTab user={user} data={dashboardData} />
+      case 'categories':
+        return <SellerCategoriesTab />
       case 'products':
         return <SellerProductsTab 
           products={products} 
@@ -95,20 +156,476 @@ const SellerDashboard = ({ user, onLogout }) => {
   }
 
   return (
-    <DashboardLayout
-      user={user}
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      onLogout={handleLogout}
-      sidebarItems={sidebarItems}
-      headerTitle={getTabTitle(activeTab)}
-    >
-      {renderTabContent()}
-    </DashboardLayout>
+    <>
+      <NepaliWelcomeDialog
+        isOpen={showNepaliWelcome}
+        onClose={handleCloseNepaliWelcome}
+        onSkipForSession={handleSkipForSession}
+        user={user}
+        animationClass={dialogAnimationClass}
+      />
+      <NepaliCalendar
+        isOpen={showNepaliCalendar}
+        onClose={handleCloseNepaliCalendar}
+      />
+      <DashboardLayout
+        user={user}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onLogout={handleLogout}
+        sidebarItems={sidebarItems}
+        headerTitle={getTabTitle(activeTab)}
+        onHelpClick={handleShowNepaliWelcome}
+        onCalendarClick={handleShowNepaliCalendar}
+      >
+        {renderTabContent()}
+      </DashboardLayout>
+    </>
   )
 }
 
-// Seller-specific tab components
+// Loading Spinner Component
+const LoadingSpinner = ({ message = "Loading..." }) => (
+  <div className="loading-spinner">
+    <div className="spinner"></div>
+    <p>{message}</p>
+  </div>
+)
+
+// Stat Card Component
+const StatCard = ({ title, value, label, icon, color = 'primary' }) => (
+  <div className={`stat-card ${color}`}>
+    <div className="stat-icon">{icon}</div>
+    <div className="stat-content">
+      <h4>{title}</h4>
+      <div className="stat-value">{value}</div>
+      <small className="stat-label">{label}</small>
+    </div>
+  </div>
+)
+
+// Seller Categories Tab Component
+const SellerCategoriesTab = () => {
+  const [categories, setCategories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [editingCategory, setEditingCategory] = useState(null)
+  const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    loadCategories()
+    loadCategoryStats()
+  }, [])
+
+  const loadCategories = async () => {
+    try {
+      setLoading(true)
+      const response = await getCategories()
+      if (response.success) {
+        setCategories(response.data.categories)
+      }
+    } catch (error) {
+      toast.error('Failed to load categories')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadCategoryStats = async () => {
+    try {
+      const response = await getCategoryStats()
+      if (response.success) {
+        setStats(response.data)
+      }
+    } catch (error) {
+      console.error('Failed to load category stats:', error)
+    }
+  }
+
+  const handleAddCategory = async (categoryData) => {
+    try {
+      const response = await createCategory(categoryData)
+      if (response.success) {
+        toast.success('Category created successfully!')
+        setShowAddForm(false)
+        loadCategories()
+        loadCategoryStats()
+      } else {
+        toast.error(response.message || 'Failed to create category')
+      }
+    } catch (error) {
+      toast.error('Failed to create category')
+    }
+  }
+
+  const handleUpdateCategory = async (categoryId, categoryData) => {
+    try {
+      const response = await updateCategory(categoryId, categoryData)
+      if (response.success) {
+        toast.success('Category updated successfully!')
+        setEditingCategory(null)
+        loadCategories()
+        loadCategoryStats()
+      } else {
+        toast.error(response.message || 'Failed to update category')
+      }
+    } catch (error) {
+      toast.error('Failed to update category')
+    }
+  }
+
+  const handleDeleteCategory = async (categoryId) => {
+    if (window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+      try {
+        const response = await deleteCategory(categoryId)
+        if (response.success) {
+          toast.success('Category deleted successfully!')
+          loadCategories()
+          loadCategoryStats()
+        } else {
+          toast.error(response.message || 'Failed to delete category')
+        }
+      } catch (error) {
+        toast.error('Failed to delete category')
+      }
+    }
+  }
+
+  if (loading) return <LoadingSpinner message="Loading categories..." />
+
+  return (
+    <div className="categories-tab">
+      <div className="tab-header">
+        <h3>Category Management</h3>
+        <button 
+          className="btn btn-primary"
+          onClick={() => setShowAddForm(true)}
+        >
+          + Add Category
+        </button>
+      </div>
+
+      {/* Category Stats */}
+      {stats && (
+        <div className="category-stats">
+          <StatCard
+            title="Total Categories"
+            value={stats.totalCategories}
+            label="Active categories"
+            icon="📂"
+          />
+          <StatCard
+            title="Categories with Products"
+            value={stats.categoriesWithProducts}
+            label="Have products"
+            icon="📦"
+            color="success"
+          />
+          <StatCard
+            title="Top Category"
+            value={stats.topCategories[0]?.name || 'None'}
+            label={`${stats.topCategories[0]?.productCount || 0} products`}
+            icon="🏆"
+            color="info"
+          />
+        </div>
+      )}
+
+      {/* Add Category Form */}
+      {showAddForm && (
+        <CategoryForm
+          onSubmit={handleAddCategory}
+          onCancel={() => setShowAddForm(false)}
+        />
+      )}
+
+      {/* Categories List */}
+      <div className="categories-list">
+        {categories.length > 0 ? (
+          categories.map((category) => (
+            <div key={category._id} className="category-item">
+              {editingCategory === category._id ? (
+                <CategoryForm
+                  category={category}
+                  onSubmit={(data) => handleUpdateCategory(category._id, data)}
+                  onCancel={() => setEditingCategory(null)}
+                />
+              ) : (
+                <CategoryCard
+                  category={category}
+                  onEdit={() => setEditingCategory(category._id)}
+                  onDelete={() => handleDeleteCategory(category._id)}
+                />
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="no-data">
+            <p>No categories found</p>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowAddForm(true)}
+            >
+              Create Your First Category
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Category Card Component
+const CategoryCard = ({ category, onEdit, onDelete }) => (
+  <div className="category-card">
+    <div className="category-image">
+      {category.image ? (
+        <img src={category.image} alt={category.name} />
+      ) : (
+        <div className="placeholder-image">📂</div>
+      )}
+    </div>
+    <div className="category-info">
+      <div className="category-header">
+        <h4>{category.name}</h4>
+        <span className={`status-badge ${category.isActive ? 'active' : 'inactive'}`}>
+          {category.isActive ? '✅ Active' : '❌ Inactive'}
+        </span>
+      </div>
+      {category.description && (
+        <p className="category-description">{category.description}</p>
+      )}
+      <div className="category-stats">
+        <span>📦 {category.productCount} products</span>
+        <span>📅 Created {new Date(category.createdAt).toLocaleDateString()}</span>
+      </div>
+    </div>
+    <div className="category-actions">
+      <button className="btn btn-outline" onClick={onEdit}>
+        Edit
+      </button>
+      <button className="btn btn-outline btn-danger" onClick={onDelete}>
+        Delete
+      </button>
+    </div>
+  </div>
+)
+
+// Category Form Component
+const CategoryForm = ({ category, onSubmit, onCancel }) => {
+  const [formData, setFormData] = useState({
+    name: category?.name || '',
+    description: category?.description || '',
+    isActive: category?.isActive !== undefined ? category.isActive : true
+  })
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState(category?.image || '')
+  const [uploading, setUploading] = useState(false)
+  const [errors, setErrors] = useState({})
+
+  const validateForm = () => {
+    const newErrors = {}
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Category name is required'
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = 'Category name must be at least 2 characters'
+    }
+    
+    if (formData.description && formData.description.length > 500) {
+      newErrors.description = 'Description must be less than 500 characters'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      toast.error('Please fix the form errors')
+      return
+    }
+    
+    setUploading(true)
+    
+    try {
+      const submitData = new FormData()
+      submitData.append('name', formData.name.trim())
+      submitData.append('description', formData.description.trim())
+      submitData.append('isActive', formData.isActive)
+      
+      if (imageFile) {
+        submitData.append('image', imageFile)
+      }
+      
+      await onSubmit(submitData)
+    } catch (error) {
+      console.error('Form submission error:', error)
+      toast.error('Failed to save category')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value
+    })
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' })
+    }
+  }
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select a valid image file (JPG, PNG, GIF, WebP)')
+        return
+      }
+      
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB')
+        return
+      }
+      
+      setImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview('')
+    // Reset the file input
+    const fileInput = document.querySelector('input[type="file"]')
+    if (fileInput) fileInput.value = ''
+  }
+
+  return (
+    <div className="category-form-overlay">
+      <form onSubmit={handleSubmit} className="category-form">
+        <div className="form-header">
+          <h4>{category ? 'Edit Category' : 'Add New Category'}</h4>
+          <button type="button" className="close-form-btn" onClick={onCancel}>✕</button>
+        </div>
+        
+        <div className="form-body">
+          <div className="form-group">
+            <label htmlFor="name">Category Name *</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              disabled={uploading}
+              placeholder="Enter category name (e.g., Fruits, Vegetables)"
+              className={errors.name ? 'error' : ''}
+            />
+            {errors.name && <span className="error-message">{errors.name}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows="3"
+              disabled={uploading}
+              placeholder="Enter category description (optional)"
+              className={errors.description ? 'error' : ''}
+            />
+            <small className="char-count">
+              {formData.description.length}/500 characters
+            </small>
+            {errors.description && <span className="error-message">{errors.description}</span>}
+          </div>
+
+          <div className="form-group">
+            <label>Category Image</label>
+            <div className="image-upload-container">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                disabled={uploading}
+                className="image-input"
+              />
+              <div className="upload-help-text">
+                <small>Choose an image file (JPG, PNG, GIF, WebP). Max size: 5MB</small>
+              </div>
+              {imagePreview && (
+                <div className="image-preview">
+                  <img src={imagePreview} alt="Category preview" />
+                  <button type="button" onClick={removeImage} className="remove-image-btn">
+                    ✕ Remove
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                name="isActive"
+                checked={formData.isActive}
+                onChange={handleChange}
+                disabled={uploading}
+              />
+              <span className="checkmark"></span>
+              Active Category
+              <small>Active categories are visible to buyers</small>
+            </label>
+          </div>
+        </div>
+
+        <div className="form-actions">
+          <button 
+            type="button" 
+            className="btn btn-outline" 
+            onClick={onCancel} 
+            disabled={uploading}
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            disabled={uploading || !formData.name.trim()}
+          >
+            {uploading ? (
+              <>
+                <span className="spinner"></span>
+                {category ? 'Updating...' : 'Creating...'}
+              </>
+            ) : (
+              category ? 'Update Category' : 'Create Category'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
 const SellerOverviewTab = ({ user, data }) => {
   if (!data) return <LoadingSpinner message="Loading overview..." />
 
@@ -357,136 +874,6 @@ const ProductCard = ({ product, onEdit, onDelete }) => (
     </div>
   </div>
 )
-
-const CategoryForm = ({ category, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
-    name: category?.name || '',
-    description: category?.description || '',
-    isActive: category?.isActive !== undefined ? category.isActive : true
-  })
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState(category?.image || '')
-  const [uploading, setUploading] = useState(false)
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setUploading(true)
-    
-    try {
-      const submitData = new FormData()
-      submitData.append('name', formData.name)
-      submitData.append('description', formData.description)
-      submitData.append('isActive', formData.isActive)
-      
-      if (imageFile) {
-        submitData.append('image', imageFile)
-      }
-      
-      await onSubmit(submitData)
-    } catch (error) {
-      console.error('Form submission error:', error)
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    })
-  }
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setImageFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const removeImage = () => {
-    setImageFile(null)
-    setImagePreview('')
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="category-form">
-      <h4>{category ? 'Edit Category' : 'Add New Category'}</h4>
-      
-      <div className="form-group">
-        <label>Category Name *</label>
-        <input
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-          disabled={uploading}
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Description</label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          rows="3"
-          disabled={uploading}
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Category Image</label>
-        <div className="image-upload-container">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            disabled={uploading}
-            className="image-input"
-          />
-          {imagePreview && (
-            <div className="image-preview">
-              <img src={imagePreview} alt="Category preview" />
-              <button type="button" onClick={removeImage} className="remove-image-btn">
-                ✕
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="form-group">
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            name="isActive"
-            checked={formData.isActive}
-            onChange={handleChange}
-            disabled={uploading}
-          />
-          Active Category
-        </label>
-      </div>
-
-      <div className="form-actions">
-        <button type="submit" className="btn btn-primary" disabled={uploading}>
-          {uploading ? 'Saving...' : (category ? 'Update Category' : 'Add Category')}
-        </button>
-        <button type="button" className="btn btn-outline" onClick={onCancel} disabled={uploading}>
-          Cancel
-        </button>
-      </div>
-    </form>
-  )
-}
 
 const SellerOrdersTab = ({ orders, loading, onUpdateStatus }) => {
   const [statusFilter, setStatusFilter] = useState('all')

@@ -94,9 +94,12 @@ const Header = ({ user, onLogout, onAuthClick }) => {
           {user ? (
             <div className="user-menu">
               <span className="user-name">Welcome, {user.firstName || user.username}</span>
-              <button className="nav-link logout-btn" onClick={handleLogout}>
-                Logout
-              </button>
+              {/* Only show logout in header for buyers, sellers use dashboard logout */}
+              {user.userType === 'buyer' && (
+                <button className="nav-link logout-btn" onClick={handleLogout}>
+                  Logout
+                </button>
+              )}
             </div>
           ) : (
             <button

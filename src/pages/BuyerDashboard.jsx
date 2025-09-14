@@ -5,14 +5,40 @@ import DashboardLayout from '../components/dashboard/DashboardLayout'
 import StatCard from '../components/dashboard/StatCard'
 import LoadingSpinner from '../components/dashboard/LoadingSpinner'
 import { useBuyerDashboard, useBuyerOrders } from '../hooks/useDashboard'
+import { getProducts, getFeaturedProducts } from '../services/productAPI'
 import '../styles/Dashboard.css'
 import '../styles/BuyerDashboard.css'
 
 const BuyerDashboard = ({ user, onLogout }) => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('overview')
+  const [products, setProducts] = useState([])
+  const [productsLoading, setProductsLoading] = useState(false)
   const { data: dashboardData, loading: dashboardLoading } = useBuyerDashboard()
   const { orders, loading: ordersLoading } = useBuyerOrders()
+
+  useEffect(() => {
+    if (activeTab === 'products') {
+      fetchProducts()
+    }
+  }, [activeTab])
+
+  const fetchProducts = async () => {
+    try {
+      setProductsLoading(true)
+      const response = await getProducts({ isActive: true })
+      if (response.success) {
+        setProducts(response.data.products || [])
+      } else {
+        setProducts(response.products || [])
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error)
+      toast.error('Failed to load products')
+    } finally {
+      setProductsLoading(false)
+    }
+  }
 
   const handleLogout = () => {
     onLogout()
@@ -58,7 +84,7 @@ const BuyerDashboard = ({ user, onLogout }) => {
       case 'overview':
         return <BuyerOverviewTab user={user} data={dashboardData} />
       case 'products':
-        return <BuyerProductsTab />
+        return <BuyerProductsTab products={products} loading={productsLoading} />
       case 'cart':
         return <BuyerCartTab />
       case 'orders':
@@ -374,7 +400,7 @@ const BuyerFavoritesTab = ({ favorites }) => {
   )
 }
 
-const BuyerProductsTab = ({ products }) => {
+const BuyerProductsTab = ({ products, loading }) => {
   const [categoryFilter, setCategoryFilter] = useState('all')
 
   const handleAddToCart = (product) => {
@@ -385,9 +411,13 @@ const BuyerProductsTab = ({ products }) => {
     toast.success(`${product.name} added to favorites!`)
   }
 
+  if (loading) {
+    return <LoadingSpinner message="Loading products..." />
+  }
+
   const filteredProducts = categoryFilter === 'all' 
     ? products 
-    : products.filter(product => product.category?.toLowerCase() === categoryFilter.toLowerCase())
+    : products.filter(product => product.category?.name?.toLowerCase() === categoryFilter.toLowerCase())
 
   return (
     <div className="products-tab">
@@ -410,38 +440,54 @@ const BuyerProductsTab = ({ products }) => {
       <div className="products-grid">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <div key={product.id} className="product-item">
+            <div key={product._id} className="product-item">
+              <div className="product-image">
+                {product.images && product.images.length > 0 ? (
+                  <img 
+                    src={`http://localhost:5000${product.images[0]}`} 
+                    alt={product.name}
+                    onError={(e) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop'
+                    }}
+                  />
+                ) : (
+                  <div className="placeholder-image">🥬</div>
+                )}
+              </div>
               <div className="product-info">
                 <h4>{product.name}</h4>
-                <p className="product-price">{product.price}</p>
-                <p className="product-farmer">Farmer: {product.farmer}</p>
+                <p className="product-price">Rs. {product.price}/{product.unit}</p>
+                <p className="product-description">{product.description}</p>
+                <p className="product-stock">Stock: {product.stock} {product.unit}</p>
                 {product.category && (
-                  <span className="product-category">{product.category}</span>
+                  <span className="product-category">{product.category.name}</span>
                 )}
                 <div className="product-rating">
-                  
+                  ⭐ {product.averageRating || 4.5} ({product.totalReviews || 0} reviews)
                 </div>
               </div>
               <div className="product-actions">
                 <button 
                   className="btn btn-primary"
                   onClick={() => handleAddToCart(product)}
+                  disabled={product.stock === 0}
                 >
-                  Add to Cart
+                  {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                 </button>
                 <button 
                   className="btn btn-outline"
                   onClick={() => handleAddToFavorites(product)}
                 >
-                  
+                  ❤️ Favorite
                 </button>
               </div>
             </div>
           ))
         ) : (
-          <div className="no-data">
-            <p>No products found</p>
-            <button className="btn btn-primary">Browse All Products</button>
+          <div className="no-products">
+            <div className="no-products-icon">🥬</div>
+            <h3>No Products Available</h3>
+            <p>Check back soon for fresh produce from our farmers!</p>
           </div>
         )}
       </div>
