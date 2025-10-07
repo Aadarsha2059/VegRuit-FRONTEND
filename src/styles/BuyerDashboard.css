@@ -42,17 +42,32 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .quick-action-btn.primary {
-  background: white;
+  background: linear-gradient(135deg, white, #f8f9fa);
   color: #4caf50;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  border: 1px solid rgba(76, 175, 80, 0.3);
 }
 
 .quick-action-btn.secondary {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
   color: white;
   border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+.quick-action-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 /* Stats Grid */
@@ -152,6 +167,20 @@
   cursor: pointer;
   padding: 0.5rem 1rem;
   border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.view-all-btn:hover {
+  background: rgba(76, 175, 80, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+  border: 1px solid rgba(76, 175, 80, 0.2);
 }
 
 /* Product Cards */

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, getFeaturedProducts } from '../services/productAPI';
+import { productAPI } from '../services/productAPI';
+import { categoryAPI } from '../services/categoryAPI';
 import toast from 'react-hot-toast';
 import '../styles/Products.css';
 
@@ -17,11 +18,11 @@ const Products = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await getProducts({ limit: 6, isActive: true });
+      const response = await productAPI.getPublicProducts({ limit: 6 });
       if (response.success) {
         setProducts(response.data.products || []);
       } else {
-        setProducts(response.products || []);
+        setProducts([]);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -31,11 +32,11 @@ const Products = () => {
 
   const fetchFeaturedProducts = async () => {
     try {
-      const response = await getFeaturedProducts(3);
+      const response = await productAPI.getFeaturedProducts(3);
       if (response.success) {
         setFeaturedProducts(response.data.products || []);
       } else {
-        setFeaturedProducts(response.products || []);
+        setFeaturedProducts([]);
       }
     } catch (error) {
       console.error('Error fetching featured products:', error);
@@ -103,7 +104,7 @@ const Products = () => {
 
   const ProductCard = ({ product, isFeatured = false }) => {
     const primaryImage = product.images && product.images.length > 0 
-      ? `http://localhost:5000${product.images[0]}` 
+      ? `http://localhost:50011${product.images[0]}` 
       : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop';
 
     const isInCart = cart.some(item => item._id === product._id);

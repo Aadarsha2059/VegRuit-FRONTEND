@@ -73,7 +73,7 @@ const AboutPage = () => {
       <section className="about-hero">
         <div className="hero-overlay">
           <div className="hero-content">
-            <Link to="/" className="back-button">
+            <Link to="/" className="back-button top-right">
               <span className="back-icon">←</span>
               Back to Home
             </Link>
@@ -81,6 +81,14 @@ const AboutPage = () => {
             <p className="hero-subtitle">
               Connecting Nepal's farmers with fresh food lovers since 2020
             </p>
+            <div className="hero-cta">
+              <Link to="/explore" className="hero-button primary">
+                Explore Products
+              </Link>
+              <Link to="/contact" className="hero-button secondary">
+                Get in Touch
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -88,9 +96,12 @@ const AboutPage = () => {
       {/* Story Section */}
       <section className="story-section">
         <div className="container">
+          <div className="section-header">
+            <h2 className="section-title">Our Story</h2>
+            <p className="section-subtitle">How we started and where we're going</p>
+          </div>
           <div className="story-content">
             <div className="story-text">
-              <h2>Our Story</h2>
               <p>
                 VegRuit was born from a simple idea: to bridge the gap between Nepal's hardworking farmers 
                 and urban consumers who value fresh, quality produce. Founded in 2020 in the heart of Kathmandu, 
@@ -106,6 +117,12 @@ const AboutPage = () => {
                 Our mission goes beyond just selling vegetables and fruits. We're building a sustainable 
                 ecosystem that empowers farmers, delights customers, and contributes to a healthier Nepal.
               </p>
+              <div className="story-highlight">
+                <blockquote>
+                  "Our goal is to make fresh, healthy food accessible to everyone while supporting our local farming communities."
+                </blockquote>
+                <cite>- AADARSHA BABU DHAKAL, Founder & CEO</cite>
+              </div>
             </div>
             <div className="story-image">
               <img 
@@ -120,7 +137,10 @@ const AboutPage = () => {
       {/* Values Section */}
       <section className="values-section">
         <div className="container">
-          <h2 className="section-title">Our Values</h2>
+          <div className="section-header">
+            <h2 className="section-title">Our Values</h2>
+            <p className="section-subtitle">Principles that guide everything we do</p>
+          </div>
           <div className="values-grid">
             {values.map((value, index) => (
               <div key={index} className="value-card">
@@ -136,7 +156,10 @@ const AboutPage = () => {
       {/* Team Section */}
       <section className="team-section">
         <div className="container">
-          <h2 className="section-title">Meet Our Team</h2>
+          <div className="section-header">
+            <h2 className="section-title">Meet Our Team</h2>
+            <p className="section-subtitle">The passionate people behind VegRuit</p>
+          </div>
           <div className="team-grid">
             {teamMembers.map((member, index) => (
               <div key={index} className="team-card">
@@ -157,7 +180,10 @@ const AboutPage = () => {
       {/* Timeline Section */}
       <section className="timeline-section">
         <div className="container">
-          <h2 className="section-title">Our Journey</h2>
+          <div className="section-header">
+            <h2 className="section-title">Our Journey</h2>
+            <p className="section-subtitle">Milestones in our growth</p>
+          </div>
           <div className="timeline">
             {milestones.map((milestone, index) => (
               <div key={index} className="timeline-item">
@@ -174,6 +200,10 @@ const AboutPage = () => {
       {/* Stats Section */}
       <section className="stats-section">
         <div className="container">
+          <div className="section-header">
+            <h2 className="section-title">By The Numbers</h2>
+            <p className="section-subtitle">Our impact so far</p>
+          </div>
           <div className="stats-grid">
             <div className="stat-item">
               <span className="stat-number">500+</span>
@@ -205,7 +235,7 @@ const AboutPage = () => {
               or a consumer seeking the freshest produce, VegRuit is here for you.
             </p>
             <div className="cta-buttons">
-              <Link to="/" className="cta-button primary">
+              <Link to="/explore" className="cta-button primary">
                 Start Shopping
               </Link>
               <Link to="/contact" className="cta-button secondary">

@@ -37,11 +37,14 @@ export const navigateToDashboard = (navigate, userType) => {
 export const hasRouteAccess = (user, route) => {
   if (!user) return false
   
+  // Handle both array and string user types
+  const userTypes = Array.isArray(user.userType) ? user.userType : [user.userType]
+  
   switch (route) {
     case '/buyer-dashboard':
-      return user.userType === USER_TYPES.BUYER
+      return user.isBuyer || userTypes.includes(USER_TYPES.BUYER)
     case '/seller-dashboard':
-      return user.userType === USER_TYPES.SELLER
+      return user.isSeller || userTypes.includes(USER_TYPES.SELLER)
     default:
       return true
   }

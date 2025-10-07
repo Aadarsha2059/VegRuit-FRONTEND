@@ -111,7 +111,7 @@ const ContactPage = () => {
       <section className="contact-hero">
         <div className="hero-overlay">
           <div className="hero-content">
-            <Link to="/" className="back-button">
+            <Link to="/" className="back-button top-right">
               <span className="back-icon">←</span>
               Back to Home
             </Link>
@@ -119,6 +119,14 @@ const ContactPage = () => {
             <p className="hero-subtitle">
               We'd love to hear from you. Send us a message and we'll respond as soon as possible.
             </p>
+            <div className="hero-cta">
+              <Link to="/explore" className="hero-button primary">
+                Explore Products
+              </Link>
+              <Link to="/about" className="hero-button secondary">
+                About Us
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -126,6 +134,10 @@ const ContactPage = () => {
       {/* Contact Form & Info Section */}
       <section className="contact-main">
         <div className="container">
+          <div className="section-header">
+            <h2 className="section-title">Contact Us</h2>
+            <p className="section-subtitle">We're here to help and answer any questions you might have</p>
+          </div>
           <div className="contact-content">
             {/* Contact Form */}
             <div className="contact-form-section">
@@ -270,7 +282,10 @@ const ContactPage = () => {
       {/* FAQ Section */}
       <section className="faq-section">
         <div className="container">
-          <h2 className="section-title">Frequently Asked Questions</h2>
+          <div className="section-header">
+            <h2 className="section-title">Frequently Asked Questions</h2>
+            <p className="section-subtitle">Find answers to common questions</p>
+          </div>
           <div className="faq-grid">
             {faqs.map((faq, index) => (
               <div key={index} className="faq-item">

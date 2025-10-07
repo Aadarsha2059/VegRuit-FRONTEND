@@ -1,24 +1,28 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import '../styles/Header.css'
 
 const Header = ({ user, onLogout, onAuthClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
+  const authModalRef = useRef(null)
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
 
-  const isActive = (path) => {
-    return location.pathname === path
+  const openAuthModal = () => {
+    setIsAuthModalOpen(true)
   }
 
-  const handleAuthClick = () => {
-    if (onAuthClick) {
-      onAuthClick()
-    }
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false)
+  }
+
+  const isActive = (path) => {
+    return location.pathname === path
   }
 
   const handleLogout = () => {
@@ -27,6 +31,29 @@ const Header = ({ user, onLogout, onAuthClick }) => {
       navigate('/')
     }
   }
+
+  // Close modal when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (authModalRef.current && !authModalRef.current.contains(event.target)) {
+        closeAuthModal()
+      }
+    }
+
+    if (isAuthModalOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      // Prevent background scrolling when modal is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      // Re-enable background scrolling when modal is closed
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isAuthModalOpen])
 
   return (
     <header className="header">
@@ -51,8 +78,8 @@ const Header = ({ user, onLogout, onAuthClick }) => {
             </li>
             <li>
               <Link 
-                to="/#explore" 
-                className={`nav-link ${isActive('/#explore') ? 'active' : ''}`}
+                to="/explore" 
+                className={`nav-link ${isActive('/explore') ? 'active' : ''}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Explore
@@ -60,8 +87,8 @@ const Header = ({ user, onLogout, onAuthClick }) => {
             </li>
             <li>
               <Link 
-                to="/#about" 
-                className={`nav-link ${isActive('/#about') ? 'active' : ''}`}
+                to="/about" 
+                className={`nav-link ${isActive('/about') ? 'active' : ''}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
@@ -69,8 +96,8 @@ const Header = ({ user, onLogout, onAuthClick }) => {
             </li>
             <li>
               <Link 
-                to="/#contact" 
-                className={`nav-link ${isActive('/#contact') ? 'active' : ''}`}
+                to="/contact" 
+                className={`nav-link ${isActive('/contact') ? 'active' : ''}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contact
@@ -80,12 +107,24 @@ const Header = ({ user, onLogout, onAuthClick }) => {
         </nav>
         
         <div className="auth-buttons">
-          <button
-            className="nav-link login-btn"
-            onClick={handleAuthClick}
-          >
-            Login / Sign Up
-          </button>
+          {user ? (
+            <div className="user-menu">
+              <span className="user-name">Welcome, {user.firstName || user.username}</span>
+              <button
+                className="nav-link logout-btn"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button 
+              className="nav-link login-btn"
+              onClick={openAuthModal}
+            >
+              Login / Sign Up
+            </button>
+          )}
         </div>
         
         <div className="mobile-menu-btn" onClick={toggleMenu}>
@@ -94,6 +133,65 @@ const Header = ({ user, onLogout, onAuthClick }) => {
           <span className={`hamburger ${isMenuOpen ? 'active' : ''}`}></span>
         </div>
       </div>
+
+      {/* Attractive Auth Modal */}
+      {isAuthModalOpen && (
+        <div className="auth-modal-overlay">
+          <div className="auth-modal-container" ref={authModalRef}>
+            <div className="auth-modal-header">
+              <h2>Get Started with VegRuit</h2>
+              <button className="auth-modal-close" onClick={closeAuthModal}>
+                ×
+              </button>
+            </div>
+            
+            <div className="auth-modal-content">
+              <div className="auth-option-card">
+                <div className="auth-option-icon">🛒</div>
+                <h3>Buy Fresh Produce</h3>
+                <p>Shop for the freshest fruits and vegetables from local farmers</p>
+                <div className="auth-option-buttons">
+                  <Link to="/buyer-login" className="btn btn-primary" onClick={closeAuthModal}>
+                    Buyer Login
+                  </Link>
+                  <Link to="/buyer-signup" className="btn btn-secondary" onClick={closeAuthModal}>
+                    Buyer Sign Up
+                  </Link>
+                </div>
+              </div>
+              
+              <div className="auth-option-card">
+                <div className="auth-option-icon">🌱</div>
+                <h3>Sell Your Produce</h3>
+                <p>Sell your fresh produce directly to customers</p>
+                <div className="auth-option-buttons">
+                  <Link to="/seller-login" className="btn btn-primary" onClick={closeAuthModal}>
+                    Seller Login
+                  </Link>
+                  <Link to="/seller-signup" className="btn btn-secondary" onClick={closeAuthModal}>
+                    Seller Sign Up
+                  </Link>
+                </div>
+              </div>
+              
+              <div className="auth-option-card">
+                <div className="auth-option-icon">🌟</div>
+                <h3>Be Both Buyer & Seller</h3>
+                <p>Enjoy the best of both worlds - shop and sell on VegRuit</p>
+                <div className="auth-option-buttons">
+                  <Link to="/auth" className="btn btn-primary" onClick={closeAuthModal}>
+                    Sign Up for Both
+                  </Link>
+                </div>
+              </div>
+            </div>
+            
+            <div className="auth-modal-footer">
+              <p>Need help? <Link to="/contact" onClick={closeAuthModal}>Contact Support</Link></p>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   )
 }

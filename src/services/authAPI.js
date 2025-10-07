@@ -1,7 +1,7 @@
 // Auth API Service Layer for MERN stack integration
 // This layer provides a clean interface for authentication operations
 
-const API_BASE_URL = 'http://localhost:5000/api/auth'
+const API_BASE_URL = 'http://localhost:50011/api/auth'
 
 // Authentication API functions
 export const authAPI = {

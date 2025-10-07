@@ -1,20 +1,15 @@
-import React from 'react';
+import React from 'react'
+import './LoadingSpinner.css'
 
-const LoadingSpinner = ({ size = 'medium', message = 'Loading...' }) => {
-  const sizeClass = {
-    small: 'spinner-small',
-    medium: 'spinner-medium',
-    large: 'spinner-large'
-  }[size];
-
+const LoadingSpinner = ({ message = "Loading...", size = "medium" }) => {
   return (
-    <div className="loading-container">
-      <div className={`loading-spinner ${sizeClass}`}>
+    <div className={`loading-spinner ${size}`}>
+      <div className="spinner-container">
         <div className="spinner"></div>
+        <div className="spinner-text">{message}</div>
       </div>
-      <p className="loading-message">{message}</p>
     </div>
-  );
-};
+  )
+}
 
-export default LoadingSpinner;
+export default LoadingSpinner

@@ -114,7 +114,7 @@ src/
 
 The frontend integrates with the backend through the `authAPI.js` service:
 
-- **Base URL**: `http://localhost:5000/api/auth`
+- **Base URL**: `http://localhost:50011/api/auth`
 - **Endpoints**: Login, registration, profile management
 - **Authentication**: JWT token-based authentication
 - **Error Handling**: Comprehensive error handling with user feedback
@@ -138,11 +138,11 @@ The frontend integrates with the backend through the `authAPI.js` service:
 
 ### Environment Variables
 
-The frontend is configured to connect to the backend at `http://localhost:5000`. Update the `API_BASE_URL` in `src/services/authAPI.js` if needed.
+The frontend is configured to connect to the backend at `http://localhost:50011`. Update the `API_BASE_URL` in `src/services/authAPI.js` if needed.
 
 ## Testing the Application
 
-1. **Start Backend**: Ensure the backend server is running on port 5000
+1. **Start Backend**: Ensure the backend server is running on port 50011
 2. **Start Frontend**: Run `npm run dev` in the frontend directory
 3. **Test Registration**: Create both buyer and seller accounts
 4. **Test Login**: Verify authentication and dashboard access

@@ -1,37 +1,75 @@
-import React from 'react';
-import '../../styles/Dashboard.css';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
+import './DashboardLayout.css'
 
 const DashboardLayout = ({ 
   user, 
   activeTab, 
   setActiveTab, 
   onLogout, 
-  children, 
-  sidebarItems,
+  sidebarItems, 
   headerTitle,
   onHelpClick,
-  onCalendarClick
+  onCalendarClick,
+  children 
 }) => {
+  const navigate = useNavigate()
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  const handleLogout = () => {
+    onLogout()
+    navigate('/')
+    toast.success('Logged out successfully!')
+  }
+
+  const handleTabClick = (tabKey) => {
+    setActiveTab(tabKey)
+  }
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed)
+  }
+
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-layout">
       {/* Sidebar */}
-      <aside className="dashboard-sidebar">
+      <aside className={`dashboard-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
-          <div className="user-profile">
-            <div className="user-avatar-placeholder">
-              {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-            </div>
-            <div className="user-info">
-              <h3>{user.firstName} {user.lastName}</h3>
-              <p>{user.email}</p>
-              <span className={`user-type-badge ${user.userType}`}>
-                {user.userType === 'buyer' ? '👤 Buyer' : '🌾 Seller'}
-              </span>
-              {user.userType === 'seller' && user.farmName && (
-                <small>{user.farmName}</small>
-              )}
-            </div>
+          <div className="sidebar-brand">
+            <div className="brand-logo">🌱</div>
+            {!sidebarCollapsed && (
+              <div className="brand-text">
+                <h3>VegRuit</h3>
+                <span>Dashboard</span>
+              </div>
+            )}
           </div>
+          <button className="sidebar-toggle" onClick={toggleSidebar}>
+            {sidebarCollapsed ? '→' : '←'}
+          </button>
+        </div>
+
+        <div className="user-profile">
+          <div className="user-avatar">
+            {user.avatar ? (
+              <img src={user.avatar} alt={user.firstName} />
+            ) : (
+              <div className="avatar-placeholder">
+                {user.firstName?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
+          </div>
+          {!sidebarCollapsed && (
+            <div className="user-info">
+              <h4>{user.firstName} {user.lastName}</h4>
+              <p>{user.email}</p>
+              <div className="user-roles">
+                {user.isBuyer && <span className="role-badge buyer">Buyer</span>}
+                {user.isSeller && <span className="role-badge seller">Seller</span>}
+              </div>
+            </div>
+          )}
         </div>
 
         <nav className="sidebar-nav">
@@ -39,16 +77,27 @@ const DashboardLayout = ({
             <button
               key={item.key}
               className={`nav-item ${activeTab === item.key ? 'active' : ''}`}
-              onClick={() => setActiveTab(item.key)}
+              onClick={() => handleTabClick(item.key)}
+              title={sidebarCollapsed ? item.label : ''}
             >
-              {item.icon} {item.label}
+              <span className="nav-icon">{item.icon}</span>
+              {!sidebarCollapsed && <span className="nav-label">{item.label}</span>}
             </button>
           ))}
         </nav>
 
         <div className="sidebar-footer">
-          <button className="logout-btn" onClick={onLogout}>
-            🚪 Logout
+          <button className="help-btn" onClick={onHelpClick} title="Help">
+            <span className="nav-icon">❓</span>
+            {!sidebarCollapsed && <span className="nav-label">Help</span>}
+          </button>
+          <button className="calendar-btn" onClick={onCalendarClick} title="Calendar">
+            <span className="nav-icon">📅</span>
+            {!sidebarCollapsed && <span className="nav-label">Calendar</span>}
+          </button>
+          <button className="logout-btn" onClick={handleLogout} title="Logout">
+            <span className="nav-icon">🚪</span>
+            {!sidebarCollapsed && <span className="nav-label">Logout</span>}
           </button>
         </div>
       </aside>
@@ -56,25 +105,44 @@ const DashboardLayout = ({
       {/* Main Content */}
       <main className="dashboard-main">
         <header className="dashboard-header">
-          <h1>{headerTitle}</h1>
-          <div className="header-actions">
-            <button className="notification-btn" title="Notifications">
-              🔔
-            </button>
-            <button 
-              className="calendar-btn large-icon" 
-              title={user.userType === 'seller' ? "नेपाली क्यालेन्डर (Nepali Calendar)" : "Calendar"}
-              onClick={onCalendarClick}
-            >
-              📅
-            </button>
-            <button 
-              className="help-btn large-icon" 
-              title={user.userType === 'seller' ? "किसान गाइड (Farmer Guide)" : "Help"}
-              onClick={onHelpClick}
-            >
-              ❓
-            </button>
+          <div className="header-left">
+            <h1>{headerTitle}</h1>
+            <div className="breadcrumb">
+              <span>Dashboard</span>
+              <span>›</span>
+              <span>{sidebarItems.find(item => item.key === activeTab)?.label}</span>
+            </div>
+          </div>
+          
+          <div className="header-right">
+            <div className="header-actions">
+              <button className="action-btn notification-btn" title="Notifications">
+                <span className="icon">🔔</span>
+                <span className="badge">3</span>
+              </button>
+              <button className="action-btn help-btn" onClick={onHelpClick} title="Help">
+                <span className="icon">❓</span>
+              </button>
+              <button className="action-btn calendar-btn" onClick={onCalendarClick} title="Calendar">
+                <span className="icon">📅</span>
+              </button>
+            </div>
+            
+            <div className="user-menu">
+              <div className="user-avatar-small">
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.firstName} />
+                ) : (
+                  <div className="avatar-placeholder-small">
+                    {user.firstName?.charAt(0)?.toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="user-details">
+                <span className="user-name">{user.firstName} {user.lastName}</span>
+                <span className="user-email">{user.email}</span>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -83,7 +151,7 @@ const DashboardLayout = ({
         </div>
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default DashboardLayout;
+export default DashboardLayout

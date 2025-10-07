@@ -1,217 +1,144 @@
-import React, { useMemo, useState, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import '../styles/Auth.css';
 
-const useAuthImages = () => {
-  const images = useMemo(() => {
-    const modules = import.meta.glob('../assets/login_signup_images/*', {
-      eager: true,
-      as: 'url'
-    })
-    const map = {}
-    Object.entries(modules).forEach(([path, url]) => {
-      map[path.toLowerCase()] = url
-    })
-    return map
-  }, [])
-
-  const getImageUrl = (mode, userType) => {
-    const modeKeys = mode === 'login' ? ['login'] : ['sign up', 'signup']
-    const typeKey = userType
-    const match = Object.entries(images).find(([key]) => {
-      const hasType = key.includes(typeKey)
-      const hasMode = modeKeys.some((mk) => key.includes(mk))
-      return hasType && hasMode
-    })
-    return match ? match[1] : undefined
-  }
-
-  return { getImageUrl }
-}
-
-const Toggle = ({ labelLeft, labelRight, value, onChange }) => {
+const AuthPage = () => {
   return (
-    <div className="flex items-center gap-3">
-      <span className={`text-sm ${value === 'buyer' ? 'font-semibold text-gray-900' : 'text-gray-500'}`}>{labelLeft}</span>
-      <button
-        type="button"
-        onClick={() => onChange(value === 'buyer' ? 'seller' : 'buyer')}
-        className="relative inline-flex h-6 w-11 items-center rounded-full bg-green-200 transition-colors duration-300"
-        aria-label="Flip buyer/seller"
-      >
-        <span
-          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-300 ${value === 'buyer' ? 'translate-x-1' : 'translate-x-5'}`}
-        />
-      </button>
-      <span className={`text-sm ${value === 'seller' ? 'font-semibold text-gray-900' : 'text-gray-500'}`}>{labelRight}</span>
-    </div>
-  )
-}
-
-const Field = ({ id, label, type = 'text', value, onChange, placeholder }) => (
-  <div className="flex flex-col gap-1">
-    <label htmlFor={id} className="text-sm font-medium text-gray-700">{label}</label>
-    <input
-      id={id}
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200"
-    />
-  </div>
-)
-
-const Auth = ({ initialMode = 'login' }) => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [mode, setMode] = useState(initialMode) // 'login' | 'signup'
-  const [userType, setUserType] = useState('buyer') // 'buyer' | 'seller'
-  const { getImageUrl } = useAuthImages()
-
-  useEffect(() => {
-    if (location.pathname.includes('/signup')) setMode('signup')
-    if (location.pathname.includes('/login')) setMode('login')
-  }, [location.pathname])
-
-  const isLogin = mode === 'login'
-  const headerTitle = isLogin
-    ? `Welcome to ${userType === 'buyer' ? 'Buyer' : 'Seller'} Login Page`
-    : `Welcome to ${userType === 'buyer' ? 'Buyer' : 'Seller'} Sign Up Page`
-
-  // Form state
-  const [form, setForm] = useState({
-    username: '',
-    email: '',
-    password: '',
-    contact: '',
-    address: '',
-    shopName: '',
-    shopAddress: ''
-  })
-
-  const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // Placeholder for API integration later
-    // For now, just navigate to home
-    navigate('/')
-  }
-
-  const sideImageUrl = getImageUrl(mode, userType)
-
-  return (
-    <div className="relative min-h-screen bg-gradient-to-b from-green-50 via-white to-green-50 px-4 pt-24 pb-16 overflow-hidden">
-      {/* Decorative Blobs */}
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-green-200/40 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-emerald-200/40 blur-3xl" />
-
-      <div className="mx-auto w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-        {/* Form Card */}
-        <div className="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-white p-6 sm:p-8 flex flex-col justify-center">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <Toggle
-              labelLeft="Buyer"
-              labelRight="Seller"
-              value={userType}
-              onChange={setUserType}
-            />
-            <div className="text-sm text-gray-600">
-              {isLogin ? (
-                <span>
-                  Don’t have an account?{' '}
-                  <Link className="text-green-600 hover:underline" to="/signup" onClick={() => setMode('signup')}>
-                    Sign Up
-                  </Link>
-                </span>
-              ) : (
-                <span>
-                  Already have an account?{' '}
-                  <Link className="text-green-600 hover:underline" to="/login" onClick={() => setMode('login')}>
-                    Login
-                  </Link>
-                </span>
-              )}
-            </div>
+    <div className="auth-page">
+      {/* Back to Home Button - Positioned at top right */}
+      <Link to="/" className="back-button top-right">
+        <span className="back-icon">←</span>
+        Back to Home
+      </Link>
+      
+      {/* Hero Section */}
+      <section className="auth-hero">
+        <div className="hero-overlay">
+          <div className="hero-content">
+            <h1 className="hero-title">Welcome to VegRuit</h1>
+            <p className="hero-subtitle">
+              Join thousands of farmers and customers in Nepal's freshest marketplace
+            </p>
           </div>
+        </div>
+      </section>
 
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2">{headerTitle}</h1>
-          <p className="text-gray-600 mb-8">Fruits and Vegetables Buy/Sell platform</p>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Common fields */}
-            <Field id="username" label="Username" value={form.username} onChange={(v) => setField('username', v)} placeholder="Enter username" />
-            <Field id="email" label="Email" type="email" value={form.email} onChange={(v) => setField('email', v)} placeholder="you@example.com" />
-            <Field id="password" label="Password" type="password" value={form.password} onChange={(v) => setField('password', v)} placeholder="••••••••" />
-
-            {/* Mode-specific fields */}
-            {isLogin ? null : (
-              <>
-                <Field id="contact" label="Contact Number" value={form.contact} onChange={(v) => setField('contact', v)} placeholder="98XXXXXXXX" />
-                {userType === 'buyer' ? (
-                  <Field id="address" label="Address" value={form.address} onChange={(v) => setField('address', v)} placeholder="Your address" />
-                ) : (
-                  <>
-                    <Field id="shopName" label="Shop Name" value={form.shopName} onChange={(v) => setField('shopName', v)} placeholder="Your shop name" />
-                    <Field id="shopAddress" label="Shop Address" value={form.shopAddress} onChange={(v) => setField('shopAddress', v)} placeholder="Shop full address" />
-                  </>
-                )}
-              </>
-            )}
-
-            {isLogin && (
-              <div className="flex items-center justify-between -mt-1">
-                <label className="inline-flex items-center gap-2 text-sm text-gray-600">
-                  <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500" />
-                  Remember me
-                </label>
-                <button type="button" className="text-sm text-green-700 hover:underline">
-                  Forgot password?
-                </button>
+      {/* Auth Options Section */}
+      <section className="auth-options">
+        <div className="container">
+          <div className="section-header">
+            <h2 className="section-title">Get Started</h2>
+            <p className="section-subtitle">Choose how you want to use VegRuit</p>
+          </div>
+          
+          <div className="auth-cards">
+            {/* Buyer Card */}
+            <div className="auth-card buyer-card">
+              <div className="card-icon">🛒</div>
+              <h3>Buy Fresh Produce</h3>
+              <p>Shop for the freshest fruits and vegetables from local farmers</p>
+              <ul className="features-list">
+                <li>✓ Browse thousands of products</li>
+                <li>✓ Fast delivery to your doorstep</li>
+                <li>✓ Secure payment options</li>
+                <li>✓ Track your orders</li>
+              </ul>
+              <div className="card-buttons">
+                <Link to="/buyer-login" className="btn btn-primary">
+                  Login as Buyer
+                </Link>
+                <Link to="/buyer-signup" className="btn btn-secondary">
+                  Sign Up as Buyer
+                </Link>
               </div>
-            )}
+            </div>
 
-            <button
-              type="submit"
-              className="mt-2 inline-flex justify-center items-center rounded-md bg-green-600 px-4 py-3 text-white font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 transition-colors shadow"
-            >
-              {isLogin
-                ? `Login as ${userType === 'buyer' ? 'Buyer' : 'Seller'}`
-                : `Sign Up as ${userType === 'buyer' ? 'Buyer' : 'Seller'}`}
-            </button>
+            {/* Seller Card */}
+            <div className="auth-card seller-card">
+              <div className="card-icon">🌱</div>
+              <h3>Sell Your Produce</h3>
+              <p>Sell your fresh produce directly to customers</p>
+              <ul className="features-list">
+                <li>✓ Create your own store</li>
+                <li>✓ Manage your inventory</li>
+                <li>✓ Process customer orders</li>
+                <li>✓ Track your earnings</li>
+              </ul>
+              <div className="card-buttons">
+                <Link to="/seller-login" className="btn btn-primary">
+                  Login as Seller
+                </Link>
+                <Link to="/seller-signup" className="btn btn-secondary">
+                  Sign Up as Seller
+                </Link>
+              </div>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setUserType(userType === 'buyer' ? 'seller' : 'buyer')}
-              className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              {isLogin
-                ? `Flip to Login ${userType === 'buyer' ? 'Seller' : 'Buyer'}`
-                : `Flip to Sign Up ${userType === 'buyer' ? 'Seller' : 'Buyer'}`}
-            </button>
-          </form>
-        </div>
-
-        {/* Side / Background Image */}
-        <div className="relative hidden lg:block overflow-hidden rounded-2xl border border-white shadow-xl">
-          {sideImageUrl ? (
-            <img src={sideImageUrl} alt="Auth visual" className="h-full w-full object-cover" />
-          ) : (
-            <div className="h-full w-full bg-gradient-to-br from-green-100 to-green-200" />
-          )}
-          <div className="pointer-events-none absolute inset-0 bg-black/10" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/40 to-transparent">
-            <div className="text-white">
-              <p className="text-sm opacity-90">Fresh from local farmers</p>
-              <p className="text-lg font-semibold">Eat healthy, live better</p>
+            {/* Both Card */}
+            <div className="auth-card both-card">
+              <div className="card-icon">🌟</div>
+              <h3>Be Both Buyer & Seller</h3>
+              <p>Enjoy the best of both worlds - shop and sell on VegRuit</p>
+              <ul className="features-list">
+                <li>✓ Access to both dashboards</li>
+                <li>✓ Special dual-role benefits</li>
+                <li>✓ Flexible role switching</li>
+                <li>✓ Exclusive community access</li>
+              </ul>
+              <div className="card-buttons">
+                <Link to="/auth" className="btn btn-primary" onClick={() => alert('For dual roles, please sign up as either buyer or seller first, then contact support to add the second role.')}>
+                  Sign Up for Both
+                </Link>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="how-it-works">
+        <div className="container">
+          <div className="section-header">
+            <h2 className="section-title">How It Works</h2>
+            <p className="section-subtitle">Simple steps to get started</p>
+          </div>
+          
+          <div className="steps">
+            <div className="step">
+              <div className="step-number">1</div>
+              <h3>Choose Your Role</h3>
+              <p>Select if you want to buy, sell, or both</p>
+            </div>
+            <div className="step">
+              <div className="step-number">2</div>
+              <h3>Create Account</h3>
+              <p>Sign up with your details</p>
+            </div>
+            <div className="step">
+              <div className="step-number">3</div>
+              <h3>Start Using</h3>
+              <p>Begin shopping or selling immediately</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="auth-cta">
+        <div className="container">
+          <div className="cta-content">
+            <h2>Ready to Get Started?</h2>
+            <p>
+              Join Nepal's leading fresh produce marketplace today
+            </p>
+            <Link to="/buyer-signup" className="cta-button">
+              Create Account Now
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
-  )
-}
+  );
+};
 
-export default Auth
-
-
+export default AuthPage;

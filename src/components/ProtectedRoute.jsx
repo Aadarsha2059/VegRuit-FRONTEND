@@ -1,6 +1,6 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
-import { hasRouteAccess } from '../utils/navigation'
+import { USER_TYPES } from '../services/authAPI'
 
 const ProtectedRoute = ({ children, user, requiredUserType, redirectTo = '/' }) => {
   // Check if user is authenticated
@@ -9,14 +9,20 @@ const ProtectedRoute = ({ children, user, requiredUserType, redirectTo = '/' }) 
   }
 
   // Check if user has the required user type
-  if (requiredUserType && user.userType !== requiredUserType) {
-    // Redirect to appropriate dashboard if user is authenticated but wrong type
-    if (user.userType === 'buyer') {
-      return <Navigate to="/buyer-dashboard" replace />
-    } else if (user.userType === 'seller') {
-      return <Navigate to="/seller-dashboard" replace />
+  if (requiredUserType) {
+    // Handle both array and string user types
+    const userTypes = Array.isArray(user.userType) ? user.userType : [user.userType]
+    const hasRequiredType = userTypes.includes(requiredUserType)
+    
+    if (!hasRequiredType) {
+      // Redirect to appropriate dashboard based on user's available roles
+      if (user.isBuyer) {
+        return <Navigate to="/buyer-dashboard" replace />
+      } else if (user.isSeller) {
+        return <Navigate to="/seller-dashboard" replace />
+      }
+      return <Navigate to={redirectTo} replace />
     }
-    return <Navigate to={redirectTo} replace />
   }
 
   return children

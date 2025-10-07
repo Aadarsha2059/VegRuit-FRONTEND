@@ -9,11 +9,20 @@ import Testimonials from './components/Testimonials'
 import Explore from './components/Explore'
 import About from './components/About'
 import Footer from './components/Footer'
-import Auth from './components/auth/Auth'
+import MainAuth from './components/auth/MainAuth'
 import ProtectedRoute from './components/ProtectedRoute'
 import AuthTest from './components/AuthTest'
-import BuyerDashboard from './pages/BuyerDashboard'
-import SellerDashboard from './pages/SellerDashboard'
+import EnhancedBuyerDashboard from './pages/EnhancedBuyerDashboard'
+import EnhancedSellerDashboard from './pages/EnhancedSellerDashboard'
+import AboutPage from './pages/AboutPage'
+import ContactPage from './pages/ContactPage'
+import ExplorePage from './pages/ExplorePage'
+import AuthPage from './pages/Auth'
+// Add imports for new components
+import BuyerLogin from './pages/BuyerLogin'
+import SellerLogin from './pages/SellerLogin'
+import BuyerSignup from './pages/BuyerSignup'
+import SellerSignup from './pages/SellerSignup'
 import { STORAGE_KEYS, USER_TYPES } from './services/authAPI'
 import './App.css'
 
@@ -21,10 +30,11 @@ import './App.css'
 const ConditionalLayout = ({ user, onLogout, onAuthClick, children }) => {
   const location = useLocation()
   const isDashboard = location.pathname.includes('dashboard')
+  const isAuthPage = location.pathname === '/auth'
   
   return (
     <>
-      {!isDashboard && (
+      {!isDashboard && !isAuthPage && (
         <Header 
           user={user} 
           onLogout={onLogout} 
@@ -32,7 +42,7 @@ const ConditionalLayout = ({ user, onLogout, onAuthClick, children }) => {
         />
       )}
       {children}
-      {!isDashboard && <Footer />}
+      {!isDashboard && !isAuthPage && <Footer />}
     </>
   )
 }
@@ -62,10 +72,20 @@ function App() {
     // Ensure userType is set correctly
     const userWithType = {
       ...userData,
-      userType: userData.userType || localStorage.getItem(STORAGE_KEYS.USER_TYPE)
+      userType: userData.userType || JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_TYPE) || '["buyer"]')
     }
     setUser(userWithType)
     setShowAuth(false)
+    
+    // Navigate to appropriate dashboard based on user roles
+    if (userWithType.isBuyer && userWithType.isSeller) {
+      // User can be both - default to buyer dashboard
+      window.location.href = '/buyer-dashboard'
+    } else if (userWithType.isBuyer) {
+      window.location.href = '/buyer-dashboard'
+    } else if (userWithType.isSeller) {
+      window.location.href = '/seller-dashboard'
+    }
   }
 
   const handleLogout = () => {
@@ -73,6 +93,8 @@ function App() {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
     localStorage.removeItem(STORAGE_KEYS.USER_TYPE)
     setUser(null)
+    // Redirect to home page
+    window.location.href = '/'
   }
 
   const handleAuthClick = () => {
@@ -127,24 +149,36 @@ function App() {
                 <About />
               </main>
             } />
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            
+            {/* New dedicated auth routes */}
+            <Route path="/buyer-login" element={<BuyerLogin />} />
+            <Route path="/seller-login" element={<SellerLogin />} />
+            <Route path="/buyer-signup" element={<BuyerSignup />} />
+            <Route path="/seller-signup" element={<SellerSignup />} />
+            
             <Route path="/buyer-dashboard" element={
               <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER}>
-                <BuyerDashboard user={user} onLogout={handleLogout} />
+                <EnhancedBuyerDashboard user={user} onLogout={handleLogout} />
               </ProtectedRoute>
             } />
             <Route path="/seller-dashboard" element={
               <ProtectedRoute user={user} requiredUserType={USER_TYPES.SELLER}>
-                <SellerDashboard user={user} onLogout={handleLogout} />
+                <EnhancedSellerDashboard user={user} onLogout={handleLogout} />
               </ProtectedRoute>
             } />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ConditionalLayout>
 
-        {/* Auth Modal */}
+        {/* Main Auth Modal */}
         {showAuth && (
-          <Auth
+          <MainAuth
             onClose={handleCloseAuth}
-            onSuccess={handleAuthSuccess}
+            onAuthSuccess={handleAuthSuccess}
           />
         )}
 
