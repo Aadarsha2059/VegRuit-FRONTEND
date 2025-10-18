@@ -1,252 +1,377 @@
-// Auth API Service Layer for MERN stack integration
-// This layer provides a clean interface for authentication operations
+// Auth API Service for VegRuit Marketplace
+// Handles all authentication-related API calls
 
-const API_BASE_URL = 'http://localhost:50011/api/auth'
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api'}/auth`;
+
+// Storage keys for local storage
+export const STORAGE_KEYS = {
+  AUTH_TOKEN: 'vegruit_auth_token',
+  USER_DATA: 'vegruit_user_data',
+  USER_TYPE: 'vegruit_user_type'
+};
 
 // Authentication API functions
 export const authAPI = {
-  // Check if user exists and suggest user type
-  async checkUserExists(username, email) {
+  // Storage management
+  getAuthToken: () => localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN),
+  getUserData: () => {
+    const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+    return userData ? JSON.parse(userData) : null;
+  },
+  getUserType: () => localStorage.getItem(STORAGE_KEYS.USER_TYPE),
+
+  // Set authentication data
+  setAuthData: (token, userData, userType) => {
+    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+    localStorage.setItem(STORAGE_KEYS.USER_TYPE, userType);
+  },
+
+  // Clear authentication data
+  clearAuthData: () => {
+    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+    localStorage.removeItem(STORAGE_KEYS.USER_TYPE);
+  },
+
+  // Check if user exists
+  async checkUserExists(email) {
     try {
-      const params = new URLSearchParams();
-      if (username) params.append('username', username);
-      if (email) params.append('email', email);
-      
-      const response = await fetch(`${API_BASE_URL}/check-user?${params.toString()}`)
-      const data = await response.json()
-      
+      const response = await fetch(`${API_BASE_URL}/check-email?email=${encodeURIComponent(email)}`);
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to check user')
+        throw new Error(data.message || 'Failed to check user');
       }
-      
-      return data
+
+      return {
+        success: true,
+        exists: data.exists,
+        userType: data.userType,
+        message: data.message
+      };
     } catch (error) {
+      console.error('Check user error:', error);
       return {
         success: false,
-        message: error.message || 'Failed to check user'
+        message: error.message || 'Failed to check user',
+        exists: false
+      };
+    }
+  },
+
+  // Login user (buyer or seller)
+  async login(credentials, expectedUserType = null) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/login`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: data.message || 'Login failed',
+          field: data.field,
+          code: data.code
+        };
       }
+
+      // Check if user type matches expected type (if provided)
+      if (expectedUserType) {
+        const userTypes = Array.isArray(data.user.userType) ? data.user.userType : [data.user.userType];
+        const isBuyer = data.user.isBuyer || userTypes.includes('buyer');
+        const isSeller = data.user.isSeller || userTypes.includes('seller');
+        
+        if (expectedUserType === 'buyer' && !isBuyer) {
+          return {
+            success: false,
+            message: 'This account is not registered as a buyer. Please use seller login.',
+            code: 'wrong_user_type'
+          };
+        }
+        
+        if (expectedUserType === 'seller' && !isSeller) {
+          return {
+            success: false,
+            message: 'This account is not registered as a seller. Please use buyer login.',
+            code: 'wrong_user_type'
+          };
+        }
+      }
+
+      // Save auth data to local storage
+      const userType = data.userType || (Array.isArray(data.user.userType) ? data.user.userType : [data.user.userType]);
+      this.setAuthData(data.token, data.user, JSON.stringify(userType));
+
+      return {
+        success: true,
+        user: data.user,
+        token: data.token,
+        userType: userType,
+        message: 'Login successful'
+      };
+    } catch (error) {
+      console.error('Login error:', error);
+      return {
+        success: false,
+        message: 'Network error. Please check your connection.',
+        code: 'network_error'
+      };
     }
   },
 
   // Buyer Login
   async loginBuyer(credentials) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        return {
-          success: false,
-          message: data.message || 'Login failed',
-          field: data.field,
-          suggestion: data.suggestion,
-          existingUserType: data.existingUserType
-        }
-      }
-      
-      return data
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error. Please check your connection.',
-        field: 'network'
-      }
-    }
+    return this.login(credentials, 'buyer');
   },
 
   // Seller Login
   async loginSeller(credentials) {
+    return this.login(credentials, 'seller');
+  },
+
+  // Register user (buyer or seller)
+  async register(userData, endpointType) {
     try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      const endpoint = endpointType === 'buyer' ? '/buyer/register' : 
+                      endpointType === 'seller' ? '/seller/register' : 
+                      '/register';
+      
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      })
-      
-      const data = await response.json()
-      
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
         return {
           success: false,
-          message: data.message || 'Login failed',
+          message: data.message || 'Registration failed',
           field: data.field,
-          suggestion: data.suggestion,
-          existingUserType: data.existingUserType
-        }
+          code: data.code
+        };
       }
-      
-      return data
+
+      // Auto-login after registration
+      if (data.token) {
+        const userType = data.userType || (Array.isArray(data.user.userType) ? data.user.userType : [data.user.userType]);
+        this.setAuthData(data.token, data.user, JSON.stringify(userType));
+      }
+
+      return {
+        success: true,
+        user: data.user,
+        token: data.token,
+        userType: data.userType,
+        message: 'Registration successful!',
+        requiresVerification: data.requiresVerification
+      };
     } catch (error) {
+      console.error('Registration error:', error);
       return {
         success: false,
         message: 'Network error. Please check your connection.',
-        field: 'network'
-      }
+        code: 'network_error'
+      };
     }
   },
 
-  // Buyer Registration
   async registerBuyer(userData) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/buyer/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        return {
-          success: false,
-          message: data.message || 'Registration failed',
-          field: data.field,
-          suggestion: data.suggestion,
-          existingUserType: data.existingUserType
-        }
-      }
-      
-      return data
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error. Please check your connection.',
-        field: 'network'
-      }
-    }
+    return this.register(userData, 'buyer');
   },
 
-  // Seller Registration
   async registerSeller(userData) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/seller/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        return {
-          success: false,
-          message: data.message || 'Registration failed',
-          field: data.field,
-          suggestion: data.suggestion,
-          existingUserType: data.existingUserType
-        }
-      }
-      
-      return data
-    } catch (error) {
-      return {
-        success: false,
-        message: 'Network error. Please check your connection.',
-        field: 'network'
-      }
-    }
+    return this.register(userData, 'seller');
   },
 
   // Logout
-  async logout(token) {
+  async logout() {
     try {
-      const response = await fetch(`${API_BASE_URL}/logout`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
+      const token = this.getAuthToken();
+      if (token) {
+        await fetch(`${API_BASE_URL}/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      this.clearAuthData();
+      return { success: true };
+    }
+  },
+
+  // Verify token
+  async verifyAuth() {
+    const token = this.getAuthToken();
+    if (!token) return { isAuthenticated: false };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/me`, {
+        headers: {
           'Authorization': `Bearer ${token}`
         }
-      })
-      
-      const data = await response.json()
-      
+      });
+
       if (!response.ok) {
-        throw new Error(data.message || 'Logout failed')
+        this.clearAuthData();
+        return { isAuthenticated: false };
       }
-      
-      return data
-    } catch (error) {
+
+      const data = await response.json();
       return {
-        success: false,
-        message: error.message || 'Logout failed'
-      }
+        isAuthenticated: true,
+        user: data.user,
+        userType: this.getUserType()
+      };
+    } catch (error) {
+      console.error('Auth verification error:', error);
+      return { isAuthenticated: false };
     }
   },
 
-  // Verify Token (for maintaining login state)
-  async verifyToken(token) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/profile`, {
-        method: 'GET',
-        headers: { 
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        return {
-          success: true,
-          valid: true,
-          user: data.user
-        }
-      } else {
-        return {
-          success: true,
-          valid: false
-        }
-      }
-    } catch (error) {
-      return {
-        success: false,
-        valid: false,
-        message: 'Token verification failed'
-      }
-    }
-  },
+  // Update user profile
+  async updateProfile(profileData) {
+    const token = this.getAuthToken();
+    if (!token) return { success: false, message: 'Not authenticated' };
 
-  // Update Profile
-  async updateProfile(token, profileData) {
     try {
       const response = await fetch(`${API_BASE_URL}/profile`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(profileData)
-      })
-      
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Profile update failed')
+        return {
+          success: false,
+          message: data.message || 'Failed to update profile'
+        };
       }
-      
-      return data
+
+      // Update stored user data
+      const userData = this.getUserData();
+      if (userData) {
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify({
+          ...userData,
+          ...profileData
+        }));
+      }
+
+      return {
+        success: true,
+        user: data.user,
+        message: 'Profile updated successfully'
+      };
     } catch (error) {
+      console.error('Update profile error:', error);
       return {
         success: false,
-        message: error.message || 'Profile update failed'
+        message: 'Network error. Please check your connection.'
+      };
+    }
+  },
+
+  // Request password reset
+  async requestPasswordReset(email) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: data.message || 'Failed to request password reset'
+        };
       }
+
+      return {
+        success: true,
+        message: data.message || 'Password reset instructions sent to your email'
+      };
+    } catch (error) {
+      console.error('Password reset request error:', error);
+      return {
+        success: false,
+        message: 'Network error. Please try again later.'
+      };
+    }
+  },
+
+  // Reset password with token
+  async resetPassword(token, newPassword) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, newPassword })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: data.message || 'Failed to reset password'
+        };
+      }
+
+      return {
+        success: true,
+        message: data.message || 'Password reset successful. You can now log in with your new password.'
+      };
+    } catch (error) {
+      console.error('Password reset error:', error);
+      return {
+        success: false,
+        message: 'Network error. Please try again later.'
+      };
     }
   }
-}
+};
 
 // User type constants
 export const USER_TYPES = {
   BUYER: 'buyer',
-  SELLER: 'seller'
-}
+  SELLER: 'seller',
+  ADMIN: 'admin'
+};
 
-// Local storage keys
-export const STORAGE_KEYS = {
-  USER_DATA: 'vegruit_user',
-  AUTH_TOKEN: 'vegruit_token',
-  USER_TYPE: 'vegruit_user_type'
-}
+// User roles
+export const USER_ROLES = {
+  CUSTOMER: 'customer',
+  FARMER: 'farmer',
+  WHOLESALER: 'wholesaler',
+  RETAILER: 'retailer',
+  ADMIN: 'admin'
+};
+
+// Auth status constants
+export const AUTH_STATUS = {
+  AUTHENTICATED: 'authenticated',
+  UNAUTHENTICATED: 'unauthenticated',
+  LOADING: 'loading'
+};
