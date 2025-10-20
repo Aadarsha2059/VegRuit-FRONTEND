@@ -146,9 +146,9 @@ const SellerSignup = () => {
       const response = await authAPI.registerSeller(signupData);
       
       if (response.success) {
-        toast.success('Seller account created successfully! Welcome to TarkariShop!');
-        // Navigate to seller dashboard
-        navigate('/seller-dashboard');
+        toast.success('Seller account created successfully! Please login to continue.');
+        // Navigate to seller login page
+        navigate('/seller-login');
       } else {
         toast.error(response.message || 'Registration failed');
         if (response.field && response.field !== 'server') {

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:50011/api/payments';
+const API_URL = 'http://localhost:5001/api/payments';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');

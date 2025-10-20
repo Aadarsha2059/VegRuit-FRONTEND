@@ -110,7 +110,8 @@ const BuyerLogin = () => {
         localStorage.setItem(STORAGE_KEYS.USER_TYPE, JSON.stringify(response.userType));
 
         toast.success(`Welcome back, ${response.user.firstName}! 🛒`);
-        navigate('/buyer-dashboard');
+        // Use window.location to force reload and update App state
+        window.location.href = '/buyer-dashboard';
       } else {
         toast.error(response.message || 'Login failed');
         if (response.field) {

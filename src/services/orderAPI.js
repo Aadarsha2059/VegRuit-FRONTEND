@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:50011/api/orders'
+const API_BASE_URL = 'http://localhost:5001/api/orders'
 
 // Order API functions
 export const orderAPI = {

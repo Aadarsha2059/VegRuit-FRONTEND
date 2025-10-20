@@ -138,8 +138,8 @@ const BuyerSignup = () => {
       
       if (response.success) {
         toast.success('Account created successfully! Welcome to TarkariShop!');
-        // Navigate to buyer dashboard
-        navigate('/buyer-dashboard');
+        // Use window.location to force reload and update App state
+        window.location.href = '/buyer-dashboard';
       } else {
         toast.error(response.message || 'Registration failed');
         if (response.field && response.field !== 'server') {
