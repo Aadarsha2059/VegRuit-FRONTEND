@@ -55,7 +55,7 @@ const OrderSuccess = () => {
                 </p>
 
                 <div className="mt-8 flex justify-center gap-4">
-                    <Link to="/" className="bg-gray-200 text-gray-800 py-2 px-6 rounded-lg font-semibold hover:bg-gray-300 transition">
+                    <Link to="/" className="bg-gray-200 text-gray-800 py-1 px-4 rounded-lg font-semibold hover:bg-gray-300 transition">
                         Continue Shopping
                     </Link>
                     <Link to="/buyer-dashboard/orders" className="bg-green-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-green-700 transition">
