@@ -1,7 +1,14 @@
-import React from 'react'
-import farmerOneImage from '../assets/farmer one.png'
-import farmerTwoImage from '../assets/farmer two.png'
-import '../styles/Farmers.css'
+import React from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { FiMapPin, FiAward, FiMessageCircle } from 'react-icons/fi';
+import farmerOneImage from '../assets/farmer one.png';
+import farmerTwoImage from '../assets/farmer two.png';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import '../styles/Farmers.css';
 
 const Farmers = () => {
   const farmers = [
@@ -11,8 +18,7 @@ const Farmers = () => {
       image: farmerOneImage,
       location: 'Lalitpur, Kathmandu Valley',
       specialty: 'Organic Vegetables',
-      experience: '15+ years',
-      story: 'Dedicated to growing the finest organic vegetables using traditional farming methods passed down through generations.'
+      quote: 'Bringing the taste of tradition to your table, one vegetable at a time.',
     },
     {
       id: 2,
@@ -20,79 +26,62 @@ const Farmers = () => {
       image: farmerTwoImage,
       location: 'Bhaktapur, Kathmandu Valley',
       specialty: 'Fresh Fruits',
-      experience: '12+ years',
-      story: 'Passionate about cultivating sweet and juicy fruits that bring joy to families across Kathmandu.'
-    }
-  ]
+      quote: 'Our passion is growing fruits that are as healthy as they are delicious.',
+    },
+    // Add more farmers if available
+  ];
 
   return (
-    <section className="farmers" id="about">
+    <section className="farmers" id="farmers">
       <div className="container">
         <div className="section-header">
-          <h2>Meet Our Local Farmers</h2>
-          <p>Supporting the hardworking farmers of Kathmandu Valley</p>
+          <h2>Our Farming Heroes</h2>
+          <p>Meet the dedicated farmers who bring you the freshest produce.</p>
         </div>
 
-        <div className="farmers-grid">
+        <Swiper
+          modules={[Navigation, Pagination, Autoplay]}
+          spaceBetween={30}
+          slidesPerView={1}
+          navigation
+          pagination={{ clickable: true }}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
+          className="farmers-swiper"
+        >
           {farmers.map((farmer) => (
-            <div key={farmer.id} className="farmer-card">
-              <div className="farmer-image">
-                <img src={farmer.image} alt={farmer.name} />
-                <div className="farmer-badge">
-                  <span>Local</span>
-                  <span>Farmer</span>
+            <SwiperSlide key={farmer.id}>
+              <div className="farmer-card">
+                <div className="farmer-image">
+                  <img src={farmer.image} alt={farmer.name} />
+                </div>
+                <div className="farmer-info">
+                  <h3 className="farmer-name">{farmer.name}</h3>
+                  <div className="farmer-details">
+                    <span className="detail-item">
+                      <FiMapPin /> {farmer.location}
+                    </span>
+                    <span className="detail-item">
+                      <FiAward /> Specializes in {farmer.specialty}
+                    </span>
+                  </div>
+                  <blockquote className="farmer-quote">
+                    <FiMessageCircle className="quote-icon" />
+                    {farmer.quote}
+                  </blockquote>
                 </div>
               </div>
-              <div className="farmer-info">
-                <h3>{farmer.name}</h3>
-                <div className="farmer-details">
-                  <div className="detail-item">
-                    <span className="icon">📍</span>
-                    <span>{farmer.location}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="icon">🌾</span>
-                    <span>{farmer.specialty}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="icon">⏰</span>
-                    <span>{farmer.experience}</span>
-                  </div>
-                </div>
-                <p className="farmer-story">{farmer.story}</p>
-                <button className="btn btn-outline">Learn More</button>
-              </div>
-            </div>
+            </SwiperSlide>
           ))}
-        </div>
+        </Swiper>
 
-        <div className="farmers-message">
-          <div className="message-content">
-            <h3>Supporting Local Communities</h3>
-            <p>
-              By choosing VegRuit, you're not just getting fresh produce - you're supporting 
-              local farmers and their families in the Kathmandu Valley. Every purchase helps 
-              sustain traditional farming practices and strengthens our community.
-            </p>
-            <div className="stats">
-              <div className="stat">
-                <span className="stat-number">50+</span>
-                <span className="stat-label">Local Farmers</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">1000+</span>
-                <span className="stat-label">Happy Customers</span>
-              </div>
-              <div className="stat">
-                <span className="stat-number">100%</span>
-                <span className="stat-label">Local Produce</span>
-              </div>
-            </div>
-          </div>
+        <div className="farmers-cta">
+          <h3>Support Local Agriculture</h3>
+          <p>Your purchase makes a difference. By choosing us, you are directly supporting local farmers and their families.</p>
+          <button className="btn btn-secondary">Learn About Our Impact</button>
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Farmers
+export default Farmers;

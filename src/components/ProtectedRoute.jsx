@@ -1,10 +1,15 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
-import { USER_TYPES } from '../services/authAPI'
+import { STORAGE_KEYS } from '../services/authAPI'
 
-const ProtectedRoute = ({ children, user, requiredUserType, redirectTo = '/' }) => {
+const ProtectedRoute = ({ children, requiredUserType, redirectTo = '/' }) => {
+  // Get user data from localStorage
+  const userDataStr = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+  const user = userDataStr ? JSON.parse(userDataStr) : null;
+  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+  
   // Check if user is authenticated
-  if (!user) {
+  if (!user || !token) {
     return <Navigate to={redirectTo} replace />
   }
 

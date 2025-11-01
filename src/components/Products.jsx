@@ -1,28 +1,41 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { FiShoppingCart, FiEye, FiFilter } from 'react-icons/fi';
 import { productAPI } from '../services/productAPI';
 import { categoryAPI } from '../services/categoryAPI';
+import { cartAPI } from '../services/cartAPI';
+import { STORAGE_KEYS } from '../services/authAPI';
 import toast from 'react-hot-toast';
 import '../styles/Products.css';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
-  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
+  const BACKEND_BASE = 'http://localhost:5001';
 
   useEffect(() => {
-    fetchProducts();
-    fetchFeaturedProducts();
+    const fetchData = async () => {
+      await fetchCategories();
+      await fetchProducts();
+      setLoading(false);
+    };
+    fetchData();
     loadCartFromStorage();
   }, []);
 
   const fetchProducts = async () => {
     try {
-      const response = await productAPI.getPublicProducts({ limit: 6 });
+      const response = await productAPI.getPublicProducts({ limit: 12 });
       if (response.success) {
         setProducts(response.data.products || []);
+        setFilteredProducts(response.data.products || []);
       } else {
         setProducts([]);
+        setFilteredProducts([]);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -30,18 +43,23 @@ const Products = () => {
     }
   };
 
-  const fetchFeaturedProducts = async () => {
+  const fetchCategories = async () => {
     try {
-      const response = await productAPI.getFeaturedProducts(3);
+      const response = await categoryAPI.getPublicCategories();
       if (response.success) {
-        setFeaturedProducts(response.data.products || []);
-      } else {
-        setFeaturedProducts([]);
+        setCategories(response.data.categories || []);
       }
     } catch (error) {
-      console.error('Error fetching featured products:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const handleFilter = (category) => {
+    setActiveCategory(category);
+    if (category === 'all') {
+      setFilteredProducts(products);
+    } else {
+      setFilteredProducts(products.filter(p => p.category.name === category));
     }
   };
 
@@ -56,199 +74,131 @@ const Products = () => {
     localStorage.setItem('cart', JSON.stringify(newCart));
   };
 
-  const addToCart = (product) => {
-    const existingItem = cart.find(item => item._id === product._id);
-    let newCart;
+  const addToCart = async (product) => {
+    try {
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
-    if (existingItem) {
-      // Check if adding one more would exceed stock
-      if (existingItem.quantity >= product.stock) {
-        toast.error(`Only ${product.stock} ${product.unit} available in stock`);
+      if (token) {
+        const res = await cartAPI.addToCart(token, product._id, 1);
+        if (res.success) {
+          toast.success('Added to cart');
+        } else {
+          toast.error(res.message || 'Failed to add to cart');
+        }
         return;
       }
-      
-      newCart = cart.map(item =>
-        item._id === product._id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-      toast.success(`Added another ${product.name} to cart`);
-    } else {
-      if (product.stock === 0) {
-        toast.error('Product is out of stock');
-        return;
+
+      const existing = [...cart];
+      const idx = existing.findIndex(i => i._id === product._id);
+      if (idx >= 0) {
+        existing[idx].quantity = (existing[idx].quantity || 1) + 1;
+      } else {
+        existing.push({ ...product, quantity: 1 });
       }
-      
-      newCart = [...cart, { 
-        ...product, 
-        quantity: 1,
-        addedAt: new Date().toISOString()
-      }];
-      toast.success(`${product.name} added to cart`);
+      setCart(existing);
+      saveCartToStorage(existing);
+      toast.success('Added to cart');
+    } catch (e) {
+      toast.error('Failed to add to cart');
     }
-
-    setCart(newCart);
-    saveCartToStorage(newCart);
   };
 
   const renderStars = (rating) => {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-    
-    return Array.from({ length: 5 }, (_, index) => (
-      <span key={index} className="star">
-        {index < fullStars ? '★' : index === fullStars && hasHalfStar ? '☆' : '☆'}
-      </span>
+    const r = Math.round(rating || 0);
+    return '★★★★★'.split('').map((s, i) => (
+      <span key={i} style={{ color: i < r ? '#f59e0b' : '#d1d5db' }}>★</span>
     ));
   };
 
-  const ProductCard = ({ product, isFeatured = false }) => {
-    const primaryImage = product.images && product.images.length > 0 
-      ? `http://localhost:50011${product.images[0]}` 
+  const ProductCard = ({ product }) => {
+    const primaryImage = product.images && product.images.length > 0
+      ? `${BACKEND_BASE}${product.images[0]}`
       : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop';
 
-    const isInCart = cart.some(item => item._id === product._id);
-    const cartItem = cart.find(item => item._id === product._id);
-    const isOutOfStock = product.stock === 0;
-    const isLowStock = product.stock > 0 && product.stock <= 5;
-
     return (
-      <div className={`product-card ${isFeatured ? 'featured' : ''}`}>
+      <motion.div
+        className="product-card"
+        layout
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.3 }}
+      >
         <div className="product-image">
           <img src={primaryImage} alt={product.name} />
           <div className="product-overlay">
-            <button className="quick-view-btn">Quick View</button>
+            <button className="quick-view-btn"><FiEye /> Quick View</button>
           </div>
-          
-          {isFeatured && (
-            <div className="featured-badge">
-              <span>⭐ Featured</span>
-            </div>
-          )}
-          
-          {product.isOrganic && (
-            <div className="organic-badge">
-              <span>🌱 Organic</span>
-            </div>
-          )}
-          
-          {isOutOfStock && (
-            <div className="stock-badge out-of-stock">
-              <span>Out of Stock</span>
-            </div>
-          )}
-          
-          {isLowStock && (
-            <div className="stock-badge low-stock">
-              <span>Only {product.stock} left</span>
-            </div>
-          )}
+          {product.isOrganic && <div className="organic-badge">🌱</div>}
         </div>
-        
         <div className="product-info">
-          <div className="product-category">{product.category.name}</div>
+          <span className="product-category">{product.category.name}</span>
           <h3 className="product-name">{product.name}</h3>
-          
-          {product.farmLocation && (
-            <div className="farm-location">📍 {product.farmLocation}</div>
-          )}
-          
-          <div className="product-rating">
-            <div className="stars">
-              {renderStars(product.averageRating || 4.5)}
-            </div>
-            <span className="rating-text">({product.totalReviews || 0} reviews)</span>
+          <div className="product-price">
+            <span className="current-price">₹{product.price}</span>
+            <span className="unit">/ {product.unit}</span>
           </div>
-          
-          <div className="product-pricing">
-            <div className="current-price">₹{product.price}/{product.unit}</div>
-            {product.originalPrice && product.originalPrice > product.price && (
-              <div className="original-price">₹{product.originalPrice}</div>
-            )}
+          <div className="product-rating" aria-label={`Rating ${product.averageRating || 0} out of 5`}>
+            {renderStars(product.averageRating)}
+            <span className="rating-count">({product.totalReviews || 0})</span>
           </div>
-          
-          <div className="product-actions">
-            <button 
-              className={`add-to-cart-btn ${isOutOfStock ? 'disabled' : ''} ${isInCart ? 'in-cart' : ''}`}
-              onClick={() => addToCart(product)}
-              disabled={isOutOfStock}
-            >
-              {isOutOfStock ? 'Out of Stock' : 
-               isInCart ? `In Cart (${cartItem.quantity})` : 'Add to Cart'}
-            </button>
-          </div>
+          <button className="add-to-cart-btn" onClick={() => addToCart(product)}>
+            <FiShoppingCart /> Add to Cart
+          </button>
         </div>
-      </div>
+      </motion.div>
     );
   };
 
-  if (loading) {
-    return (
-      <section className="products" id="products">
-        <div className="container">
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-            <p>Loading fresh products...</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const SkeletonCard = () => (
+    <div className="product-card skeleton">
+      <div className="product-image"></div>
+      <div className="product-info">
+        <div className="skeleton-line" style={{ width: '40%' }}></div>
+        <div className="skeleton-line" style={{ width: '80%' }}></div>
+        <div className="skeleton-line" style={{ width: '60%' }}></div>
+        <div className="skeleton-button"></div>
+      </div>
+    </div>
+  );
 
   return (
     <section className="products" id="products">
       <div className="container">
         <div className="section-header">
-          <h2>Our Fresh Products</h2>
-          <p>Handpicked fresh fruits and vegetables from local farmers</p>
+          <h2>Discover Our Products</h2>
+          <p>From farm-fresh vegetables to juicy fruits, find everything you need.</p>
         </div>
 
-        {/* Featured Products Section */}
-        {featuredProducts.length > 0 && (
-          <div className="featured-section">
-            <h3 className="featured-title">⭐ Featured Products</h3>
-            <div className="featured-grid">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product._id} product={product} isFeatured={true} />
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="filter-bar">
+          <button
+            className={`filter-btn ${activeCategory === 'all' ? 'active' : ''}`}
+            onClick={() => handleFilter('all')}
+          >
+            All Products
+          </button>
+          {categories.map(cat => (
+            <button
+              key={cat._id}
+              className={`filter-btn ${activeCategory === cat.name ? 'active' : ''}`}
+              onClick={() => handleFilter(cat.name)}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
 
-        {/* Regular Products Section */}
-        <div className="products-section">
-          <h3 className="section-title">All Products</h3>
-          {products.length > 0 ? (
-            <div className="products-grid">
-              {products.map((product) => (
+        <motion.div className="products-grid" layout>
+          {loading
+            ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
+            : filteredProducts.map(product => (
                 <ProductCard key={product._id} product={product} />
               ))}
-            </div>
-          ) : (
-            <div className="no-products">
-              <div className="no-products-icon">🥬</div>
-              <h3>No Products Available</h3>
-              <p>Check back soon for fresh produce from our farmers!</p>
-            </div>
-          )}
-        </div>
-
-        {/* Cart Summary */}
-        {cart.length > 0 && (
-          <div className="cart-summary">
-            <div className="cart-info">
-              <span className="cart-count">🛒 {cart.length} items in cart</span>
-              <span className="cart-total">
-                Total: ₹{cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2)}
-              </span>
-            </div>
-            <button className="view-cart-btn">View Cart</button>
-          </div>
-        )}
+        </motion.div>
 
         <div className="products-cta">
-          <h3>Want to See More?</h3>
-          <p>Explore our complete catalog of fresh produce</p>
+          <h3>Looking for more?</h3>
+          <p>Explore our full range of products and find your favorites.</p>
           <button className="btn btn-primary">View All Products</button>
         </div>
       </div>

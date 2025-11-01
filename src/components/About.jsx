@@ -1,149 +1,74 @@
-import React from 'react'
-import '../styles/About.css'
-import aadarshaImage from '../assets/aadarsha.png'
+import React from 'react';
+import { motion } from 'framer-motion';
+import { FiZap, FiHeart, FiUsers, FiAward } from 'react-icons/fi';
+import aadarshaImage from '../assets/aadarsha.png';
+import '../styles/About.css';
 
 const About = () => {
-  const stats = [
-    { number: '500+', label: 'Happy Customers', icon: '😊' },
-    { number: '50+', label: 'Local Farmers', icon: '👨‍🌾' },
-    { number: '100+', label: 'Product Varieties', icon: '🥬' },
-    { number: '24/7', label: 'Customer Support', icon: '📞' }
-  ]
-
-  const values = [
-    {
-      icon: '🌱',
-      title: 'Freshness Guaranteed',
-      description: 'We ensure all our produce is harvested fresh and delivered to your doorstep within hours.'
-    },
-    {
-      icon: '👨‍🌾',
-      title: 'Support Local Farmers',
-      description: 'We work directly with local farmers to provide them fair prices and support their livelihoods.'
-    },
-    {
-      icon: '🌍',
-      title: 'Eco-Friendly',
-      description: 'Our packaging is eco-friendly and we promote sustainable farming practices.'
-    },
-    {
-      icon: '💚',
-      title: 'Quality Assured',
-      description: 'Every product goes through quality checks to ensure you get the best fresh produce.'
-    }
-  ]
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
 
   return (
     <section className="about" id="about">
       <div className="container">
         <div className="section-header">
-          <h2>About VegRuit</h2>
-          <p>Connecting local farmers with urban consumers for fresh, healthy produce</p>
+          <h2>Our Story & Mission</h2>
+          <p>Rooted in community, growing for a healthier future.</p>
         </div>
 
-        <div className="about-content">
-          <div className="about-story">
-            <div className="story-text">
-              <h3>Our Story</h3>
-              <p>
-                VegRuit was born from a simple idea: to bridge the gap between local farmers in Kathmandu Valley 
-                and urban consumers who crave fresh, organic produce. Founded in 2024, we started as a small 
-                initiative to support local farmers while providing city dwellers with access to the freshest 
-                fruits and vegetables.
-              </p>
-              <p>
-                Today, we're proud to serve thousands of customers across Kathmandu, working with over 50 
-                local farmers who share our commitment to quality and sustainability. Our mission is to 
-                make fresh, organic produce accessible to everyone while supporting the local farming community.
-              </p>
-            </div>
-            <div className="story-image">
-              <div className="image-placeholder">
-                <span className="placeholder-icon">🥬</span>
-                <p>Fresh from Farm to Table</p>
-              </div>
-            </div>
+        <motion.div className="about-grid" variants={fadeIn} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+          <div className="about-text">
+            <h3>From a Simple Idea to a Fresh Revolution</h3>
+            <p>
+              Our journey began with a simple yet powerful idea: to connect the hardworking farmers of the Kathmandu Valley directly with you. We envisioned a community where fresh, sustainably grown produce is not a luxury, but a daily reality.
+            </p>
+            <p>
+              Today, we are proud to be that bridge. We partner with local farming families, ensuring they receive fair compensation for their dedication, while you receive produce that is bursting with flavor and nutrients. It's a cycle of goodness, and you're at the heart of it.
+            </p>
           </div>
+          <div className="about-image">
+            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=600&fit=crop" alt="Fresh vegetables" />
+          </div>
+        </motion.div>
 
-          <div className="stats-section">
-            <h3>Our Impact</h3>
-            <div className="stats-grid">
-              {stats.map((stat, index) => (
-                <div key={index} className="stat-item">
-                  <div className="stat-icon">{stat.icon}</div>
-                  <div className="stat-number">{stat.number}</div>
-                  <div className="stat-label">{stat.label}</div>
-                </div>
-              ))}
-            </div>
+        <motion.div className="values-grid" variants={fadeIn} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
+          <div className="value-card">
+            <FiZap className="value-icon" />
+            <h4>Directly Sourced</h4>
+            <p>Harvested at peak freshness and delivered from the farm to your table, often within hours.</p>
           </div>
+          <div className="value-card">
+            <FiHeart className="value-icon" />
+            <h4>Community Focused</h4>
+            <p>Every purchase supports local farmers, strengthens our community, and promotes sustainable practices.</p>
+          </div>
+          <div className="value-card">
+            <FiUsers className="value-icon" />
+            <h4>Customer First</h4>
+            <p>Your satisfaction is our priority. We are committed to providing exceptional quality and service.</p>
+          </div>
+          <div className="value-card">
+            <FiAward className="value-icon" />
+            <h4>Uncompromising Quality</h4>
+            <p>We hand-select the best produce, ensuring every item meets our high standards of excellence.</p>
+          </div>
+        </motion.div>
 
-          <div className="values-section">
-            <h3>Our Values</h3>
-            <div className="values-grid">
-              {values.map((value, index) => (
-                <div key={index} className="value-card">
-                  <div className="value-icon">{value.icon}</div>
-                  <h4>{value.title}</h4>
-                  <p>{value.description}</p>
-                </div>
-              ))}
-            </div>
+        <motion.div className="team-card" variants={fadeIn} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+          <div className="team-image">
+            <img src={aadarshaImage} alt="Aadarsha Babu Dhakal" />
           </div>
-
-          <div className="team-section">
-            <h3>Meet Our Team</h3>
-            <div className="team-grid">
-              <div className="team-member">
-                <div className="member-avatar">
-                  <img src={aadarshaImage} alt="Aadarsha Babu Dhakal" />
-                </div>
-                <h4>Aadarsha Babu Dhakal</h4>
-                <p>Founder & CEO</p>
-                <p className="member-description">
-                  Passionate about connecting farmers with consumers and promoting sustainable agriculture. 
-                  Leading VegRuit's mission to revolutionize fresh produce delivery in Kathmandu Valley.
-                </p>
-                <div className="member-social">
-                  <a href="#" className="social-link">💼 LinkedIn</a>
-                  <a href="#" className="social-link">📧 Email</a>
-                </div>
-              </div>
-            </div>
+          <div className="team-info">
+            <h3>Meet the Founder</h3>
+            <h4>Aadarsha Babu Dhakal</h4>
+            <p>"I started this journey to bring the authentic taste of my homeland's soil to every home. It's more than a business; it's a passion for fresh food and a commitment to our community's well-being."</p>
           </div>
-
-          <div className="mission-section">
-            <div className="mission-content">
-              <h3>Our Mission</h3>
-              <p>
-                To revolutionize the way people access fresh produce by creating a direct bridge between 
-                local farmers and consumers, ensuring quality, freshness, and fair prices for everyone 
-                involved in the process.
-              </p>
-              <div className="mission-points">
-                <div className="mission-point">
-                  <span className="point-icon">✅</span>
-                  <span>Support local farmers with fair prices</span>
-                </div>
-                <div className="mission-point">
-                  <span className="point-icon">✅</span>
-                  <span>Provide fresh, organic produce to consumers</span>
-                </div>
-                <div className="mission-point">
-                  <span className="point-icon">✅</span>
-                  <span>Promote sustainable farming practices</span>
-                </div>
-                <div className="mission-point">
-                  <span className="point-icon">✅</span>
-                  <span>Build a stronger local food ecosystem</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        </motion.div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default About
+export default About;

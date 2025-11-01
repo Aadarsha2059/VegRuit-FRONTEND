@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { getOrderById } from '../../services/orderAPI';
-import { toast } from 'react-hot-toast';
+import BackButton from '../components/BackButton';
 
 const OrderDetail = () => {
     const { orderId } = useParams();
@@ -47,9 +45,7 @@ const OrderDetail = () => {
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
             <div className="mb-6">
-                <Link to="/buyer-dashboard/orders" className="text-green-600 hover:text-green-800 font-medium">
-                    &larr; Back to Orders
-                </Link>
+                <BackButton />
                 <h1 className="text-3xl font-bold text-gray-800 mt-2">Order Details</h1>
                 <p className="text-gray-500">
                     Order #{order.orderId} &bull; Placed on {new Date(order.createdAt).toLocaleDateString()}
@@ -66,7 +62,7 @@ const OrderDetail = () => {
                             {order.items.map(item => (
                                 <div key={item.product._id} className="flex items-center gap-4 border-b border-gray-200 pb-4 last:border-b-0">
                                     <img 
-                                        src={`http://localhost:5000${item.product.images[0]}`} 
+                                        src={`http://localhost:5001${item.product.images[0]}`} 
                                         alt={item.product.name} 
                                         className="w-20 h-20 object-cover rounded-md"
                                     />

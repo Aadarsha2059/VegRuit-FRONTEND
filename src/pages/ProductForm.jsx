@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import '../styles/ProductForm.css';
+import BackButton from '../components/BackButton';
 
-const ProductForm = ({ product, categories = [], onSubmit, onCancel }) => {
+const ProductForm = ({ product, categories = [], onSubmit }) => {
   const [formData, setFormData] = useState({
     name: product?.name || '',
     description: product?.description || '',
@@ -14,6 +15,8 @@ const ProductForm = ({ product, categories = [], onSubmit, onCancel }) => {
   });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     // If editing a product, ensure its category is set
@@ -65,8 +68,8 @@ const ProductForm = ({ product, categories = [], onSubmit, onCancel }) => {
     <div className="product-form-overlay">
       <form onSubmit={handleSubmit} className="product-form" noValidate>
         <div className="form-header">
+          <BackButton />
           <h4>{product ? 'Edit Product' : 'Add New Product'}</h4>
-          <button type="button" className="close-form-btn" onClick={onCancel}>✕</button>
         </div>
 
         <div className="form-body">

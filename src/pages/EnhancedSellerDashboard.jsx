@@ -536,7 +536,7 @@ const SellerProductsTab = ({ products, categories, onCreateProduct }) => {
           <div key={product._id} className="product-card">
             <div className="product-image">
               {product.images && product.images.length > 0 ? (
-                <img src={`http://localhost:5000${product.images[0]}`} alt={product.name} />
+                <img src={`http://localhost:5001${product.images[0]}`} alt={product.name} />
               ) : (
                 <div className="placeholder-image">🥬</div>
               )}

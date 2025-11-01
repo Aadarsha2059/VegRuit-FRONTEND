@@ -63,13 +63,13 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  color: white;
+  color: #333;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 8px 16px;
   border-radius: 30px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.8);
   transition: all 0.3s ease;
   font-weight: 600;
   backdrop-filter: blur(5px);

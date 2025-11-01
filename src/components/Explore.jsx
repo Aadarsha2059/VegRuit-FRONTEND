@@ -1,173 +1,107 @@
-import React from 'react'
-import '../styles/Explore.css'
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiChevronRight, FiBox, FiFeather, FiGift } from 'react-icons/fi';
+import '../styles/Explore.css';
+
+const categories = [
+  {
+    id: 'vegetables',
+    name: 'Fresh Vegetables',
+    icon: <FiBox />,
+    items: [
+      { name: 'Spinach', image: 'https://images.unsplash.com/photo-1576045057992-9a503194f2ff?w=200&h=200&fit=crop' },
+      { name: 'Broccoli', image: 'https://images.unsplash.com/photo-1587351177733-a03249697314?w=200&h=200&fit=crop' },
+      { name: 'Carrot', image: 'https://images.unsplash.com/photo-1598170845058-32fe411b0521?w=200&h=200&fit=crop' },
+      { name: 'Cucumber', image: 'https://images.unsplash.com/photo-1601253258214-35de732ea5b8?w=200&h=200&fit=crop' },
+    ],
+  },
+  {
+    id: 'fruits',
+    name: 'Exotic Fruits',
+    icon: <FiFeather />,
+    items: [
+      { name: 'Dragon Fruit', image: 'https://images.unsplash.com/photo-1517282009859-f000ec3b26fe?w=200&h=200&fit=crop' },
+      { name: 'Lychee', image: 'https://images.unsplash.com/photo-1531259459336-de386f3f72a4?w=200&h=200&fit=crop' },
+      { name: 'Mango', image: 'https://images.unsplash.com/photo-1591078382203-765e44316d83?w=200&h=200&fit=crop' },
+      { name: 'Pineapple', image: 'https://images.unsplash.com/photo-1587883139193-10b353a933d8?w=200&h=200&fit=crop' },
+    ],
+  },
+  {
+    id: 'seasonal',
+    name: 'Seasonal Boxes',
+    icon: <FiGift />,
+    items: [
+      { name: 'Summer Box', image: 'https://images.unsplash.com/photo-1590779431133-d9f4a49e33c2?w=200&h=200&fit=crop' },
+      { name: 'Winter Box', image: 'https://images.unsplash.com/photo-1573500921999-89a65c1b4a94?w=200&h=200&fit=crop' },
+      { name: 'Monsoon Box', image: 'https://images.unsplash.com/photo-1567791124560-c60b7d3834b1?w=200&h=200&fit=crop' },
+      { name: 'Fiesta Box', image: 'https://images.unsplash.com/photo-1593280443077-ae4d6f5a7743?w=200&h=200&fit=crop' },
+    ],
+  },
+];
 
 const Explore = () => {
-  const categories = [
-    {
-      id: 1,
-      name: 'Fresh Fruits',
-      icon: '🍎',
-      description: 'Sweet and nutritious fruits from local orchards',
-      items: [
-        { 
-          name: 'Apples', 
-          price: 'Rs. 180/kg', 
-          image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=200&h=200&fit=crop', 
-          description: 'Sweet and crisp red apples' 
-        },
-        { 
-          name: 'Oranges', 
-          price: 'Rs. 120/kg', 
-          image: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=200&h=200&fit=crop', 
-          description: 'Juicy and vitamin C rich' 
-        },
-        { 
-          name: 'Mangoes', 
-          price: 'Rs. 200/kg', 
-          image: 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=200&h=200&fit=crop', 
-          description: 'Sweet and aromatic mangoes' 
-        },
-        { 
-          name: 'Bananas', 
-          price: 'Rs. 80/kg', 
-          image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=200&h=200&fit=crop', 
-          description: 'Fresh and energy-rich bananas' 
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Fresh Vegetables',
-      icon: '🥬',
-      description: 'Organic vegetables from local farmers',
-      items: [
-        { 
-          name: 'Cauliflower', 
-          price: 'Rs. 80/kg', 
-          image: 'https://images.unsplash.com/photo-1594282486552-05b4d80fbb9f?w=200&h=200&fit=crop', 
-          description: 'Fresh organic cauliflower' 
-        },
-        { 
-          name: 'Tomatoes', 
-          price: 'Rs. 90/kg', 
-          image: 'https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=200&h=200&fit=crop', 
-          description: 'Ripe and juicy tomatoes' 
-        },
-        { 
-          name: 'Cucumber', 
-          price: 'Rs. 60/kg', 
-          image: 'https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=200&h=200&fit=crop', 
-          description: 'Crisp and refreshing cucumbers' 
-        },
-        { 
-          name: 'Carrots', 
-          price: 'Rs. 70/kg', 
-          image: 'https://images.unsplash.com/photo-1447175008436-170170e88636?w=200&h=200&fit=crop', 
-          description: 'Sweet and crunchy carrots' 
-        }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Seasonal Specials',
-      icon: '🌟',
-      description: 'Limited time seasonal produce',
-      items: [
-        { 
-          name: 'Strawberries', 
-          price: 'Rs. 300/kg', 
-          image: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=200&h=200&fit=crop', 
-          description: 'Sweet seasonal strawberries' 
-        },
-        { 
-          name: 'Pomegranate', 
-          price: 'Rs. 250/kg', 
-          image: 'https://images.unsplash.com/photo-1541344999737-1c29d3fe0c8b?w=200&h=200&fit=crop', 
-          description: 'Fresh pomegranate seeds' 
-        },
-        { 
-          name: 'Green Peas', 
-          price: 'Rs. 100/kg', 
-          image: 'https://images.unsplash.com/photo-1556801712-76c8eb07bbc9?w=200&h=200&fit=crop', 
-          description: 'Fresh green peas' 
-        },
-        { 
-          name: 'Spinach', 
-          price: 'Rs. 50/kg', 
-          image: 'https://images.unsplash.com/photo-1576045057992-9a503194f2ff?w=200&h=200&fit=crop', 
-          description: 'Nutritious fresh spinach' 
-        }
-      ]
-    }
-  ]
+  const [activeTab, setActiveTab] = useState(categories[0].id);
+
+  const activeCategory = categories.find(cat => cat.id === activeTab);
 
   return (
     <section className="explore" id="explore">
       <div className="container">
         <div className="section-header">
-          <h2>Explore Our Fresh Produce</h2>
-          <p>Discover the finest selection of fruits and vegetables from local farmers in Kathmandu</p>
+          <h2>Explore Our Collections</h2>
+          <p>A curated selection of the finest produce, updated weekly.</p>
         </div>
 
-        <div className="categories-grid">
-          {categories.map((category) => (
-            <div key={category.id} className="category-card">
-              <div className="category-header">
-                <div className="category-icon">{category.icon}</div>
-                <h3>{category.name}</h3>
-                <p>{category.description}</p>
-              </div>
-              
-              <div className="items-grid">
-                {category.items.map((item, index) => (
-                  <div key={index} className="item-card">
-                    <div className="item-image">
-                      <img src={item.image} alt={item.name} />
+        <div className="explore-content">
+          <div className="tabs-container">
+            {categories.map(category => (
+              <button
+                key={category.id}
+                className={`tab-item ${activeTab === category.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(category.id)}
+              >
+                <span className="tab-icon">{category.icon}</span>
+                <span className="tab-name">{category.name}</span>
+                <FiChevronRight className="tab-arrow" />
+              </button>
+            ))}
+          </div>
+
+          <div className="gallery-container">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="gallery-grid"
+              >
+                {activeCategory.items.map((item, index) => (
+                  <motion.div
+                    key={index}
+                    className="gallery-item"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <img src={item.image} alt={item.name} />
+                    <div className="item-overlay">
+                      <h3>{item.name}</h3>
                     </div>
-                    <div className="item-info">
-                      <h4>{item.name}</h4>
-                      <p>{item.description}</p>
-                      <span className="item-price">{item.price}</span>
-                    </div>
-                    <button className="add-to-cart-btn">Add to Cart</button>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="explore-features">
-          <div className="feature-card">
-            <div className="feature-icon">🚚</div>
-            <h3>Fast Delivery</h3>
-            <p>Same day delivery within Kathmandu Valley</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🌱</div>
-            <h3>100% Organic</h3>
-            <p>All produce is certified organic and fresh</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">👨‍🌾</div>
-            <h3>Local Farmers</h3>
-            <p>Direct from local farmers to your table</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">💰</div>
-            <h3>Best Prices</h3>
-            <p>Competitive prices for premium quality</p>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 
-        <div className="cta-section">
-          <h3>Ready to Start Shopping?</h3>
-          <p>Join thousands of satisfied customers who trust VegRuit for their daily fresh produce needs</p>
-          <button className="btn btn-primary">Start Shopping Now</button>
+        <div className="explore-cta">
+          <h3>Ready to Taste the Freshness?</h3>
+          <p>Browse our full catalog and get the best of nature delivered to your door.</p>
+          <button className="btn btn-primary">Shop All Products</button>
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Explore
+export default Explore;

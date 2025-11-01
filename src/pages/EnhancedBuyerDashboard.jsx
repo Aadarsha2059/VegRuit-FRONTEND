@@ -381,7 +381,7 @@ const BuyerOverviewTab = ({ user, data, products }) => {
                 <div className="product-image">
                   {product.images && product.images.length > 0 ? (
                     <img 
-                      src={`http://localhost:5000${product.images[0]}`} 
+                      src={`http://localhost:5001${product.images[0]}`} 
                       alt={product.name}
                       onError={(e) => {
                         e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop'
@@ -401,7 +401,7 @@ const BuyerOverviewTab = ({ user, data, products }) => {
                 </div>
                 <div className="product-actions">
                   <button className="favorite-btn">❤️</button>
-                  <button className="add-cart-btn">Add to Cart</button>
+                  <button className="add-cart-btn" onClick={() => handleAddToCart(product._id)}>Add to Cart</button>
                 </div>
               </div>
             ))}
@@ -458,7 +458,7 @@ const BuyerProductsTab = ({ products, categories, onAddToCart }) => {
               <div className="product-image">
                 {product.images && product.images.length > 0 ? (
                   <img 
-                    src={`http://localhost:5000${product.images[0]}`} 
+                    src={`http://localhost:5001${product.images[0]}`} 
                     alt={product.name}
                     onError={(e) => {
                       e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop'

@@ -6,7 +6,7 @@
   left: 0;
   right: 0;
   z-index: 2001;
-  box-shadow: 0 4px 20px rgba(45, 90, 39, 0.2);
+  box-shadow: 0 8px 24px rgba(45, 90, 39, 0.25);
   backdrop-filter: blur(10px);
 }
 
@@ -86,7 +86,7 @@
 .nav-link:hover {
   background: rgba(255, 255, 255, 0.25);
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 28px rgba(255, 255, 255, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 

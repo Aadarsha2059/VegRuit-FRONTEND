@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import BackButton from '../components/BackButton';
 import '../styles/Explore.css';
 
 const ExplorePage = () => {
@@ -165,10 +166,7 @@ const ExplorePage = () => {
       <section className="explore-hero">
         <div className="hero-overlay">
           <div className="hero-content">
-            <Link to="/" className="back-button top-right">
-              <span className="back-icon">←</span>
-              Back to Home
-            </Link>
+            <BackButton />
             <h1 className="hero-title">Explore Fresh Produce</h1>
             <p className="hero-subtitle">
               Discover the finest selection of fruits and vegetables from local farmers in Nepal

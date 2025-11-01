@@ -52,21 +52,21 @@ const DashboardLayout = ({
 
         <div className="user-profile">
           <div className="user-avatar">
-            {user.avatar ? (
-              <img src={user.avatar} alt={user.firstName} />
+            {user && user.avatar ? (
+              <img src={user.avatar} alt={user?.firstName || 'User'} />
             ) : (
               <div className="avatar-placeholder">
-                {user.firstName?.charAt(0)?.toUpperCase()}
+                {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
               </div>
             )}
           </div>
           {!sidebarCollapsed && (
             <div className="user-info">
-              <h4>{user.firstName} {user.lastName}</h4>
-              <p>{user.email}</p>
+              <h4>{user?.firstName || 'User'} {user?.lastName || ''}</h4>
+              <p>{user?.email || 'No email'}</p>
               <div className="user-roles">
-                {user.isBuyer && <span className="role-badge buyer">Buyer</span>}
-                {user.isSeller && <span className="role-badge seller">Seller</span>}
+                {user?.isBuyer && <span className="role-badge buyer">Buyer</span>}
+                {user?.isSeller && <span className="role-badge seller">Seller</span>}
               </div>
             </div>
           )}
@@ -130,17 +130,17 @@ const DashboardLayout = ({
             
             <div className="user-menu">
               <div className="user-avatar-small">
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.firstName} />
+                {user && user.avatar ? (
+                  <img src={user.avatar} alt={user?.firstName || 'User'} />
                 ) : (
                   <div className="avatar-placeholder-small">
-                    {user.firstName?.charAt(0)?.toUpperCase()}
+                    {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
                   </div>
                 )}
               </div>
               <div className="user-details">
-                <span className="user-name">{user.firstName} {user.lastName}</span>
-                <span className="user-email">{user.email}</span>
+                <span className="user-name">{user?.firstName || 'User'} {user?.lastName || ''}</span>
+                <span className="user-email">{user?.email || 'user@example.com'}</span>
               </div>
             </div>
           </div>

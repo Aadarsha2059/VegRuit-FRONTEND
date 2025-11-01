@@ -174,16 +174,7 @@ const Header = ({ user, onLogout, onAuthClick }) => {
                 </div>
               </div>
               
-              <div className="auth-option-card">
-                <div className="auth-option-icon">🌟</div>
-                <h3>Be Both Buyer & Seller</h3>
-                <p>Enjoy the best of both worlds - shop and sell on VegRuit</p>
-                <div className="auth-option-buttons">
-                  <Link to="/auth" className="btn btn-primary" onClick={closeAuthModal}>
-                    Sign Up for Both
-                  </Link>
-                </div>
-              </div>
+              {/* Removed the combined Buyer & Seller option for a simpler auth dialog */}
             </div>
             
             <div className="auth-modal-footer">

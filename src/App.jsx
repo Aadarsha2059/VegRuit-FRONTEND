@@ -154,19 +154,19 @@ function App() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/auth" element={<AuthPage />} />
             
-            {/* New dedicated auth routes */}
-            <Route path="/buyer-login" element={<BuyerLogin />} />
-            <Route path="/seller-login" element={<SellerLogin />} />
-            <Route path="/buyer-signup" element={<BuyerSignup />} />
-            <Route path="/seller-signup" element={<SellerSignup />} />
+            {/* Authentication routes */}
+            <Route path="/buyer-login" element={<BuyerLogin onAuthSuccess={handleAuthSuccess} />} />
+            <Route path="/seller-login" element={<SellerLogin onAuthSuccess={handleAuthSuccess} />} />
+            <Route path="/buyer-signup" element={<BuyerSignup onAuthSuccess={handleAuthSuccess} />} />
+            <Route path="/seller-signup" element={<SellerSignup onAuthSuccess={handleAuthSuccess} />} />
             
             <Route path="/buyer-dashboard" element={
-              <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER}>
+              <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER} redirectTo="/buyer-login">
                 <EnhancedBuyerDashboard user={user} onLogout={handleLogout} />
               </ProtectedRoute>
             } />
             <Route path="/seller-dashboard" element={
-              <ProtectedRoute user={user} requiredUserType={USER_TYPES.SELLER}>
+              <ProtectedRoute user={user} requiredUserType={USER_TYPES.SELLER} redirectTo="/seller-login">
                 <EnhancedSellerDashboard user={user} onLogout={handleLogout} />
               </ProtectedRoute>
             } />

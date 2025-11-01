@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI } from '../services/authAPI';
-import './SellerSignup.css';
+import AttractiveAuth from '../components/auth/AttractiveAuth';
+import { FaUser, FaEnvelope, FaLock, FaPhone, FaStore, FaMapMarkerAlt, FaCity } from 'react-icons/fa';
+import '../styles/SellerSignup.css';
 
 const SellerSignup = () => {
   const navigate = useNavigate();
@@ -25,110 +27,52 @@ const SellerSignup = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
+    if (!formData.username.trim()) newErrors.username = 'Username is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
     
-    // Username validation
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
-    } else if (formData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
-    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      newErrors.username = 'Username can only contain letters, numbers, and underscores';
-    }
-
-    // Email validation
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    // First name validation
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
-    } else if (formData.firstName.trim().length < 2) {
-      newErrors.firstName = 'First name must be at least 2 characters';
-    }
-
-    // Last name validation
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
-    } else if (formData.lastName.trim().length < 2) {
-      newErrors.lastName = 'Last name must be at least 2 characters';
-    }
-
+    if (!formData.password) newErrors.password = 'Password is required';
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+    
     // Phone validation
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else if (!/^[\+]?[0-9\s\-\(\)]+$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+    } else {
+      // Remove any non-digit characters for validation
+      const phoneDigits = formData.phone.replace(/\D/g, '');
+      if (phoneDigits.length < 10) {
+        newErrors.phone = 'Phone number must have at least 10 digits';
+      }
     }
-
-    // Farm name validation
-    if (!formData.farmName.trim()) {
-      newErrors.farmName = 'Farm name is required';
-    } else if (formData.farmName.trim().length < 3) {
-      newErrors.farmName = 'Farm name must be at least 3 characters';
-    }
-
-    // Farm location validation
-    if (!formData.farmLocation.trim()) {
-      newErrors.farmLocation = 'Farm location is required';
-    } else if (formData.farmLocation.trim().length < 5) {
-      newErrors.farmLocation = 'Farm location must be at least 5 characters';
-    }
-
-    // City validation
-    if (!formData.city.trim()) {
-      newErrors.city = 'City is required';
-    } else if (formData.city.trim().length < 2) {
-      newErrors.city = 'City must be at least 2 characters';
-    }
-
+    
+    if (!formData.farmName.trim()) newErrors.farmName = 'Farm name is required';
+    if (!formData.farmLocation.trim()) newErrors.farmLocation = 'Farm location is required';
+    if (!formData.city.trim()) newErrors.city = 'City is required';
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) {
       toast.error('Please fix the errors before submitting');
       return;
     }
-
     setLoading(true);
-    
     try {
-      // Prepare data for backend
       const signupData = {
         username: formData.username.trim(),
         email: formData.email.trim().toLowerCase(),
@@ -142,12 +86,10 @@ const SellerSignup = () => {
         isBuyer: false,
         isSeller: true
       };
-
       const response = await authAPI.registerSeller(signupData);
-      
       if (response.success) {
         toast.success('Seller account created successfully! Please login to continue.');
-        // Navigate to seller login page
+        // Navigate to seller login page instead of dashboard
         navigate('/seller-login');
       } else {
         toast.error(response.message || 'Registration failed');
@@ -172,265 +114,203 @@ const SellerSignup = () => {
   };
 
   return (
-    <div className="seller-signup-container">
-      <div className="seller-signup-wrapper">
-        <div className="seller-signup-header">
-          <div className="signup-icon">
-            🌱
+    <AttractiveAuth title="Create Seller Account">
+      <form onSubmit={handleSubmit} className="seller-signup-form">
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="firstName">First Name</label>
+            <div className="input-with-icon">
+              <FaUser className="input-icon" />
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                className={errors.firstName ? 'error' : ''}
+                placeholder="John"
+              />
+            </div>
+            {errors.firstName && <span className="error-text">{errors.firstName}</span>}
           </div>
-          <h1>Join as a Seller</h1>
-          <p>Create your seller account to start selling fresh vegetables and fruits</p>
+          <div className="form-group">
+            <label htmlFor="lastName">Last Name</label>
+            <div className="input-with-icon">
+              <FaUser className="input-icon" />
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                className={errors.lastName ? 'error' : ''}
+                placeholder="Doe"
+              />
+            </div>
+            {errors.lastName && <span className="error-text">{errors.lastName}</span>}
+          </div>
         </div>
-
-        <div className="seller-signup-form-container">
-          <form onSubmit={handleSubmit} className="seller-signup-form">
-            <div className="form-section">
-              <h3>Personal Information</h3>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="firstName">
-                    <span className="label-icon">👤</span>
-                    First Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className={errors.firstName ? 'error' : ''}
-                    placeholder="Enter your first name"
-                    disabled={loading}
-                  />
-                  {errors.firstName && <span className="error-message">{errors.firstName}</span>}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="lastName">
-                    <span className="label-icon">👤</span>
-                    Last Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    className={errors.lastName ? 'error' : ''}
-                    placeholder="Enter your last name"
-                    disabled={loading}
-                  />
-                  {errors.lastName && <span className="error-message">{errors.lastName}</span>}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="username">
-                  <span className="label-icon">🏷️</span>
-                  Username *
-                </label>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  className={errors.username ? 'error' : ''}
-                  placeholder="Choose a unique username"
-                  disabled={loading}
-                />
-                {errors.username && <span className="error-message">{errors.username}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">
-                  <span className="label-icon">✉️</span>
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={errors.email ? 'error' : ''}
-                  placeholder="Enter your email address"
-                  disabled={loading}
-                />
-                {errors.email && <span className="error-message">{errors.email}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="phone">
-                  <span className="label-icon">📱</span>
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className={errors.phone ? 'error' : ''}
-                  placeholder="Enter your phone number"
-                  disabled={loading}
-                />
-                {errors.phone && <span className="error-message">{errors.phone}</span>}
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h3>Account Security</h3>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="password">
-                    <span className="label-icon">🔒</span>
-                    Password *
-                  </label>
-                  <div className="password-input-wrapper">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      id="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className={errors.password ? 'error' : ''}
-                      placeholder="Create a strong password"
-                      disabled={loading}
-                    />
-                    <button
-                      type="button"
-                      className="password-toggle"
-                      onClick={togglePasswordVisibility}
-                      disabled={loading}
-                    >
-                      {showPassword ? '🙈' : '👁️'}
-                    </button>
-                  </div>
-                  {errors.password && <span className="error-message">{errors.password}</span>}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="confirmPassword">
-                    <span className="label-icon">🔐</span>
-                    Confirm Password *
-                  </label>
-                  <div className="password-input-wrapper">
-                    <input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      className={errors.confirmPassword ? 'error' : ''}
-                      placeholder="Confirm your password"
-                      disabled={loading}
-                    />
-                    <button
-                      type="button"
-                      className="password-toggle"
-                      onClick={toggleConfirmPasswordVisibility}
-                      disabled={loading}
-                    >
-                      {showConfirmPassword ? '🙈' : '👁️'}
-                    </button>
-                  </div>
-                  {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
-                </div>
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h3>Farm Details</h3>
-              <div className="form-group">
-                <label htmlFor="farmName">
-                  <span className="label-icon">🌾</span>
-                  Farm Name *
-                </label>
-                <input
-                  type="text"
-                  id="farmName"
-                  name="farmName"
-                  value={formData.farmName}
-                  onChange={handleChange}
-                  className={errors.farmName ? 'error' : ''}
-                  placeholder="Enter your farm name"
-                  disabled={loading}
-                />
-                {errors.farmName && <span className="error-message">{errors.farmName}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="farmLocation">
-                  <span className="label-icon">📍</span>
-                  Farm Location *
-                </label>
-                <textarea
-                  id="farmLocation"
-                  name="farmLocation"
-                  value={formData.farmLocation}
-                  onChange={handleChange}
-                  className={errors.farmLocation ? 'error' : ''}
-                  placeholder="Enter your farm's detailed location and address"
-                  rows="3"
-                  disabled={loading}
-                />
-                {errors.farmLocation && <span className="error-message">{errors.farmLocation}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="city">
-                  <span className="label-icon">🏢</span>
-                  City *
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className={errors.city ? 'error' : ''}
-                  placeholder="Enter your city"
-                  disabled={loading}
-                />
-                {errors.city && <span className="error-message">{errors.city}</span>}
-              </div>
-            </div>
-
+        
+        <div className="form-group">
+          <label htmlFor="username">Username</label>
+          <div className="input-with-icon">
+            <FaUser className="input-icon" />
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className={errors.username ? 'error' : ''}
+              placeholder="johndoe123"
+            />
+          </div>
+          {errors.username && <span className="error-text">{errors.username}</span>}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <div className="input-with-icon">
+            <FaEnvelope className="input-icon" />
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={errors.email ? 'error' : ''}
+              placeholder="john.doe@example.com"
+            />
+          </div>
+          {errors.email && <span className="error-text">{errors.email}</span>}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="phone">Phone Number</label>
+          <div className="input-with-icon">
+            <FaPhone className="input-icon" />
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className={errors.phone ? 'error' : ''}
+              placeholder="e.g., 9876543210"
+            />
+          </div>
+          {errors.phone && <span className="error-text">{errors.phone}</span>}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <div className="input-with-icon password-input">
+            <FaLock className="input-icon" />
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={errors.password ? 'error' : ''}
+              placeholder="Min. 6 characters"
+            />
             <button 
-              type="submit" 
-              className="signup-button" 
-              disabled={loading}
+              type="button" 
+              className="password-toggle" 
+              onClick={togglePasswordVisibility}
             >
-              {loading ? (
-                <>
-                  <span className="loading-spinner"></span>
-                  Creating Account...
-                </>
-              ) : (
-                <>
-                  <span className="button-icon">🌱</span>
-                  Create Seller Account
-                </>
-              )}
+              {showPassword ? "Hide" : "Show"}
             </button>
-          </form>
+          </div>
+          {errors.password && <span className="error-text">{errors.password}</span>}
         </div>
-
-        <div className="signup-footer">
+        
+        <div className="form-group">
+          <label htmlFor="confirmPassword">Confirm Password</label>
+          <div className="input-with-icon password-input">
+            <FaLock className="input-icon" />
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className={errors.confirmPassword ? 'error' : ''}
+              placeholder="Confirm your password"
+            />
+            <button 
+              type="button" 
+              className="password-toggle" 
+              onClick={toggleConfirmPasswordVisibility}
+            >
+              {showConfirmPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+          {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="farmName">Farm Name</label>
+          <div className="input-with-icon">
+            <FaStore className="input-icon" />
+            <input
+              type="text"
+              id="farmName"
+              name="farmName"
+              value={formData.farmName}
+              onChange={handleChange}
+              className={errors.farmName ? 'error' : ''}
+              placeholder="Green Valley Farms"
+            />
+          </div>
+          {errors.farmName && <span className="error-text">{errors.farmName}</span>}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="farmLocation">Farm Location</label>
+          <div className="input-with-icon">
+            <FaMapMarkerAlt className="input-icon" />
+            <input
+              type="text"
+              id="farmLocation"
+              name="farmLocation"
+              value={formData.farmLocation}
+              onChange={handleChange}
+              className={errors.farmLocation ? 'error' : ''}
+              placeholder="e.g., Bhaktapur"
+            />
+          </div>
+          {errors.farmLocation && <span className="error-text">{errors.farmLocation}</span>}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="city">City</label>
+          <div className="input-with-icon">
+            <FaCity className="input-icon" />
+            <input
+              type="text"
+              id="city"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              className={errors.city ? 'error' : ''}
+              placeholder="e.g., Kathmandu"
+            />
+          </div>
+          {errors.city && <span className="error-text">{errors.city}</span>}
+        </div>
+        
+        <button type="submit" className="submit-btn" disabled={loading}>
+          {loading ? 'Creating Account...' : 'Create Account'}
+        </button>
+        <div className="auth-footer">
           <p>
-            Already have an account? {' '}
-            <Link to="/seller-login" className="login-link">
-              Sign in here
-            </Link>
-          </p>
-          <p>
-            Want to buy products? {' '}
-            <Link to="/buyer-signup" className="buyer-link">
-              Join as a Buyer
-            </Link>
+            Already have an account? <Link to="/seller-login">Sign in</Link>
           </p>
         </div>
-      </div>
-    </div>
+      </form>
+    </AttractiveAuth>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
 import ProductForm from '../components/ProductForm';
 import toast from 'react-hot-toast';
@@ -21,57 +21,85 @@ import {
 import NepaliWelcomeDialog from '../components/NepaliWelcomeDialog';
 import NepaliCalendar from '../components/NepaliCalendar';
 import '../styles/SellerDashboard.css';
+import { FaArrowLeft, FaBox, FaChartLine, FaClipboardList, FaShoppingCart, FaStore, FaTags, FaUsers } from 'react-icons/fa';
 
 const SellerDashboard = ({ user, onLogout }) => {
-  const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('overview')
-  const [showNepaliWelcome, setShowNepaliWelcome] = useState(true)
-  const [showNepaliCalendar, setShowNepaliCalendar] = useState(false)
-  const [dialogAnimationClass, setDialogAnimationClass] = useState('fade-in')
-  const { data: dashboardData, loading: dashboardLoading } = useSellerDashboard()
-  const { products, loading: productsLoading, addProduct, updateProduct, deleteProduct } = useSellerProducts()
-  const { orders, loading: ordersLoading, updateOrderStatus } = useSellerOrders()
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showNepaliWelcome, setShowNepaliWelcome] = useState(false); // Changed to false to prevent initial overlay
+  const [showNepaliCalendar, setShowNepaliCalendar] = useState(false);
+  const [dialogAnimationClass, setDialogAnimationClass] = useState('fade-in');
+  const { data: dashboardData, loading: dashboardLoading, refetch: refetchDashboard } = useSellerDashboard();
+  const { products, loading: productsLoading, addProduct, updateProduct: updateProductItem, deleteProduct: deleteProductItem } = useSellerProducts();
+  const { orders, loading: ordersLoading, updateOrderStatus } = useSellerOrders();
+  
+  // Ensure we have user data
+  const [userData, setUserData] = useState(user || {});
 
   useEffect(() => {
-    // Show Nepali welcome dialog every time dashboard loads
-    if (user) {
-      setShowNepaliWelcome(true)
-      setDialogAnimationClass('fade-in')
-      
-      // Add a slight delay for smooth entrance animation
-      setTimeout(() => {
-        setDialogAnimationClass('fade-in active')
-      }, 100)
+    // Check if user is logged in
+    const isLoggedIn = localStorage.getItem('sellerLoggedIn');
+    if (!isLoggedIn) {
+      toast.error('Please login to access the seller dashboard');
+      navigate('/seller-login');
+      return;
     }
-  }, [user])
+    
+    // Load user data from localStorage if not provided
+    if (!user || Object.keys(userData).length === 0) {
+      const storedUser = localStorage.getItem('sellerData');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setUserData(parsedUser);
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          toast.error('Error loading user data');
+          navigate('/seller-login');
+        }
+      } else {
+        toast.error('User data not found');
+        navigate('/seller-login');
+      }
+    }
+    
+    // Fetch dashboard data
+    refetchDashboard?.();
+  }, [user, navigate]);
 
   const handleLogout = () => {
-    onLogout()
-    navigate('/')
-    toast.success('Logged out successfully!')
-  }
+    if (onLogout) {
+      onLogout();
+    } else {
+      // Fallback logout if onLogout prop is not provided
+      localStorage.removeItem('sellerLoggedIn');
+      localStorage.removeItem('sellerData');
+    }
+    navigate('/');
+    toast.success('Logged out successfully!');
+  };
 
   const handleCloseNepaliWelcome = () => {
     // Add smooth exit animation before hiding
-    setDialogAnimationClass('fade-out')
+    setDialogAnimationClass('fade-out');
     setTimeout(() => {
-      setShowNepaliWelcome(false)
-    }, 300)
-  }
+      setShowNepaliWelcome(false);
+    }, 300);
+  };
 
   const handleSkipForSession = () => {
     // Skip dialog for current session only
-    sessionStorage.setItem('skipNepaliDialog', 'true')
-    handleCloseNepaliWelcome()
-  }
+    sessionStorage.setItem('skipNepaliDialog', 'true');
+    handleCloseNepaliWelcome();
+  };
 
   const handleShowNepaliWelcome = () => {
-    setShowNepaliWelcome(true)
-    setDialogAnimationClass('fade-in')
+    setShowNepaliWelcome(true);
+    setDialogAnimationClass('fade-in');
     setTimeout(() => {
-      setDialogAnimationClass('fade-in active')
-    }, 100)
-  }
+      setDialogAnimationClass('fade-in active');
+    }, 100);
+  };
 
   const handleShowNepaliCalendar = () => {
     setShowNepaliCalendar(true);
@@ -81,23 +109,277 @@ const SellerDashboard = ({ user, onLogout }) => {
     setShowNepaliCalendar(false);
   };
 
+  const handleGoBack = () => {
+    navigate(-1); // Navigate to the previous page
+  };
+
   // Check if user wants to skip dialog for current session
   useEffect(() => {
-    const skipDialog = sessionStorage.getItem('skipNepaliDialog')
+    const skipDialog = sessionStorage.getItem('skipNepaliDialog');
     if (skipDialog === 'true') {
-      setShowNepaliWelcome(false)
+      setShowNepaliWelcome(false);
     }
-  }, [])
+  }, []);
+
+  // Generate placeholder stats if data is not available
+  const stats = dashboardData?.stats || {
+    totalProducts: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+    totalEarnings: 0,
+    totalCustomers: 0
+  };
+
+  // Render dashboard content based on active tab
+  const renderDashboardContent = () => {
+    if (dashboardLoading) {
+      return (
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Loading dashboard data...</p>
+        </div>
+      );
+    }
+
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <div className="overview-tab">
+            <div className="back-button-container">
+              <button className="back-button" onClick={handleGoBack}>
+                <FaArrowLeft /> Back
+              </button>
+            </div>
+            
+            <h2>Welcome, {userData.firstName || 'Seller'}!</h2>
+            <p className="welcome-message">Here's an overview of your farm business</p>
+            
+            <div className="overview-stats">
+              <div className="stat-card">
+                <div className="stat-icon products-icon">
+                  <FaBox />
+                </div>
+                <div className="stat-content">
+                  <h3>{stats.totalProducts || 0}</h3>
+                  <p>Total Products</p>
+                </div>
+              </div>
+              
+              <div className="stat-card">
+                <div className="stat-icon orders-icon">
+                  <FaShoppingCart />
+                </div>
+                <div className="stat-content">
+                  <h3>{stats.totalOrders || 0}</h3>
+                  <p>Total Orders</p>
+                </div>
+              </div>
+              
+              <div className="stat-card">
+                <div className="stat-icon pending-icon">
+                  <FaClipboardList />
+                </div>
+                <div className="stat-content">
+                  <h3>{stats.pendingOrders || 0}</h3>
+                  <p>Pending Orders</p>
+                </div>
+              </div>
+              
+              <div className="stat-card">
+                <div className="stat-icon earnings-icon">
+                  <FaChartLine />
+                </div>
+                <div className="stat-content">
+                  <h3>Rs. {stats.totalEarnings?.toLocaleString() || 0}</h3>
+                  <p>Total Earnings</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="dashboard-sections">
+              <div className="recent-orders-section">
+                <h3>Recent Orders</h3>
+                {orders && orders.length > 0 ? (
+                  <div className="recent-orders-list">
+                    {orders.slice(0, 5).map(order => (
+                      <div className="order-item" key={order._id}>
+                        <div className="order-info">
+                          <p className="order-id">Order #{order._id?.substring(0, 8)}</p>
+                          <p className="order-date">{new Date(order.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="order-status">
+                          <span className={`status-badge status-${order.status}`}>
+                            {order.status}
+                          </span>
+                          <p className="order-amount">Rs. {order.total?.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-data-message">No recent orders found.</p>
+                )}
+                <button className="view-all-btn" onClick={() => setActiveTab('orders')}>
+                  View All Orders
+                </button>
+              </div>
+              
+              <div className="recent-products-section">
+                <h3>Recent Products</h3>
+                {products && products.length > 0 ? (
+                  <div className="recent-products-list">
+                    {products.slice(0, 5).map(product => (
+                      <div className="product-item" key={product._id}>
+                        <div className="product-info">
+                          <p className="product-name">{product.name}</p>
+                          <p className="product-category">{product.category?.name || 'Uncategorized'}</p>
+                        </div>
+                        <div className="product-price">
+                          <p>Rs. {product.price?.toLocaleString()}</p>
+                          <p className="product-stock">Stock: {product.stock || 0}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-data-message">No products found.</p>
+                )}
+                <button className="view-all-btn" onClick={() => setActiveTab('products')}>
+                  View All Products
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'products':
+        return (
+          <div className="products-tab">
+            <div className="back-button-container">
+              <button className="back-button" onClick={handleGoBack}>
+                <FaArrowLeft /> Back
+              </button>
+            </div>
+            <h2>Your Products</h2>
+            {productsLoading ? (
+              <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Loading products...</p>
+              </div>
+            ) : products && products.length > 0 ? (
+              <div className="products-list">
+                {products.map(product => (
+                  <div className="product-card" key={product._id}>
+                    <div className="product-image">
+                      {product.image ? (
+                        <img src={product.image} alt={product.name} />
+                      ) : (
+                        <div className="no-image">No Image</div>
+                      )}
+                    </div>
+                    <div className="product-details">
+                      <h3>{product.name}</h3>
+                      <p className="product-description">{product.description}</p>
+                      <div className="product-meta">
+                        <span className="product-price">Rs. {product.price?.toLocaleString()}</span>
+                        <span className="product-stock">Stock: {product.stock || 0}</span>
+                      </div>
+                    </div>
+                    <div className="product-actions">
+                      <button className="edit-btn">Edit</button>
+                      <button className="delete-btn">Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-products">
+                <p>You haven't added any products yet.</p>
+                <button className="add-product-btn">Add Your First Product</button>
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'orders':
+        return (
+          <div className="orders-tab">
+            <div className="back-button-container">
+              <button className="back-button" onClick={handleGoBack}>
+                <FaArrowLeft /> Back
+              </button>
+            </div>
+            <h2>Your Orders</h2>
+            {ordersLoading ? (
+              <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Loading orders...</p>
+              </div>
+            ) : orders && orders.length > 0 ? (
+              <div className="orders-list">
+                {orders.map(order => (
+                  <div className="order-card" key={order._id}>
+                    <div className="order-header">
+                      <h3>Order #{order._id?.substring(0, 8)}</h3>
+                      <span className={`status-badge status-${order.status}`}>
+                        {order.status}
+                      </span>
+                    </div>
+                    <div className="order-details">
+                      <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p><strong>Customer:</strong> {order.user?.firstName} {order.user?.lastName}</p>
+                      <p><strong>Total:</strong> Rs. {order.total?.toLocaleString()}</p>
+                    </div>
+                    <div className="order-actions">
+                      <button className="view-details-btn">View Details</button>
+                      <select 
+                        className="status-select"
+                        defaultValue={order.status}
+                        onChange={(e) => updateOrderStatus(order._id, e.target.value)}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-data-message">No orders found.</p>
+            )}
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="coming-soon-tab">
+            <div className="back-button-container">
+              <button className="back-button" onClick={handleGoBack}>
+                <FaArrowLeft /> Back
+              </button>
+            </div>
+            <h2>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
+            <div className="coming-soon">
+              <h3>Coming Soon!</h3>
+              <p>This feature is currently under development. Please check back later.</p>
+            </div>
+          </div>
+        );
+    }
+  };
 
   const sidebarItems = [
-    { key: 'overview', label: 'Overview', icon: '📊' },
-    { key: 'categories', label: 'Categories', icon: '📂' },
-    { key: 'products', label: 'Products', icon: '🍎' },
-    { key: 'orders', label: 'Orders', icon: '📦' },
-    { key: 'earnings', label: 'Earnings', icon: '💰' },
-    { key: 'customers', label: 'Customers', icon: '👥' },
-    { key: 'inventory', label: 'Inventory', icon: '📋' },
-    { key: 'farm', label: 'Farm', icon: '🏡' },
+    { key: 'overview', label: 'Overview', icon: <FaChartLine /> },
+    { key: 'categories', label: 'Categories', icon: <FaTags /> },
+    { key: 'products', label: 'Products', icon: <FaBox /> },
+    { key: 'orders', label: 'Orders', icon: <FaShoppingCart /> },
+    { key: 'earnings', label: 'Earnings', icon: <FaChartLine /> },
+    { key: 'customers', label: 'Customers', icon: <FaUsers /> },
+    { key: 'inventory', label: 'Inventory', icon: <FaClipboardList /> },
+    { key: 'farm', label: 'Farm', icon: <FaStore /> },
     { key: 'settings', label: 'Settings', icon: '⚙️' }
   ]
 
@@ -161,7 +443,7 @@ const SellerDashboard = ({ user, onLogout }) => {
         isOpen={showNepaliWelcome}
         onClose={handleCloseNepaliWelcome}
         onSkipForSession={handleSkipForSession}
-        user={user}
+        user={userData}
         animationClass={dialogAnimationClass}
       />
       <NepaliCalendar
@@ -169,7 +451,7 @@ const SellerDashboard = ({ user, onLogout }) => {
         onClose={handleCloseNepaliCalendar}
       />
       <DashboardLayout
-        user={user}
+        user={userData}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onLogout={handleLogout}
@@ -178,7 +460,7 @@ const SellerDashboard = ({ user, onLogout }) => {
         onHelpClick={handleShowNepaliWelcome}
         onCalendarClick={handleShowNepaliCalendar}
       >
-        {renderTabContent()}
+        {renderDashboardContent()}
       </DashboardLayout>
     </>
   )

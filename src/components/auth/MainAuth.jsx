@@ -176,6 +176,13 @@ const MainAuth = ({
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Handle tab switching between buyer and seller
+  const handleUserTypeChange = (type) => {
+    setUserType(type);
+    // Reset form errors when switching user types
+    setErrors({});
+  };
 
   // ... (rest of your existing code)
 

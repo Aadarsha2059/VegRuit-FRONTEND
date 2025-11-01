@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import BackButton from '../components/BackButton';
 import '../styles/AboutPage.css';
 
 const AboutPage = () => {
@@ -73,10 +74,7 @@ const AboutPage = () => {
       <section className="about-hero">
         <div className="hero-overlay">
           <div className="hero-content">
-            <Link to="/" className="back-button top-right">
-              <span className="back-icon">←</span>
-              Back to Home
-            </Link>
+            <BackButton />
             <h1 className="hero-title">About VegRuit</h1>
             <p className="hero-subtitle">
               Connecting Nepal's farmers with fresh food lovers since 2020

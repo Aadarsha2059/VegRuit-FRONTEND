@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import BackButton from '../components/BackButton';
 import '../styles/ContactPage.css';
 
 const ContactPage = () => {
@@ -111,10 +111,7 @@ const ContactPage = () => {
       <section className="contact-hero">
         <div className="hero-overlay">
           <div className="hero-content">
-            <Link to="/" className="back-button top-right">
-              <span className="back-icon">←</span>
-              Back to Home
-            </Link>
+            <BackButton />
             <h1 className="hero-title">Get in Touch</h1>
             <p className="hero-subtitle">
               We'd love to hear from you. Send us a message and we'll respond as soon as possible.
