@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { cartAPI } from '../services/cartAPI';
 import { orderAPI } from '../services/orderAPI';
 import { authAPI } from '../services/authAPI';
+import { productAPI } from '../services/productAPI';
 
 const BuyerDashboard = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -18,6 +19,28 @@ const BuyerDashboard = ({ user, onLogout }) => {
     orders: false,
     favorites: false
   });
+
+  // Fetch products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (activeTab === 'products') {
+        setLoading(prev => ({ ...prev, products: true }));
+        try {
+          const response = await productAPI.getPublicProducts();
+          if (response.success) {
+            setProducts(response.data.products || []);
+          }
+        } catch (error) {
+          console.error('Error fetching products:', error);
+          toast.error('Failed to load products');
+        } finally {
+          setLoading(prev => ({ ...prev, products: false }));
+        }
+      }
+    };
+    
+    fetchProducts();
+  }, [activeTab]);
 
   // Fetch cart items
   useEffect(() => {
@@ -52,16 +75,18 @@ const BuyerDashboard = ({ user, onLogout }) => {
           const response = await orderAPI.getBuyerOrders(token);
           if (response.success) {
             setOrders(response.data.orders || []);
+          } else {
+            throw new Error(response.message || 'Failed to load orders');
           }
         } catch (error) {
           console.error('Error fetching orders:', error);
-          toast.error('Failed to load orders');
+          toast.error('Failed to load orders: ' + error.message);
         } finally {
           setLoading(prev => ({ ...prev, orders: false }));
         }
       }
     };
-    
+  
     fetchOrders();
   }, [activeTab]);
 
@@ -107,6 +132,11 @@ const BuyerDashboard = ({ user, onLogout }) => {
       const response = await cartAPI.addToCart(token, productId, quantity);
       if (response.success) {
         toast.success('Item added to cart!');
+        // Update cart count in header
+        const cartResponse = await cartAPI.getCart(token);
+        if (cartResponse.success) {
+          setCartItems(cartResponse.data.items || []);
+        }
       } else {
         toast.error(response.message || 'Failed to add item to cart');
       }
@@ -318,47 +348,18 @@ const OverviewTab = ({ user, orders, favorites }) => {
 const ProductsTab = ({ products, onAddToCart }) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Mock products data for demonstration
-  const mockProducts = [
-    {
-      _id: '1',
-      name: 'Fresh Tomatoes',
-      price: 80,
-      unit: 'kg',
-      description: 'Organic red tomatoes from local farms',
-      stock: 50,
-      category: { name: 'Vegetables' },
-      images: []
-    },
-    {
-      _id: '2',
-      name: 'Green Apples',
-      price: 120,
-      unit: 'kg',
-      description: 'Crisp and juicy green apples',
-      stock: 30,
-      category: { name: 'Fruits' },
-      images: []
-    },
-    {
-      _id: '3',
-      name: 'Fresh Spinach',
-      price: 60,
-      unit: 'bunch',
-      description: 'Organic leafy greens',
-      stock: 40,
-      category: { name: 'Leafy Greens' },
-      images: []
-    }
-  ];
-
-  const filteredProducts = mockProducts.filter(product => {
+  // Filter products based on category and search term
+  const filteredProducts = products.filter(product => {
     const matchesCategory = categoryFilter === 'all' || 
       product.category?.name?.toLowerCase() === categoryFilter.toLowerCase();
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  // Get unique categories from products
+  const categories = [...new Set(products.map(product => product.category?.name).filter(Boolean))];
 
   return (
     <div className="products-tab">
@@ -378,48 +379,56 @@ const ProductsTab = ({ products, onAddToCart }) => {
             className="filter-select"
           >
             <option value="all">All Categories</option>
-            <option value="fruits">Fruits</option>
-            <option value="vegetables">Vegetables</option>
-            <option value="leafy greens">Leafy Greens</option>
+            {categories.map((category, index) => (
+              <option key={index} value={category.toLowerCase()}>{category}</option>
+            ))}
           </select>
         </div>
       </div>
       
-      <div className="products-grid">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <div key={product._id} className="product-item">
-              <div className="product-image">
-                <div className="placeholder-image">🥬</div>
+      {loading ? (
+        <div className="loading">Loading products...</div>
+      ) : (
+        <div className="products-grid">
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <div key={product._id} className="product-item">
+                <div className="product-image">
+                  {product.images && product.images.length > 0 ? (
+                    <img src={product.images[0]} alt={product.name} />
+                  ) : (
+                    <div className="placeholder-image">🥬</div>
+                  )}
+                </div>
+                <div className="product-info">
+                  <h4>{product.name}</h4>
+                  <p className="product-price">Rs. {product.price}/{product.unit}</p>
+                  <p className="product-description">{product.description}</p>
+                  <p className="product-stock">Stock: {product.stock} {product.unit}</p>
+                  {product.category && (
+                    <span className="product-category">{product.category.name}</span>
+                  )}
+                </div>
+                <div className="product-actions">
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => onAddToCart(product._id)}
+                    disabled={product.stock === 0}
+                  >
+                    {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  </button>
+                </div>
               </div>
-              <div className="product-info">
-                <h4>{product.name}</h4>
-                <p className="product-price">Rs. {product.price}/{product.unit}</p>
-                <p className="product-description">{product.description}</p>
-                <p className="product-stock">Stock: {product.stock} {product.unit}</p>
-                {product.category && (
-                  <span className="product-category">{product.category.name}</span>
-                )}
-              </div>
-              <div className="product-actions">
-                <button 
-                  className="btn btn-primary"
-                  onClick={() => onAddToCart(product._id)}
-                  disabled={product.stock === 0}
-                >
-                  {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-                </button>
-              </div>
+            ))
+          ) : (
+            <div className="no-products">
+              <div className="no-products-icon">🥬</div>
+              <h3>No Products Available</h3>
+              <p>Check back soon for fresh produce from our farmers!</p>
             </div>
-          ))
-        ) : (
-          <div className="no-products">
-            <div className="no-products-icon">🥬</div>
-            <h3>No Products Available</h3>
-            <p>Check back soon for fresh produce from our farmers!</p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -437,11 +446,40 @@ const CartTab = ({ cartItems, loading, onProceedToCheckout }) => {
     setQuantities(initialQuantities);
   }, [cartItems]);
 
-  const updateQuantity = (productId, newQuantity) => {
+  const updateQuantity = async (productId, newQuantity) => {
+    // Update local state immediately for UI responsiveness
     setQuantities(prev => ({
       ...prev,
       [productId]: newQuantity
     }));
+
+    // Update backend
+    try {
+      const token = authAPI.getAuthToken();
+      if (newQuantity > 0) {
+        await cartAPI.updateCartItem(token, productId, newQuantity);
+      } else {
+        await cartAPI.removeFromCart(token, productId);
+        // Update local state to remove item
+        setQuantities(prev => {
+          const newQuantities = { ...prev };
+          delete newQuantities[productId];
+          return newQuantities;
+        });
+      }
+    } catch (error) {
+      console.error('Error updating cart item:', error);
+      toast.error('Failed to update cart item');
+      // Revert local state on error
+      const cartResponse = await cartAPI.getCart(token);
+      if (cartResponse.success) {
+        const updatedQuantities = {};
+        cartResponse.data.items.forEach(item => {
+          updatedQuantities[item.product._id] = item.quantity;
+        });
+        setQuantities(updatedQuantities);
+      }
+    }
   };
 
   const removeFromCart = async (productId) => {
@@ -488,7 +526,11 @@ const CartTab = ({ cartItems, loading, onProceedToCheckout }) => {
             {cartItems.map((item) => (
               <div key={item.product._id} className="cart-item">
                 <div className="item-image">
-                  <div className="placeholder-image">🥬</div>
+                  {item.product.images && item.product.images.length > 0 ? (
+                    <img src={item.product.images[0]} alt={item.product.name} />
+                  ) : (
+                    <div className="placeholder-image">🥬</div>
+                  )}
                 </div>
                 <div className="item-details">
                   <h4>{item.product.name}</h4>
@@ -538,7 +580,7 @@ const CartTab = ({ cartItems, loading, onProceedToCheckout }) => {
               className="btn btn-primary checkout-btn"
               onClick={onProceedToCheckout}
             >
-              Proceed to Checkout
+              Proceed to Checkout (Cash on Delivery)
             </button>
           </div>
         </>
@@ -583,6 +625,7 @@ const OrdersTab = ({ orders, loading }) => {
             <option value="all">All Orders</option>
             <option value="pending">Pending</option>
             <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
             <option value="delivered">Delivered</option>
             <option value="cancelled">Cancelled</option>
           </select>
@@ -594,23 +637,33 @@ const OrdersTab = ({ orders, loading }) => {
           filteredOrders.map((order) => (
             <div key={order._id} className="order-item">
               <div className="order-header">
-                <h4>Order #{order._id.substring(0, 8)}</h4>
-                <span className={`order-status ${order.status.toLowerCase()}`}>
+                <div>
+                  <h4>Order #{order._id?.substring(0, 8)}</h4>
+                  <p className="order-date">{new Date(order.createdAt).toLocaleDateString()}</p>
+                </div>
+                <span className={`order-status status-${order.status?.toLowerCase()}`}>
                   {order.status}
                 </span>
               </div>
+              
               <div className="order-items">
+                <h5>Items Ordered</h5>
                 {order.items?.map((item, index) => (
                   <div key={index} className="order-item-detail">
-                    <span>{item.productName}</span>
-                    <span>Qty: {item.quantity}</span>
-                    <span>Rs. {item.price}</span>
+                    <span className="item-name">{item.productName}</span>
+                    <span className="item-quantity">Qty: {item.quantity} {item.unit || 'kg'}</span>
+                    <span className="item-price">Rs. {item.price}</span>
+                    <span className="item-total">Total: Rs. {(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
+              
               <div className="order-footer">
-                <span>Total: Rs. {order.total}</span>
-                <span>Date: {new Date(order.createdAt).toLocaleDateString()}</span>
+                <div className="order-totals">
+                  <p><strong>Subtotal:</strong> Rs. {order.totalAmount?.toFixed(2)}</p>
+                  <p><strong>Delivery Fee:</strong> Rs. {order.deliveryFee?.toFixed(2)}</p>
+                  <p className="order-total"><strong>Total:</strong> Rs. {order.finalAmount?.toFixed(2)}</p>
+                </div>
                 <div className="order-actions">
                   <button className="btn btn-outline">View Details</button>
                   {order.status === 'Delivered' && (

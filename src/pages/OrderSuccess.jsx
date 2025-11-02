@@ -1,66 +1,160 @@
-import React, { useEffect, useState } from 'react';
-import BackButton from '../components/BackButton';
+import React, { useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import './OrderSuccess.css'
 
 const OrderSuccess = () => {
-    const { orderId } = useParams();
-    const [order, setOrder] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { orderNumber, orderId } = location.state || {}
 
-    useEffect(() => {
-        const fetchOrder = async () => {
-            try {
-                const data = await getOrderById(orderId);
-                setOrder(data);
-            } catch (error) {
-                toast.error('Could not fetch order details.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchOrder();
-    }, [orderId]);
-
-    if (loading) {
-        return <div className="text-center p-10">Loading your order confirmation...</div>;
+  useEffect(() => {
+    // If no order data, redirect to dashboard
+    if (!orderNumber) {
+      navigate('/buyer-dashboard')
     }
+  }, [orderNumber, navigate])
 
-    if (!order) {
-        return <div className="text-center p-10">Could not find your order.</div>;
-    }
+  const handleViewOrder = () => {
+    navigate('/buyer-dashboard', { state: { activeTab: 'orders' } })
+  }
 
-    return (
-        <div className="container mx-auto p-8 flex justify-center items-center min-h-[70vh]">
-            <div className="bg-white p-10 rounded-xl shadow-2xl text-center max-w-lg">
-                <div className="mx-auto bg-green-100 rounded-full h-20 w-20 flex items-center justify-center">
-                    <svg className="h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
+  const handleContinueShopping = () => {
+    navigate('/buyer-dashboard', { state: { activeTab: 'products' } })
+  }
+
+  return (
+    <div className="order-success-page">
+      <div className="order-success-container">
+        <motion.div
+          className="success-content"
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div
+            className="success-icon"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+          >
+            ✅
+          </motion.div>
+          
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            Order Placed Successfully!
+          </motion.h1>
+          
+          <motion.p
+            className="success-message"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            Thank you for your order. Your fresh produce will be delivered soon!
+          </motion.p>
+
+          {orderNumber && (
+            <motion.div
+              className="order-details"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+            >
+              <h3>Order Details</h3>
+              <div className="order-info">
+                <div className="info-item">
+                  <span className="label">Order Number:</span>
+                  <span className="value">#{orderNumber}</span>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-800 mt-6">Thank You For Your Order!</h1>
-                <p className="text-gray-600 mt-2">Your order has been placed successfully.</p>
-
-                <div className="text-left bg-gray-50 p-4 rounded-lg mt-6">
-                    <p className="font-semibold">
-                        Order ID: <span className="font-normal text-gray-700">{order.orderId}</span>
-                    </p>
-                    <p className="font-semibold mt-2">
-                        Estimated Delivery: <span className="font-normal text-gray-700">{new Date(order.estimatedDeliveryTime).toLocaleDateString()}</span>
-                    </p>
+                <div className="info-item">
+                  <span className="label">Order Date:</span>
+                  <span className="value">{new Date().toLocaleDateString()}</span>
                 </div>
-
-                <p className="text-sm text-gray-500 mt-6">
-                    You will receive an email confirmation shortly. You can also track your order in your dashboard.
-                </p>
-
-                <div className="mt-8 flex justify-center gap-4">
-                    <BackButton />
-                    <Link to="/buyer-dashboard/orders" className="bg-green-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-green-700 transition">
-                        View My Orders
-                    </Link>
+                <div className="info-item">
+                  <span className="label">Payment Method:</span>
+                  <span className="value">Cash on Delivery</span>
                 </div>
+                <div className="info-item">
+                  <span className="label">Status:</span>
+                  <span className="value status-pending">Pending</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          <motion.div
+            className="next-steps"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.0 }}
+          >
+            <h3>What's Next?</h3>
+            <div className="steps">
+              <div className="step">
+                <div className="step-icon">📦</div>
+                <div className="step-content">
+                  <h4>Order Confirmation</h4>
+                  <p>We'll confirm your order and prepare it for delivery</p>
+                </div>
+              </div>
+              <div className="step">
+                <div className="step-icon">🚚</div>
+                <div className="step-content">
+                  <h4>Delivery</h4>
+                  <p>Your fresh produce will be delivered to your address</p>
+                </div>
+              </div>
+              <div className="step">
+                <div className="step-icon">⭐</div>
+                <div className="step-content">
+                  <h4>Review</h4>
+                  <p>Share your experience and rate the products</p>
+                </div>
+              </div>
             </div>
-        </div>
-    );
-};
+          </motion.div>
 
-export default OrderSuccess;
+          <motion.div
+            className="action-buttons"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+          >
+            <button 
+              className="btn btn-primary"
+              onClick={handleViewOrder}
+            >
+              View Order Details
+            </button>
+            <button 
+              className="btn btn-outline"
+              onClick={handleContinueShopping}
+            >
+              Continue Shopping
+            </button>
+          </motion.div>
+
+          <motion.div
+            className="contact-info"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4 }}
+          >
+            <p>
+              Need help? Contact us at{' '}
+              <a href="tel:+977-9800000000">+977-9800000000</a> or{' '}
+              <a href="mailto:support@tarkarishop.com">support@tarkarishop.com</a>
+            </p>
+          </motion.div>
+        </motion.div>
+      </div>
+    </div>
+  )
+}
+
+export default OrderSuccess

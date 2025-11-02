@@ -18,6 +18,9 @@ import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
 import ExplorePage from './pages/ExplorePage'
 import AuthPage from './pages/Auth'
+import Checkout from './pages/Checkout'
+import OrderSuccess from './pages/OrderSuccess'
+import OrderDetail from './pages/OrderDetail'
 // Add imports for new components
 import BuyerLogin from './pages/BuyerLogin'
 import SellerLogin from './pages/SellerLogin'
@@ -159,6 +162,23 @@ function App() {
             <Route path="/seller-login" element={<SellerLogin onAuthSuccess={handleAuthSuccess} />} />
             <Route path="/buyer-signup" element={<BuyerSignup onAuthSuccess={handleAuthSuccess} />} />
             <Route path="/seller-signup" element={<SellerSignup onAuthSuccess={handleAuthSuccess} />} />
+            
+            {/* Checkout and Order routes */}
+            <Route path="/checkout" element={
+              <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER} redirectTo="/buyer-login">
+                <Checkout />
+              </ProtectedRoute>
+            } />
+            <Route path="/order-success" element={
+              <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER} redirectTo="/buyer-login">
+                <OrderSuccess />
+              </ProtectedRoute>
+            } />
+            <Route path="/order-details/:orderId" element={
+              <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER} redirectTo="/buyer-login">
+                <OrderDetail />
+              </ProtectedRoute>
+            } />
             
             <Route path="/buyer-dashboard" element={
               <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER} redirectTo="/buyer-login">

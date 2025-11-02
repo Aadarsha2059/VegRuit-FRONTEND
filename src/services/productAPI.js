@@ -22,6 +22,14 @@ export const productAPI = {
       
       return data
     } catch (error) {
+      console.error('Get public products error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running.'
+        }
+      }
       return {
         success: false,
         message: error.message || 'Failed to fetch products'
@@ -91,6 +99,14 @@ export const productAPI = {
       
       return data
     } catch (error) {
+      console.error('Get seller products error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running.'
+        }
+      }
       return {
         success: false,
         message: error.message || 'Failed to fetch products'
@@ -101,13 +117,23 @@ export const productAPI = {
   // Create product
   async createProduct(token, productData) {
     try {
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      }
+      
+      // Don't set Content-Type for FormData, let browser set it with boundary
+      let body
+      if (productData instanceof FormData) {
+        body = productData
+      } else {
+        headers['Content-Type'] = 'application/json'
+        body = JSON.stringify(productData)
+      }
+
       const response = await fetch(`${API_BASE_URL}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(productData)
+        headers,
+        body
       })
       const data = await response.json()
       
@@ -127,13 +153,23 @@ export const productAPI = {
   // Update product
   async updateProduct(token, productId, productData) {
     try {
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      }
+      
+      // Don't set Content-Type for FormData, let browser set it with boundary
+      let body
+      if (productData instanceof FormData) {
+        body = productData
+      } else {
+        headers['Content-Type'] = 'application/json'
+        body = JSON.stringify(productData)
+      }
+
       const response = await fetch(`${API_BASE_URL}/${productId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(productData)
+        headers,
+        body
       })
       const data = await response.json()
       

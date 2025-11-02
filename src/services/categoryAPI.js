@@ -14,6 +14,14 @@ export const categoryAPI = {
       
       return data
     } catch (error) {
+      console.error('Get public categories error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running.'
+        }
+      }
       return {
         success: false,
         message: error.message || 'Failed to fetch categories'
@@ -47,13 +55,23 @@ export const categoryAPI = {
   // Create category
   async createCategory(token, categoryData) {
     try {
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      }
+      
+      // Don't set Content-Type for FormData, let browser set it with boundary
+      let body
+      if (categoryData instanceof FormData) {
+        body = categoryData
+      } else {
+        headers['Content-Type'] = 'application/json'
+        body = JSON.stringify(categoryData)
+      }
+
       const response = await fetch(`${API_BASE_URL}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(categoryData)
+        headers,
+        body
       })
       const data = await response.json()
       
@@ -73,13 +91,23 @@ export const categoryAPI = {
   // Update category
   async updateCategory(token, categoryId, categoryData) {
     try {
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      }
+      
+      // Don't set Content-Type for FormData, let browser set it with boundary
+      let body
+      if (categoryData instanceof FormData) {
+        body = categoryData
+      } else {
+        headers['Content-Type'] = 'application/json'
+        body = JSON.stringify(categoryData)
+      }
+
       const response = await fetch(`${API_BASE_URL}/${categoryId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(categoryData)
+        headers,
+        body
       })
       const data = await response.json()
       

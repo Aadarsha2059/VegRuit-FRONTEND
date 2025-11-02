@@ -314,14 +314,32 @@ const SellerCategoriesTab = ({ categories, onCreateCategory }) => {
     name: '',
     description: '',
     icon: '📦',
-    color: '#059669'
+    color: '#059669',
+    image: null
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onCreateCategory(formData)
+    
+    const formDataToSend = new FormData()
+    formDataToSend.append('name', formData.name)
+    formDataToSend.append('description', formData.description)
+    formDataToSend.append('icon', formData.icon)
+    formDataToSend.append('color', formData.color)
+    if (formData.image) {
+      formDataToSend.append('image', formData.image)
+    }
+
+    await onCreateCategory(formDataToSend)
     setShowForm(false)
-    setFormData({ name: '', description: '', icon: '📦', color: '#059669' })
+    setFormData({ name: '', description: '', icon: '📦', color: '#059669', image: null })
+  }
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setFormData({ ...formData, image: file })
+    }
   }
 
   return (
@@ -355,6 +373,24 @@ const SellerCategoriesTab = ({ categories, onCreateCategory }) => {
               />
             </div>
             <div className="form-group">
+              <label>Category Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="file-input"
+              />
+              {formData.image && (
+                <div className="image-preview">
+                  <img 
+                    src={URL.createObjectURL(formData.image)} 
+                    alt="Preview" 
+                    style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="form-group">
               <label>Icon</label>
               <input
                 type="text"
@@ -385,8 +421,18 @@ const SellerCategoriesTab = ({ categories, onCreateCategory }) => {
       <div className="categories-grid">
         {categories.map((category) => (
           <div key={category._id} className="category-card">
-            <div className="category-icon" style={{ backgroundColor: category.color }}>
-              {category.icon}
+            <div className="category-visual">
+              {category.image ? (
+                <img 
+                  src={`http://localhost:5001${category.image}`} 
+                  alt={category.name}
+                  className="category-image"
+                />
+              ) : (
+                <div className="category-icon" style={{ backgroundColor: category.color }}>
+                  {category.icon}
+                </div>
+              )}
             </div>
             <div className="category-info">
               <h4>{category.name}</h4>
@@ -414,12 +460,28 @@ const SellerProductsTab = ({ products, categories, onCreateProduct }) => {
     unit: 'kg',
     stock: '',
     category: '',
-    organic: false
+    organic: false,
+    images: []
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onCreateProduct(formData)
+    
+    const formDataToSend = new FormData()
+    formDataToSend.append('name', formData.name)
+    formDataToSend.append('description', formData.description)
+    formDataToSend.append('price', formData.price)
+    formDataToSend.append('unit', formData.unit)
+    formDataToSend.append('stock', formData.stock)
+    formDataToSend.append('category', formData.category)
+    formDataToSend.append('organic', formData.organic)
+    
+    // Append multiple images
+    formData.images.forEach((image, index) => {
+      formDataToSend.append('images', image)
+    })
+
+    await onCreateProduct(formDataToSend)
     setShowForm(false)
     setFormData({
       name: '',
@@ -428,8 +490,19 @@ const SellerProductsTab = ({ products, categories, onCreateProduct }) => {
       unit: 'kg',
       stock: '',
       category: '',
-      organic: false
+      organic: false,
+      images: []
     })
+  }
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files)
+    setFormData({ ...formData, images: files })
+  }
+
+  const removeImage = (index) => {
+    const newImages = formData.images.filter((_, i) => i !== index)
+    setFormData({ ...formData, images: newImages })
   }
 
   return (
@@ -476,6 +549,36 @@ const SellerProductsTab = ({ products, categories, onCreateProduct }) => {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows="3"
               />
+            </div>
+            <div className="form-group">
+              <label>Product Images (Max 5)</label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="file-input"
+              />
+              {formData.images.length > 0 && (
+                <div className="image-previews">
+                  {formData.images.map((image, index) => (
+                    <div key={index} className="image-preview">
+                      <img 
+                        src={URL.createObjectURL(image)} 
+                        alt={`Preview ${index + 1}`} 
+                        style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }}
+                      />
+                      <button 
+                        type="button" 
+                        className="remove-image"
+                        onClick={() => removeImage(index)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="form-row">
               <div className="form-group">
@@ -546,6 +649,7 @@ const SellerProductsTab = ({ products, categories, onCreateProduct }) => {
               <p className="product-price">Rs. {product.price}/{product.unit}</p>
               <p className="product-stock">Stock: {product.stock} {product.unit}</p>
               <span className={`status ${product.status}`}>{product.status}</span>
+              {product.organic && <span className="organic-badge">🌱 Organic</span>}
             </div>
             <div className="product-actions">
               <button className="btn btn-outline">Edit</button>

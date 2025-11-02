@@ -354,8 +354,16 @@ const BuyerOverviewTab = ({ user, data, products }) => {
                       {order.status}
                     </span>
                   </div>
-                  <div className="order-date">
-                    {new Date(order.orderDate).toLocaleDateString()}
+                  <div className="order-actions-mini">
+                    <span className="order-date">
+                      {new Date(order.orderDate).toLocaleDateString()}
+                    </span>
+                    <button 
+                      className="view-details-btn"
+                      onClick={() => navigate(`/order-details/${order._id}`)}
+                    >
+                      View Details
+                    </button>
                   </div>
                 </div>
               ))
@@ -601,7 +609,7 @@ const BuyerCartTab = ({ cart, onUpdateItem, onRemoveItem, onClearCart, onCreateO
       </div>
 
       <div className="cart-actions">
-        <button className="btn btn-primary" onClick={() => setShowCheckout(true)}>
+        <button className="btn btn-primary" onClick={() => window.location.href = '/checkout'}>
           Proceed to Checkout
         </button>
       </div>
@@ -644,48 +652,120 @@ const BuyerCartTab = ({ cart, onUpdateItem, onRemoveItem, onClearCart, onCreateO
 
 // Orders Tab Component
 const BuyerOrdersTab = ({ orders }) => {
+  const navigate = useNavigate()
+
+  const getStatusInfo = (status) => {
+    const statusMap = {
+      pending: { color: 'bg-yellow-100 text-yellow-800', icon: '⏳' },
+      confirmed: { color: 'bg-blue-100 text-blue-800', icon: '✅' },
+      processing: { color: 'bg-purple-100 text-purple-800', icon: '👨‍🍳' },
+      shipped: { color: 'bg-indigo-100 text-indigo-800', icon: '🚚' },
+      delivered: { color: 'bg-green-100 text-green-800', icon: '🎉' },
+      cancelled: { color: 'bg-red-100 text-red-800', icon: '❌' }
+    };
+    return statusMap[status] || statusMap.pending;
+  }
+
+  const handleViewDetails = (orderId) => {
+    navigate(`/order-details/${orderId}`)
+  }
+
   return (
     <div className="orders-tab">
       <div className="tab-header">
         <h3>Order History</h3>
+        <div className="orders-summary">
+          <span className="orders-count">{orders.length} orders</span>
+        </div>
       </div>
       
       <div className="orders-list">
         {orders.length > 0 ? (
-          orders.map((order) => (
-            <div key={order._id} className="order-item">
-              <div className="order-header">
-                <h4>Order #{order.orderNumber}</h4>
-                <span className={`order-status ${order.status.toLowerCase()}`}>
-                  {order.status}
-                </span>
-              </div>
-              <div className="order-items">
-                {order.items?.map((item, index) => (
-                  <div key={index} className="order-item-detail">
-                    <span>{item.productName}</span>
-                    <span>Qty: {item.quantity}</span>
-                    <span>Rs. {item.price}</span>
-                    <small>Seller: {item.sellerName}</small>
+          orders.map((order) => {
+            const statusInfo = getStatusInfo(order.status)
+            return (
+              <div key={order._id} className="enhanced-order-item">
+                <div className="order-card-header">
+                  <div className="order-info">
+                    <h4 className="order-number">#{order.orderNumber}</h4>
+                    <p className="order-date">
+                      {new Date(order.orderDate).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </p>
                   </div>
-                ))}
-              </div>
-              <div className="order-footer">
-                <span>Total: Rs. {order.total}</span>
-                <span>Date: {new Date(order.orderDate).toLocaleDateString()}</span>
-                <div className="order-actions">
-                  <button className="btn btn-outline">View Details</button>
-                  {order.status === 'delivered' && (
-                    <button className="btn btn-primary">Review</button>
+                  <div className={`order-status-badge ${statusInfo.color}`}>
+                    <span className="status-icon">{statusInfo.icon}</span>
+                    <span className="status-text">{order.status}</span>
+                  </div>
+                </div>
+                
+                <div className="order-items-preview">
+                  {order.items?.slice(0, 3).map((item, index) => (
+                    <div key={index} className="order-item-preview">
+                      <div className="item-image-small">
+                        <img 
+                          src={item.productImage || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=50&h=50&fit=crop'} 
+                          alt={item.productName}
+                          onError={(e) => {
+                            e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=50&h=50&fit=crop';
+                          }}
+                        />
+                      </div>
+                      <div className="item-info-small">
+                        <span className="item-name-small">{item.productName}</span>
+                        <span className="item-quantity-small">×{item.quantity}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {order.items?.length > 3 && (
+                    <div className="more-items">
+                      +{order.items.length - 3} more
+                    </div>
                   )}
                 </div>
+                
+                <div className="order-card-footer">
+                  <div className="order-total">
+                    <span className="total-label">Total:</span>
+                    <span className="total-amount">Rs. {order.total}</span>
+                  </div>
+                  <div className="order-actions">
+                    <button 
+                      className="btn btn-outline btn-sm"
+                      onClick={() => handleViewDetails(order._id)}
+                    >
+                      View Details
+                    </button>
+                    {order.status === 'delivered' && (
+                      <button className="btn btn-primary btn-sm">
+                        ⭐ Review
+                      </button>
+                    )}
+                    {['pending', 'confirmed'].includes(order.status) && (
+                      <button className="btn btn-outline btn-sm cancel-btn">
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))
+            )
+          })
         ) : (
-          <div className="no-data">
-            <p>No orders found</p>
-            <button className="btn btn-primary">Start Shopping</button>
+          <div className="no-orders-state">
+            <div className="no-orders-icon">📦</div>
+            <h3>No orders yet</h3>
+            <p>Start shopping to see your orders here</p>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setActiveTab('products')}
+            >
+              Browse Products
+            </button>
           </div>
         )}
       </div>

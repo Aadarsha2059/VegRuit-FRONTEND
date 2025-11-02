@@ -13,17 +13,27 @@ export const orderAPI = {
         },
         body: JSON.stringify(orderData)
       })
+      
       const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to create order')
+        console.error('Order creation failed:', data);
+        throw new Error(data.message || `Failed to create order. Server responded with status ${response.status}`);
       }
       
       return data
     } catch (error) {
+      console.error('Order creation error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running and try again.'
+        }
+      }
       return {
         success: false,
-        message: error.message || 'Failed to create order'
+        message: error.message || 'Failed to create order. Please check your network connection and try again.'
       }
     }
   },
@@ -52,6 +62,14 @@ export const orderAPI = {
       
       return data
     } catch (error) {
+      console.error('Get buyer orders error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running.'
+        }
+      }
       return {
         success: false,
         message: error.message || 'Failed to fetch orders'
@@ -83,6 +101,14 @@ export const orderAPI = {
       
       return data
     } catch (error) {
+      console.error('Get seller orders error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running.'
+        }
+      }
       return {
         success: false,
         message: error.message || 'Failed to fetch orders'
@@ -106,6 +132,14 @@ export const orderAPI = {
       
       return data
     } catch (error) {
+      console.error('Get order error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running.'
+        }
+      }
       return {
         success: false,
         message: error.message || 'Failed to fetch order'
@@ -132,6 +166,14 @@ export const orderAPI = {
       
       return data
     } catch (error) {
+      console.error('Update order status error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running.'
+        }
+      }
       return {
         success: false,
         message: error.message || 'Failed to update order status'
@@ -158,6 +200,14 @@ export const orderAPI = {
       
       return data
     } catch (error) {
+      console.error('Cancel order error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running.'
+        }
+      }
       return {
         success: false,
         message: error.message || 'Failed to cancel order'
@@ -181,6 +231,14 @@ export const orderAPI = {
       
       return data
     } catch (error) {
+      console.error('Get order stats error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running.'
+        }
+      }
       return {
         success: false,
         message: error.message || 'Failed to fetch order statistics'

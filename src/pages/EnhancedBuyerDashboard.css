@@ -805,3 +805,278 @@
     padding: 20px;
   }
 }
+/* Enhanced Order Items Styles */
+.orders-tab {
+  padding: 20px 0;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.orders-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.orders-count {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.enhanced-order-item {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s ease;
+}
+
+.enhanced-order-item:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.order-info h4.order-number {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.order-date {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.order-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.status-icon {
+  font-size: 1rem;
+}
+
+.status-text {
+  text-transform: capitalize;
+}
+
+.order-items-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.order-item-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.item-image-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.item-image-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-info-small {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-name-small {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #374151;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-quantity-small {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.more-items {
+  background: #e5e7eb;
+  color: #6b7280;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.order-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.order-total {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.total-label {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.total-amount {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.order-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+}
+
+.cancel-btn {
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+.cancel-btn:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.no-orders-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.no-orders-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.no-orders-state h3 {
+  color: #111827;
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+}
+
+.no-orders-state p {
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+/* Responsive Design for Orders */
+@media (max-width: 768px) {
+  .order-card-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .order-card-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .order-actions {
+    justify-content: center;
+  }
+  
+  .order-items-preview {
+    flex-wrap: wrap;
+  }
+  
+  .enhanced-order-item {
+    padding: 16px;
+  }
+}/* Mini Or
+der Actions */
+.order-actions-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.view-details-btn {
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-details-btn:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
+.order-date {
+  font-size: 0.875rem;
+  color: #6b7280;
+}

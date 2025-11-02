@@ -657,41 +657,68 @@ const SellerCategoriesTab = () => {
   )
 }
 
-// Category Card Component
-const CategoryCard = ({ category, onEdit, onDelete }) => (
-  <div className="category-card">
-    <div className="category-image">
-      {category.image ? (
-        <img src={category.image} alt={category.name} />
-      ) : (
-        <div className="placeholder-image">📂</div>
-      )}
-    </div>
-    <div className="category-info">
-      <div className="category-header">
-        <h4>{category.name}</h4>
-        <span className={`status-badge ${category.isActive ? 'active' : 'inactive'}`}>
-          {category.isActive ? '✅ Active' : '❌ Inactive'}
-        </span>
+// Category Card Component with Icons
+const CategoryCard = ({ category, onEdit, onDelete }) => {
+  // Define icons for common categories
+  const getCategoryIcon = (categoryName) => {
+    const lowerName = categoryName.toLowerCase();
+    if (lowerName.includes('fruit')) return '🍎';
+    if (lowerName.includes('vegetable')) return '🥕';
+    if (lowerName.includes('leaf') || lowerName.includes('green')) return '🥬';
+    if (lowerName.includes('herb')) return '🌿';
+    if (lowerName.includes('nut')) return '🥜';
+    if (lowerName.includes('grain')) return '🌾';
+    if (lowerName.includes('dairy')) return '🥛';
+    if (lowerName.includes('meat')) return '🍖';
+    if (lowerName.includes('fish') || lowerName.includes('seafood')) return '🐟';
+    if (lowerName.includes('egg')) return '🥚';
+    if (lowerName.includes('flower')) return '🌸';
+    if (lowerName.includes('spice') || lowerName.includes('masala')) return '🌶️';
+    if (lowerName.includes('oil')) return '🛢️';
+    if (lowerName.includes('honey')) return '🍯';
+    if (lowerName.includes('tea')) return '🍵';
+    if (lowerName.includes('coffee')) return '☕';
+    return '📦'; // Default icon
+  };
+
+  return (
+    <div className="category-card">
+      <div className="category-icon">
+        {getCategoryIcon(category.name)}
       </div>
-      {category.description && (
-        <p className="category-description">{category.description}</p>
-      )}
-      <div className="category-stats">
-        <span>📦 {category.productCount} products</span>
-        <span>📅 Created {new Date(category.createdAt).toLocaleDateString()}</span>
+      <div className="category-image">
+        {category.image ? (
+          <img src={category.image} alt={category.name} />
+        ) : (
+          <div className="placeholder-image">📂</div>
+        )}
+      </div>
+      <div className="category-info">
+        <div className="category-header">
+          <h4>{category.name}</h4>
+          <span className={`status-badge ${category.isActive ? 'active' : 'inactive'}`}>
+            {category.isActive ? '✅ Active' : '❌ Inactive'}
+          </span>
+        </div>
+        {category.description && (
+          <p className="category-description">{category.description}</p>
+        )}
+        <div className="category-stats">
+          <span>📦 {category.productCount} products</span>
+          <span>📅 Created {new Date(category.createdAt).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <div className="category-actions">
+        <button className="btn btn-outline" onClick={onEdit}>
+          Edit
+        </button>
+        <button className="btn btn-outline btn-danger" onClick={onDelete}>
+          Delete
+        </button>
       </div>
     </div>
-    <div className="category-actions">
-      <button className="btn btn-outline" onClick={onEdit}>
-        Edit
-      </button>
-      <button className="btn btn-outline btn-danger" onClick={onDelete}>
-        Delete
-      </button>
-    </div>
-  </div>
-)
+  )
+}
 
 // Category Form Component
 const CategoryForm = ({ category, onSubmit, onCancel }) => {
@@ -1193,42 +1220,54 @@ const SellerOrdersTab = ({ orders, loading, onUpdateStatus }) => {
       <div className="orders-list">
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
-            <div key={order.id} className="order-item">
+            <div key={order._id} className="order-item">
               <div className="order-header">
-                <h4>Order #{order.id}</h4>
-                <span className={`order-status ${order.status.toLowerCase()}`}>
+                <div>
+                  <h4>Order #{order._id?.substring(0, 8)}</h4>
+                  <p className="order-date">{new Date(order.createdAt).toLocaleDateString()}</p>
+                </div>
+                <span className={`order-status status-${order.status?.toLowerCase()}`}>
                   {order.status}
                 </span>
               </div>
+              
               <div className="order-customer">
-                <p><strong>Customer:</strong> {order.customer}</p>
-                <p><strong>Email:</strong> {order.customerEmail}</p>
-                <p><strong>Delivery:</strong> {order.deliveryAddress}</p>
+                <h5>Customer Information</h5>
+                <p><strong>Name:</strong> {order.user?.firstName} {order.user?.lastName}</p>
+                <p><strong>Phone:</strong> {order.deliveryAddress?.phone}</p>
+                <p><strong>Delivery Address:</strong> {order.deliveryAddress?.address}, {order.deliveryAddress?.city}</p>
               </div>
+              
               <div className="order-items">
+                <h5>Items Ordered</h5>
                 {order.items?.map((item, index) => (
                   <div key={index} className="order-item-detail">
-                    <span>{item.name}</span>
-                    <span>Qty: {item.quantity}</span>
-                    <span>Rs. {item.price}</span>
-                    <span>Total: Rs. {item.total}</span>
+                    <span className="item-name">{item.productName}</span>
+                    <span className="item-quantity">Qty: {item.quantity} {item.unit || 'kg'}</span>
+                    <span className="item-price">Rs. {item.price}</span>
+                    <span className="item-total">Total: Rs. {(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
+              
               <div className="order-footer">
-                <span>Total: Rs. {order.total}</span>
-                <span>Date: {new Date(order.date).toLocaleDateString()}</span>
+                <div className="order-totals">
+                  <p><strong>Subtotal:</strong> Rs. {order.totalAmount?.toFixed(2)}</p>
+                  <p><strong>Delivery Fee:</strong> Rs. {order.deliveryFee?.toFixed(2)}</p>
+                  <p className="order-total"><strong>Total:</strong> Rs. {order.finalAmount?.toFixed(2)}</p>
+                </div>
+                
                 <div className="order-actions">
                   <select
                     value={order.status}
-                    onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                    onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
                     className="status-select"
                   >
-                    <option value="Pending">Pending</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
                   </select>
                   <button className="btn btn-outline">View Details</button>
                 </div>

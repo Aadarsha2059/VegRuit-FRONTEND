@@ -18,6 +18,14 @@ export const cartAPI = {
       
       return data
     } catch (error) {
+      console.error('Get cart error:', error);
+      // Check if it's a connection error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Unable to connect to the server. Please make sure the backend server is running.'
+        }
+      }
       return {
         success: false,
         message: error.message || 'Failed to fetch cart'

@@ -1,146 +1,454 @@
 import React, { useEffect, useState } from 'react';
-import BackButton from '../components/BackButton';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
+import { orderAPI } from '../services/orderAPI';
+import { STORAGE_KEYS } from '../services/authAPI';
+import './OrderDetail.css';
 
 const OrderDetail = () => {
     const { orderId } = useParams();
+    const navigate = useNavigate();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
     useEffect(() => {
-        const fetchOrder = async () => {
-            try {
-                const data = await getOrderById(orderId);
-                setOrder(data);
-            } catch (error) {
-                toast.error('Could not fetch order details.');
-                console.error(error);
-            } finally {
-                setLoading(false);
+        if (!token) {
+            navigate('/buyer-login');
+            return;
+        }
+        fetchOrder();
+    }, [orderId, token, navigate]);
+
+    const fetchOrder = async () => {
+        try {
+            const response = await orderAPI.getOrder(token, orderId);
+            if (response.success) {
+                setOrder(response.data.order);
+            } else {
+                toast.error(response.message);
+                navigate('/buyer-dashboard');
+            }
+        } catch (error) {
+            console.error('Error fetching order:', error);
+            toast.error('Failed to load order details');
+            navigate('/buyer-dashboard');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getStatusInfo = (status) => {
+        const statusMap = {
+            pending: { 
+                color: 'bg-yellow-100 text-yellow-800 border-yellow-200', 
+                icon: '⏳', 
+                message: 'Your order is being processed',
+                progress: 20
+            },
+            confirmed: { 
+                color: 'bg-blue-100 text-blue-800 border-blue-200', 
+                icon: '✅', 
+                message: 'Order confirmed and being prepared',
+                progress: 40
+            },
+            processing: { 
+                color: 'bg-purple-100 text-purple-800 border-purple-200', 
+                icon: '👨‍🍳', 
+                message: 'Your fresh produce is being prepared',
+                progress: 60
+            },
+            shipped: { 
+                color: 'bg-indigo-100 text-indigo-800 border-indigo-200', 
+                icon: '🚚', 
+                message: 'On the way to your doorstep',
+                progress: 80
+            },
+            delivered: { 
+                color: 'bg-green-100 text-green-800 border-green-200', 
+                icon: '🎉', 
+                message: 'Successfully delivered!',
+                progress: 100
+            },
+            cancelled: { 
+                color: 'bg-red-100 text-red-800 border-red-200', 
+                icon: '❌', 
+                message: 'Order has been cancelled',
+                progress: 0
             }
         };
-        fetchOrder();
-    }, [orderId]);
+        return statusMap[status] || statusMap.pending;
+    };
 
-    const getStatusClass = (status) => {
-        const statusClasses = {
-            delivered: 'bg-green-100 text-green-800',
-            pending: 'bg-yellow-100 text-yellow-800',
-            cancelled: 'bg-red-100 text-red-800',
-            out_for_delivery: 'bg-blue-100 text-blue-800',
-            confirmed: 'bg-indigo-100 text-indigo-800',
-            preparing: 'bg-purple-100 text-purple-800',
-            ready: 'bg-pink-100 text-pink-800',
+    const getPaymentMethodInfo = (method) => {
+        const methodMap = {
+            cod: { name: 'Cash on Delivery', icon: '💵', description: 'Pay when you receive' },
+            khalti: { name: 'Khalti', icon: '📱', description: 'Digital wallet payment' },
+            esewa: { name: 'eSewa', icon: '💳', description: 'Online payment' }
         };
-        return statusClasses[status] || 'bg-gray-100 text-gray-800';
+        return methodMap[method] || methodMap.cod;
     };
 
     if (loading) {
-        return <div className="p-6 text-center">Loading order details...</div>;
+        return (
+            <div className="order-detail-loading">
+                <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <p>Loading your order details...</p>
+                </div>
+            </div>
+        );
     }
 
     if (!order) {
-        return <div className="p-6 text-center text-red-500">Failed to load order. Please try again.</div>;
+        return (
+            <div className="order-detail-error">
+                <div className="error-container">
+                    <div className="error-icon">😞</div>
+                    <h2>Order Not Found</h2>
+                    <p>We couldn't find the order you're looking for.</p>
+                    <button onClick={() => navigate('/buyer-dashboard')} className="btn btn-primary">
+                        Back to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
     }
 
-    return (
-        <div className="p-6 bg-gray-50 min-h-screen">
-            <div className="mb-6">
-                <BackButton />
-                <h1 className="text-3xl font-bold text-gray-800 mt-2">Order Details</h1>
-                <p className="text-gray-500">
-                    Order #{order.orderId} &bull; Placed on {new Date(order.createdAt).toLocaleDateString()}
-                </p>
-            </div>
+    const statusInfo = getStatusInfo(order.status);
+    const paymentInfo = getPaymentMethodInfo(order.paymentMethod);
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Content */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Order Items */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-xl font-semibold mb-4">Items in your order</h2>
-                        <div className="space-y-4">
-                            {order.items.map(item => (
-                                <div key={item.product._id} className="flex items-center gap-4 border-b border-gray-200 pb-4 last:border-b-0">
-                                    <img 
-                                        src={`http://localhost:5001${item.product.images[0]}`} 
-                                        alt={item.product.name} 
-                                        className="w-20 h-20 object-cover rounded-md"
-                                    />
-                                    <div className="flex-grow">
-                                        <h3 className="font-semibold text-gray-800">{item.product.name}</h3>
-                                        <p className="text-sm text-gray-500">Qty: {item.quantity} {item.unit}</p>
+    return (
+        <div className="order-detail-page">
+            <div className="order-detail-container">
+                {/* Header Section */}
+                <motion.div 
+                    className="order-header"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                >
+                    <button onClick={() => navigate('/buyer-dashboard')} className="back-button">
+                        <span className="back-icon">←</span>
+                        Back to Dashboard
+                    </button>
+                    
+                    <div className="order-title-section">
+                        <h1 className="order-title">Order Details</h1>
+                        <div className="order-meta">
+                            <span className="order-number">#{order.orderNumber}</span>
+                            <span className="order-date">
+                                Placed on {new Date(order.orderDate).toLocaleDateString('en-US', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Status Banner */}
+                    <motion.div 
+                        className={`status-banner ${statusInfo.color}`}
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                    >
+                        <div className="status-content">
+                            <span className="status-icon">{statusInfo.icon}</span>
+                            <div className="status-text">
+                                <h3 className="status-title">{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</h3>
+                                <p className="status-message">{statusInfo.message}</p>
+                            </div>
+                        </div>
+                        <div className="progress-bar">
+                            <div 
+                                className="progress-fill" 
+                                style={{ width: `${statusInfo.progress}%` }}
+                            ></div>
+                        </div>
+                    </motion.div>
+                </motion.div>
+
+                <div className="order-content">
+                    {/* Main Content */}
+                    <div className="order-main">
+                        {/* Order Items */}
+                        <motion.div 
+                            className="order-section order-items-section"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3, duration: 0.6 }}
+                        >
+                            <div className="section-header">
+                                <h2 className="section-title">
+                                    <span className="section-icon">🛒</span>
+                                    Items in Your Order
+                                </h2>
+                                <span className="items-count">{order.items?.length || 0} items</span>
+                            </div>
+                            
+                            <div className="items-list">
+                                {order.items?.map((item, index) => (
+                                    <motion.div 
+                                        key={item._id || index}
+                                        className="order-item"
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.4 + index * 0.1, duration: 0.5 }}
+                                    >
+                                        <div className="item-image">
+                                            <img 
+                                                src={item.productImage || `http://localhost:5001${item.productImage}` || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop'} 
+                                                alt={item.productName}
+                                                onError={(e) => {
+                                                    e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop';
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="item-details">
+                                            <h3 className="item-name">{item.productName}</h3>
+                                            <p className="item-seller">by {item.sellerName}</p>
+                                            <div className="item-specs">
+                                                <span className="item-quantity">Qty: {item.quantity}</span>
+                                                <span className="item-unit">{item.unit}</span>
+                                            </div>
+                                        </div>
+                                        <div className="item-pricing">
+                                            <div className="item-total">Rs. {item.total}</div>
+                                            <div className="item-unit-price">Rs. {item.price} per {item.unit}</div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                        {/* Order Timeline */}
+                        <motion.div 
+                            className="order-section timeline-section"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.5, duration: 0.6 }}
+                        >
+                            <div className="section-header">
+                                <h2 className="section-title">
+                                    <span className="section-icon">📍</span>
+                                    Order Timeline
+                                </h2>
+                            </div>
+                            
+                            <div className="timeline">
+                                <div className="timeline-item active">
+                                    <div className="timeline-marker">
+                                        <span className="timeline-icon">📝</span>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-semibold text-gray-800">Rs. {(item.price * item.quantity).toFixed(2)}</p>
-                                        <p className="text-sm text-gray-500">Rs. {item.price.toFixed(2)} each</p>
+                                    <div className="timeline-content">
+                                        <h4>Order Placed</h4>
+                                        <p>{new Date(order.orderDate).toLocaleString()}</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Order Tracking */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-xl font-semibold mb-4">Order Tracking</h2>
-                        <ol className="relative border-l border-gray-200">
-                            {order.trackingUpdates.map((update, index) => (
-                                <li key={index} className="mb-6 ml-6">
-                                    <span className={`absolute flex items-center justify-center w-6 h-6 rounded-full -left-3 ring-8 ring-white ${getStatusClass(update.status)}`}>
-                                        {/* You can add icons here */}
-                                    </span>
-                                    <h3 className="flex items-center mb-1 text-lg font-semibold text-gray-900 capitalize">
-                                        {update.status.replace('_', ' ')}
-                                    </h3>
-                                    <time className="block mb-2 text-sm font-normal leading-none text-gray-400">
-                                        {new Date(update.timestamp).toLocaleString()}
-                                    </time>
-                                    <p className="text-base font-normal text-gray-500">{update.message}</p>
-                                </li>
-                            ))}
-                        </ol>
-                    </div>
-                </div>
-
-                {/* Sidebar */}
-                <div className="space-y-8">
-                    {/* Order Summary */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-xl font-semibold mb-4">Summary</h2>
-                        <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Status:</span>
-                                <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${getStatusClass(order.status)}`}>
-                                    {order.status.replace('_', ' ')}
-                                </span>
+                                
+                                {order.confirmedAt && (
+                                    <div className="timeline-item active">
+                                        <div className="timeline-marker">
+                                            <span className="timeline-icon">✅</span>
+                                        </div>
+                                        <div className="timeline-content">
+                                            <h4>Order Confirmed</h4>
+                                            <p>{new Date(order.confirmedAt).toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {order.processedAt && (
+                                    <div className="timeline-item active">
+                                        <div className="timeline-marker">
+                                            <span className="timeline-icon">👨‍🍳</span>
+                                        </div>
+                                        <div className="timeline-content">
+                                            <h4>Being Prepared</h4>
+                                            <p>{new Date(order.processedAt).toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {order.shippedAt && (
+                                    <div className="timeline-item active">
+                                        <div className="timeline-marker">
+                                            <span className="timeline-icon">🚚</span>
+                                        </div>
+                                        <div className="timeline-content">
+                                            <h4>Out for Delivery</h4>
+                                            <p>{new Date(order.shippedAt).toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div className={`timeline-item ${order.status === 'delivered' ? 'active' : 'pending'}`}>
+                                    <div className="timeline-marker">
+                                        <span className="timeline-icon">🎉</span>
+                                    </div>
+                                    <div className="timeline-content">
+                                        <h4>Delivered</h4>
+                                        <p>{order.deliveredAt ? new Date(order.deliveredAt).toLocaleString() : 'Pending delivery'}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex justify-between"><span className="text-gray-600">Subtotal:</span><span className="font-medium">Rs. {order.totalAmount.toFixed(2)}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-600">Delivery Fee:</span><span className="font-medium">Rs. {order.deliveryFee.toFixed(2)}</span></div>
-                            <div className="flex justify-between pt-2 border-t mt-2 text-base font-bold">
-                                <span>Total:</span>
-                                <span>Rs. {order.finalAmount.toFixed(2)}</span>
+                        </motion.div>
+                    </div>
+
+                    {/* Sidebar */}
+                    <div className="order-sidebar">
+                        {/* Order Summary */}
+                        <motion.div 
+                            className="order-section summary-section"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.4, duration: 0.6 }}
+                        >
+                            <div className="section-header">
+                                <h2 className="section-title">
+                                    <span className="section-icon">💰</span>
+                                    Order Summary
+                                </h2>
                             </div>
-                        </div>
-                    </div>
+                            
+                            <div className="summary-details">
+                                <div className="summary-row">
+                                    <span>Subtotal</span>
+                                    <span>Rs. {order.subtotal}</span>
+                                </div>
+                                <div className="summary-row">
+                                    <span>Delivery Fee</span>
+                                    <span>Rs. {order.deliveryFee}</span>
+                                </div>
+                                <div className="summary-row">
+                                    <span>Tax (13%)</span>
+                                    <span>Rs. {order.tax}</span>
+                                </div>
+                                {order.discount > 0 && (
+                                    <div className="summary-row discount">
+                                        <span>Discount</span>
+                                        <span>-Rs. {order.discount}</span>
+                                    </div>
+                                )}
+                                <div className="summary-row total">
+                                    <span>Total Amount</span>
+                                    <span>Rs. {order.total}</span>
+                                </div>
+                            </div>
+                        </motion.div>
 
-                    {/* Seller Info */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-xl font-semibold mb-4">Seller Information</h2>
-                        <div className="space-y-1 text-sm">
-                            <p className="font-semibold text-gray-800">{order.seller.farmName}</p>
-                            <p className="text-gray-600">{order.seller.firstName} {order.seller.lastName}</p>
-                            <p className="text-gray-600">{order.seller.phone}</p>
-                        </div>
-                    </div>
+                        {/* Payment Information */}
+                        <motion.div 
+                            className="order-section payment-section"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.5, duration: 0.6 }}
+                        >
+                            <div className="section-header">
+                                <h2 className="section-title">
+                                    <span className="section-icon">💳</span>
+                                    Payment Method
+                                </h2>
+                            </div>
+                            
+                            <div className="payment-info">
+                                <div className="payment-method">
+                                    <span className="payment-icon">{paymentInfo.icon}</span>
+                                    <div className="payment-details">
+                                        <h4>{paymentInfo.name}</h4>
+                                        <p>{paymentInfo.description}</p>
+                                    </div>
+                                </div>
+                                <div className={`payment-status ${order.paymentStatus}`}>
+                                    {order.paymentStatus === 'paid' ? '✅ Paid' : '⏳ Pending'}
+                                </div>
+                            </div>
+                        </motion.div>
 
-                    {/* Delivery Address */}
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
-                        <div className="space-y-1 text-sm text-gray-600">
-                            <p className="font-semibold text-gray-800">{order.deliveryAddress.fullName}</p>
-                            <p>{order.deliveryAddress.address}</p>
-                            <p>{order.deliveryAddress.city}</p>
-                            <p>Phone: {order.deliveryAddress.phone}</p>
-                        </div>
+                        {/* Delivery Information */}
+                        <motion.div 
+                            className="order-section delivery-section"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.6, duration: 0.6 }}
+                        >
+                            <div className="section-header">
+                                <h2 className="section-title">
+                                    <span className="section-icon">🏠</span>
+                                    Delivery Address
+                                </h2>
+                            </div>
+                            
+                            <div className="delivery-info">
+                                <div className="address-details">
+                                    <p className="recipient-name">{order.buyerName}</p>
+                                    <p className="address-line">{order.deliveryAddress?.street}</p>
+                                    <p className="address-line">{order.deliveryAddress?.city}, {order.deliveryAddress?.state}</p>
+                                    <p className="address-line">{order.deliveryAddress?.country}</p>
+                                    {order.deliveryAddress?.postalCode && (
+                                        <p className="postal-code">Postal Code: {order.deliveryAddress.postalCode}</p>
+                                    )}
+                                </div>
+                                <div className="contact-info">
+                                    <p className="phone">📞 {order.buyerPhone}</p>
+                                    <p className="email">📧 {order.buyerEmail}</p>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Seller Information */}
+                        {order.items && order.items.length > 0 && (
+                            <motion.div 
+                                className="order-section seller-section"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.7, duration: 0.6 }}
+                            >
+                                <div className="section-header">
+                                    <h2 className="section-title">
+                                        <span className="section-icon">👨‍🌾</span>
+                                        Seller Information
+                                    </h2>
+                                </div>
+                                
+                                <div className="seller-info">
+                                    <div className="seller-details">
+                                        <h4>{order.items[0]?.sellerName || 'Local Farmer'}</h4>
+                                        <p className="seller-type">Fresh Produce Supplier</p>
+                                    </div>
+                                    <div className="seller-rating">
+                                        <div className="rating-stars">⭐⭐⭐⭐⭐</div>
+                                        <span className="rating-text">4.8 (124 reviews)</span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <motion.div 
+                            className="order-actions"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.8, duration: 0.6 }}
+                        >
+                            {order.status === 'delivered' && (
+                                <button className="btn btn-primary">
+                                    ⭐ Rate & Review
+                                </button>
+                            )}
+                            {['pending', 'confirmed'].includes(order.status) && (
+                                <button className="btn btn-outline">
+                                    ❌ Cancel Order
+                                </button>
+                            )}
+                            <button className="btn btn-outline">
+                                📞 Contact Support
+                            </button>
+                        </motion.div>
                     </div>
                 </div>
             </div>
