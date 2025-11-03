@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5001/api/cart'
+const API_BASE_URL = 'http://localhost:50011/api/cart'
 
 // Cart API functions
 export const cartAPI = {

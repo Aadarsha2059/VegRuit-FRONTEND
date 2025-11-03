@@ -1,9 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import BackButton from '../components/BackButton';
 import '../styles/AboutPage.css';
 
 const AboutPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
   const teamMembers = [
     {
       name: "Ram Sharma",
@@ -69,39 +88,46 @@ const AboutPage = () => {
   ];
 
   return (
-    <div className="about-page">
+    <motion.div 
+      className="about-page"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
       {/* Hero Section */}
-      <section className="about-hero">
+      <motion.section className="about-hero" variants={fadeInUp}>
         <div className="hero-overlay">
           <div className="hero-content">
             <BackButton />
-            <h1 className="hero-title">About VegRuit</h1>
-            <p className="hero-subtitle">
+            <motion.h1 className="hero-title" variants={fadeInUp}>
+              About TarkariShop
+            </motion.h1>
+            <motion.p className="hero-subtitle" variants={fadeInUp}>
               Connecting Nepal's farmers with fresh food lovers since 2020
-            </p>
-            <div className="hero-cta">
+            </motion.p>
+            <motion.div className="hero-cta" variants={fadeInUp}>
               <Link to="/explore" className="hero-button primary">
                 Explore Products
               </Link>
               <Link to="/contact" className="hero-button secondary">
                 Get in Touch
               </Link>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Story Section */}
-      <section className="story-section">
+      <motion.section className="story-section" variants={fadeInUp}>
         <div className="container">
-          <div className="section-header">
+          <motion.div className="section-header" variants={fadeInUp}>
             <h2 className="section-title">Our Story</h2>
             <p className="section-subtitle">How we started and where we're going</p>
-          </div>
-          <div className="story-content">
-            <div className="story-text">
+          </motion.div>
+          <motion.div className="story-content" variants={staggerContainer}>
+            <motion.div className="story-text" variants={fadeInUp}>
               <p>
-                VegRuit was born from a simple idea: to bridge the gap between Nepal's hardworking farmers 
+                TarkariShop was born from a simple idea: to bridge the gap between Nepal's hardworking farmers 
                 and urban consumers who value fresh, quality produce. Founded in 2020 in the heart of Kathmandu, 
                 we started as a small initiative to help local farmers reach more customers while providing 
                 city dwellers with access to the freshest vegetables and fruits.
@@ -115,52 +141,52 @@ const AboutPage = () => {
                 Our mission goes beyond just selling vegetables and fruits. We're building a sustainable 
                 ecosystem that empowers farmers, delights customers, and contributes to a healthier Nepal.
               </p>
-              <div className="story-highlight">
+              <motion.div className="story-highlight" variants={fadeInUp}>
                 <blockquote>
                   "Our goal is to make fresh, healthy food accessible to everyone while supporting our local farming communities."
                 </blockquote>
                 <cite>- AADARSHA BABU DHAKAL, Founder & CEO</cite>
-              </div>
-            </div>
-            <div className="story-image">
+              </motion.div>
+            </motion.div>
+            <motion.div className="story-image" variants={fadeInUp}>
               <img 
                 src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&h=400&fit=crop" 
                 alt="Farmers in Nepal"
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Values Section */}
-      <section className="values-section">
+      <motion.section className="values-section" variants={fadeInUp}>
         <div className="container">
-          <div className="section-header">
+          <motion.div className="section-header" variants={fadeInUp}>
             <h2 className="section-title">Our Values</h2>
             <p className="section-subtitle">Principles that guide everything we do</p>
-          </div>
-          <div className="values-grid">
+          </motion.div>
+          <motion.div className="values-grid" variants={staggerContainer}>
             {values.map((value, index) => (
-              <div key={index} className="value-card">
+              <motion.div key={index} className="value-card" variants={fadeInUp}>
                 <div className="value-icon">{value.icon}</div>
                 <h3>{value.title}</h3>
                 <p>{value.description}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Team Section */}
-      <section className="team-section">
+      <motion.section className="team-section" variants={fadeInUp}>
         <div className="container">
-          <div className="section-header">
+          <motion.div className="section-header" variants={fadeInUp}>
             <h2 className="section-title">Meet Our Team</h2>
-            <p className="section-subtitle">The passionate people behind VegRuit</p>
-          </div>
-          <div className="team-grid">
+            <p className="section-subtitle">The passionate people behind TarkariShop</p>
+          </motion.div>
+          <motion.div className="team-grid" variants={staggerContainer}>
             {teamMembers.map((member, index) => (
-              <div key={index} className="team-card">
+              <motion.div key={index} className="team-card" variants={fadeInUp}>
                 <div className="member-image">
                   <img src={member.image} alt={member.name} />
                 </div>
@@ -169,11 +195,11 @@ const AboutPage = () => {
                   <p className="member-role">{member.role}</p>
                   <p className="member-description">{member.description}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Timeline Section */}
       <section className="timeline-section">
@@ -243,7 +269,7 @@ const AboutPage = () => {
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 };
 

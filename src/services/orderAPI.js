@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5001/api/orders'
+const API_BASE_URL = 'http://localhost:50011/api/orders'
 
 // Order API functions
 export const orderAPI = {
@@ -143,6 +143,59 @@ export const orderAPI = {
       return {
         success: false,
         message: error.message || 'Failed to fetch order'
+      }
+    }
+  },
+
+  // Accept order (seller only)
+  async acceptOrder(token, orderId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${orderId}/accept`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to accept order')
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Accept order error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to accept order'
+      }
+    }
+  },
+
+  // Reject order (seller only)
+  async rejectOrder(token, orderId, reason = null) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${orderId}/reject`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ reason })
+      })
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to reject order')
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Reject order error:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to reject order'
       }
     }
   },

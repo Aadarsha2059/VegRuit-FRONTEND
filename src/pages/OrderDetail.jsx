@@ -44,26 +44,38 @@ const OrderDetail = () => {
             pending: { 
                 color: 'bg-yellow-100 text-yellow-800 border-yellow-200', 
                 icon: '⏳', 
-                message: 'Your order is being processed',
-                progress: 20
+                message: 'Waiting for seller confirmation',
+                progress: 10
+            },
+            approved: { 
+                color: 'bg-green-100 text-green-800 border-green-200', 
+                icon: '✅', 
+                message: 'Order approved by seller',
+                progress: 30
+            },
+            rejected: { 
+                color: 'bg-red-100 text-red-800 border-red-200', 
+                icon: '❌', 
+                message: 'Order rejected by seller',
+                progress: 0
             },
             confirmed: { 
                 color: 'bg-blue-100 text-blue-800 border-blue-200', 
                 icon: '✅', 
                 message: 'Order confirmed and being prepared',
-                progress: 40
+                progress: 50
             },
             processing: { 
                 color: 'bg-purple-100 text-purple-800 border-purple-200', 
                 icon: '👨‍🍳', 
                 message: 'Your fresh produce is being prepared',
-                progress: 60
+                progress: 70
             },
             shipped: { 
                 color: 'bg-indigo-100 text-indigo-800 border-indigo-200', 
                 icon: '🚚', 
                 message: 'On the way to your doorstep',
-                progress: 80
+                progress: 90
             },
             delivered: { 
                 color: 'bg-green-100 text-green-800 border-green-200', 
@@ -201,7 +213,7 @@ const OrderDetail = () => {
                                     >
                                         <div className="item-image">
                                             <img 
-                                                src={item.productImage || `http://localhost:5001${item.productImage}` || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop'} 
+                                                src={item.productImage || `http://localhost:50011${item.productImage}` || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop'} 
                                                 alt={item.productName}
                                                 onError={(e) => {
                                                     e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop';

@@ -15,7 +15,7 @@ const Products = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
-  const BACKEND_BASE = 'http://localhost:5001';
+  const BACKEND_BASE = 'http://localhost:50011';
 
   useEffect(() => {
     const fetchData = async () => {

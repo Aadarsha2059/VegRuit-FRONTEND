@@ -201,7 +201,7 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
     { key: 'overview', label: 'Overview', icon: '📊' },
     { key: 'products', label: 'Browse Products', icon: '🛒' },
     { key: 'cart', label: 'Shopping Cart', icon: '🛍️' },
-    { key: 'orders', label: 'My Orders', icon: '📦' },
+    { key: 'orders', label: 'Order History', icon: '📦' },
     { key: 'favorites', label: 'Favorites', icon: '❤️' },
     { key: 'payments', label: 'Payments', icon: '💳' },
     { key: 'delivery', label: 'Delivery', icon: '🚚' },
@@ -215,7 +215,7 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
       overview: 'Dashboard Overview',
       products: 'Browse Fresh Products',
       cart: 'Shopping Cart',
-      orders: 'Order History',
+      orders: 'Order History & Tracking',
       favorites: 'Favorite Items',
       payments: 'Payment Methods',
       delivery: 'Delivery Addresses',
@@ -389,7 +389,7 @@ const BuyerOverviewTab = ({ user, data, products }) => {
                 <div className="product-image">
                   {product.images && product.images.length > 0 ? (
                     <img 
-                      src={`http://localhost:5001${product.images[0]}`} 
+                      src={`http://localhost:50011${product.images[0]}`} 
                       alt={product.name}
                       onError={(e) => {
                         e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop'
@@ -424,89 +424,215 @@ const BuyerOverviewTab = ({ user, data, products }) => {
 const BuyerProductsTab = ({ products, categories, onAddToCart }) => {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [sortBy, setSortBy] = useState('name')
+  const [viewMode, setViewMode] = useState('grid')
 
   const filteredProducts = products.filter(product => {
     const categoryMatch = selectedCategory === 'all' || product.category?._id === selectedCategory
     const searchMatch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                       product.description?.toLowerCase().includes(searchTerm.toLowerCase())
     return categoryMatch && searchMatch
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'price-low':
+        return a.price - b.price
+      case 'price-high':
+        return b.price - a.price
+      case 'rating':
+        return (b.averageRating || 0) - (a.averageRating || 0)
+      case 'name':
+      default:
+        return a.name.localeCompare(b.name)
+    }
   })
 
   return (
-    <div className="products-tab">
-      <div className="tab-header">
-        <h3>Available Products</h3>
-        <div className="product-filters">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          <select 
-            value={selectedCategory} 
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Categories</option>
-            {categories.map(category => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+    <div className="products-tab-container">
+      <div className="products-tab-header">
+        <div className="header-content">
+          <h2 className="tab-title">Browse Fresh Products</h2>
+          <p className="tab-subtitle">Discover fresh produce from local farmers</p>
+        </div>
+        
+        <div className="products-filters-section">
+          <div className="filters-row">
+            <div className="search-filter">
+              <input
+                type="text"
+                placeholder="🔍 Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+            </div>
+            
+            <div className="category-filter">
+              <select 
+                value={selectedCategory} 
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Categories ({products.length})</option>
+                {categories.map(category => (
+                  <option key={category._id} value={category._id}>
+                    {category.name} ({products.filter(p => p.category?._id === category._id).length})
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="sort-filter">
+              <select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value)}
+                className="filter-select"
+              >
+                <option value="name">Sort by Name</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Highest Rated</option>
+              </select>
+            </div>
+            
+            <div className="view-toggle">
+              <button 
+                className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Grid View"
+              >
+                ⊞
+              </button>
+              <button 
+                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                ☰
+              </button>
+            </div>
+          </div>
+          
+          <div className="results-info">
+            <span className="results-count">
+              Showing {filteredProducts.length} of {products.length} products
+            </span>
+          </div>
         </div>
       </div>
       
-      <div className="products-grid">
+      <div className="products-content">
         {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <div key={product._id} className="product-item">
-              <div className="product-image">
-                {product.images && product.images.length > 0 ? (
-                  <img 
-                    src={`http://localhost:5001${product.images[0]}`} 
-                    alt={product.name}
-                    onError={(e) => {
-                      e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop'
-                    }}
-                  />
-                ) : (
-                  <div className="placeholder-image">🥬</div>
-                )}
-              </div>
-              <div className="product-info">
-                <h4>{product.name}</h4>
-                <p className="product-price">Rs. {product.price}/{product.unit}</p>
-                <p className="product-description">{product.description}</p>
-                <p className="product-stock">Stock: {product.stock} {product.unit}</p>
-                {product.category && (
-                  <span className="product-category">{product.category.name}</span>
-                )}
-                <div className="product-rating">
-                  ⭐ {product.averageRating || 4.5} ({product.totalReviews || 0} reviews)
+          <div className={`products-grid ${viewMode === 'list' ? 'list-view' : 'grid-view'}`}>
+            {filteredProducts.map((product) => (
+              <div key={product._id} className="product-card-enhanced">
+                <div className="product-badges">
+                  {product.organic && <span className="badge organic">🌱 Organic</span>}
+                  {product.isFeatured && <span className="badge featured">⭐ Featured</span>}
+                  {product.stock < 10 && product.stock > 0 && (
+                    <span className="badge low-stock">⚠️ Low Stock</span>
+                  )}
+                </div>
+                
+                <div className="product-image-container">
+                  {product.images && product.images.length > 0 ? (
+                    <img 
+                      src={`http://localhost:50011${product.images[0]}`} 
+                      alt={product.name}
+                      className="product-image"
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop'
+                      }}
+                    />
+                  ) : (
+                    <div className="placeholder-image">🥬</div>
+                  )}
+                  <div className="product-overlay">
+                    <button className="quick-view-btn">👁️ Quick View</button>
+                  </div>
+                </div>
+                
+                <div className="product-info-section">
+                  <div className="product-header">
+                    <h3 className="product-name">{product.name}</h3>
+                    <div className="product-rating">
+                      <span className="stars">⭐ {product.averageRating || 4.5}</span>
+                      <span className="reviews">({product.totalReviews || 0})</span>
+                    </div>
+                  </div>
+                  
+                  <p className="product-description">{product.description}</p>
+                  
+                  <div className="product-meta">
+                    <div className="seller-info">
+                      <span className="seller-label">Seller:</span>
+                      <span className="seller-name">
+                        {product.seller?.firstName} {product.seller?.lastName}
+                      </span>
+                    </div>
+                    {product.category && (
+                      <span className="product-category-tag">
+                        {product.category.icon} {product.category.name}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="product-pricing">
+                    <div className="price-info">
+                      <span className="current-price">Rs. {product.price}</span>
+                      <span className="price-unit">/{product.unit}</span>
+                    </div>
+                    <div className="stock-info">
+                      <span className={`stock-status ${product.stock === 0 ? 'out-of-stock' : product.stock < 10 ? 'low-stock' : 'in-stock'}`}>
+                        {product.stock === 0 ? 'Out of Stock' : `${product.stock} ${product.unit} available`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="product-actions-section">
+                  <div className="quantity-selector">
+                    <button className="qty-btn minus">-</button>
+                    <input type="number" value="1" min="1" max={product.stock} className="qty-input" />
+                    <button className="qty-btn plus">+</button>
+                  </div>
+                  <button 
+                    className="add-to-cart-btn"
+                    onClick={() => onAddToCart(product._id)}
+                    disabled={product.stock === 0}
+                  >
+                    {product.stock === 0 ? '❌ Out of Stock' : '🛒 Add to Cart'}
+                  </button>
+                  <button className="favorite-btn" title="Add to Favorites">
+                    ❤️
+                  </button>
                 </div>
               </div>
-              <div className="product-actions">
+            ))}
+          </div>
+        ) : (
+          <div className="no-products-state">
+            <div className="empty-state-content">
+              <div className="empty-icon">🥬</div>
+              <h3>No Products Found</h3>
+              <p>
+                {searchTerm 
+                  ? `No products found for "${searchTerm}". Try different keywords.`
+                  : selectedCategory !== 'all' 
+                    ? 'No products available in this category.'
+                    : 'No products available right now. Check back soon!'}
+              </p>
+              {(searchTerm || selectedCategory !== 'all') && (
                 <button 
                   className="btn btn-primary"
-                  onClick={() => onAddToCart(product._id)}
-                  disabled={product.stock === 0}
+                  onClick={() => {
+                    setSearchTerm('')
+                    setSelectedCategory('all')
+                  }}
                 >
-                  {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  🔄 Clear Filters
                 </button>
-                <button className="btn btn-outline">
-                  ❤️ Favorite
-                </button>
-              </div>
+              )}
             </div>
-          ))
-        ) : (
-          <div className="no-products">
-            <div className="no-products-icon">🥬</div>
-            <h3>No Products Available</h3>
-            <p>Check back soon for fresh produce from our farmers!</p>
           </div>
         )}
       </div>
@@ -653,15 +779,19 @@ const BuyerCartTab = ({ cart, onUpdateItem, onRemoveItem, onClearCart, onCreateO
 // Orders Tab Component
 const BuyerOrdersTab = ({ orders }) => {
   const navigate = useNavigate()
+  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('all')
 
   const getStatusInfo = (status) => {
     const statusMap = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', icon: '⏳' },
-      confirmed: { color: 'bg-blue-100 text-blue-800', icon: '✅' },
-      processing: { color: 'bg-purple-100 text-purple-800', icon: '👨‍🍳' },
-      shipped: { color: 'bg-indigo-100 text-indigo-800', icon: '🚚' },
-      delivered: { color: 'bg-green-100 text-green-800', icon: '🎉' },
-      cancelled: { color: 'bg-red-100 text-red-800', icon: '❌' }
+      pending: { color: 'status-pending', icon: '⏳', label: 'Pending' },
+      approved: { color: 'status-approved', icon: '✅', label: 'Approved' },
+      rejected: { color: 'status-rejected', icon: '❌', label: 'Rejected' },
+      confirmed: { color: 'status-confirmed', icon: '✅', label: 'Confirmed' },
+      processing: { color: 'status-processing', icon: '👨‍🍳', label: 'Processing' },
+      shipped: { color: 'status-shipped', icon: '🚚', label: 'Shipped' },
+      delivered: { color: 'status-delivered', icon: '🎉', label: 'Delivered' },
+      cancelled: { color: 'status-cancelled', icon: '❌', label: 'Cancelled' }
     };
     return statusMap[status] || statusMap.pending;
   }
@@ -670,105 +800,198 @@ const BuyerOrdersTab = ({ orders }) => {
     navigate(`/order-details/${orderId}`)
   }
 
+  const filteredOrders = statusFilter === 'all' 
+    ? orders 
+    : orders.filter(order => order.status === statusFilter)
+
   return (
-    <div className="orders-tab">
-      <div className="tab-header">
-        <h3>Order History</h3>
-        <div className="orders-summary">
-          <span className="orders-count">{orders.length} orders</span>
+    <div className="orders-tab-container">
+      <div className="orders-tab-header">
+        <div className="header-content">
+          <h2 className="tab-title">Order History</h2>
+          <p className="tab-subtitle">Track and manage all your orders</p>
+        </div>
+        <div className="header-actions">
+          <div className="orders-summary">
+            <span className="orders-count">{orders.length} total orders</span>
+          </div>
+          <select 
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="status-filter"
+          >
+            <option value="all">All Orders</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
         </div>
       </div>
       
-      <div className="orders-list">
-        {orders.length > 0 ? (
-          orders.map((order) => {
-            const statusInfo = getStatusInfo(order.status)
-            return (
-              <div key={order._id} className="enhanced-order-item">
-                <div className="order-card-header">
-                  <div className="order-info">
-                    <h4 className="order-number">#{order.orderNumber}</h4>
-                    <p className="order-date">
-                      {new Date(order.orderDate).toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </p>
+      <div className="orders-content">
+        {filteredOrders.length > 0 ? (
+          <div className="orders-grid">
+            {filteredOrders.map((order) => {
+              const statusInfo = getStatusInfo(order.status)
+              return (
+                <div key={order._id} className="order-card-enhanced">
+                  <div className="order-card-header">
+                    <div className="order-main-info">
+                      <h3 className="order-number">#{order.orderNumber}</h3>
+                      <p className="order-date">
+                        {new Date(order.orderDate).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    <div className={`order-status-badge ${statusInfo.color}`}>
+                      <span className="status-icon">{statusInfo.icon}</span>
+                      <span className="status-text">{statusInfo.label}</span>
+                    </div>
                   </div>
-                  <div className={`order-status-badge ${statusInfo.color}`}>
-                    <span className="status-icon">{statusInfo.icon}</span>
-                    <span className="status-text">{order.status}</span>
+                  
+                  <div className="order-items-section">
+                    <div className="items-header">
+                      <h4>Items ({order.items?.length || 0})</h4>
+                    </div>
+                    <div className="order-items-grid">
+                      {order.items?.slice(0, 4).map((item, index) => (
+                        <div key={index} className="order-item-card">
+                          <div className="item-image">
+                            <img 
+                              src={item.productImage || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop'} 
+                              alt={item.productName}
+                              onError={(e) => {
+                                e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop';
+                              }}
+                            />
+                          </div>
+                          <div className="item-details">
+                            <span className="item-name">{item.productName}</span>
+                            <span className="item-quantity">Qty: {item.quantity}</span>
+                            <span className="item-price">Rs. {item.total}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {order.items?.length > 4 && (
+                        <div className="more-items-card">
+                          <span>+{order.items.length - 4} more items</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-                
-                <div className="order-items-preview">
-                  {order.items?.slice(0, 3).map((item, index) => (
-                    <div key={index} className="order-item-preview">
-                      <div className="item-image-small">
-                        <img 
-                          src={item.productImage || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=50&h=50&fit=crop'} 
-                          alt={item.productName}
-                          onError={(e) => {
-                            e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=50&h=50&fit=crop';
-                          }}
-                        />
+                  
+                  <div className="order-summary-section">
+                    <div className="order-total-info">
+                      <div className="total-breakdown">
+                        <span className="subtotal">Subtotal: Rs. {order.subtotal}</span>
+                        <span className="delivery">Delivery: Rs. {order.deliveryFee || 50}</span>
+                        <span className="tax">Tax: Rs. {order.tax || 0}</span>
                       </div>
-                      <div className="item-info-small">
-                        <span className="item-name-small">{item.productName}</span>
-                        <span className="item-quantity-small">×{item.quantity}</span>
+                      <div className="total-amount">
+                        <span className="total-label">Total:</span>
+                        <span className="total-value">Rs. {order.total}</span>
                       </div>
                     </div>
-                  ))}
-                  {order.items?.length > 3 && (
-                    <div className="more-items">
-                      +{order.items.length - 3} more
+                  </div>
+                  
+                  <div className="order-actions-section">
+                    <div className="action-buttons">
+                      <button 
+                        className="btn btn-outline"
+                        onClick={() => handleViewDetails(order._id)}
+                      >
+                        📋 View Details
+                      </button>
+                      {order.status === 'delivered' && (
+                        <button className="btn btn-primary">
+                          ⭐ Write Review
+                        </button>
+                      )}
+                      {order.status === 'shipped' && (
+                        <button className="btn btn-info">
+                          📍 Track Order
+                        </button>
+                      )}
+                      {['pending', 'confirmed'].includes(order.status) && (
+                        <button className="btn btn-danger">
+                          ❌ Cancel Order
+                        </button>
+                      )}
+                      <button 
+                        className="btn btn-secondary"
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        📞 Contact Seller
+                      </button>
                     </div>
-                  )}
-                </div>
-                
-                <div className="order-card-footer">
-                  <div className="order-total">
-                    <span className="total-label">Total:</span>
-                    <span className="total-amount">Rs. {order.total}</span>
-                  </div>
-                  <div className="order-actions">
-                    <button 
-                      className="btn btn-outline btn-sm"
-                      onClick={() => handleViewDetails(order._id)}
-                    >
-                      View Details
-                    </button>
-                    {order.status === 'delivered' && (
-                      <button className="btn btn-primary btn-sm">
-                        ⭐ Review
-                      </button>
-                    )}
-                    {['pending', 'confirmed'].includes(order.status) && (
-                      <button className="btn btn-outline btn-sm cancel-btn">
-                        Cancel
-                      </button>
-                    )}
                   </div>
                 </div>
-              </div>
-            )
-          })
+              )
+            })}
+          </div>
         ) : (
           <div className="no-orders-state">
-            <div className="no-orders-icon">📦</div>
-            <h3>No orders yet</h3>
-            <p>Start shopping to see your orders here</p>
-            <button 
-              className="btn btn-primary"
-              onClick={() => setActiveTab('products')}
-            >
-              Browse Products
-            </button>
+            <div className="empty-state-content">
+              <div className="empty-icon">📦</div>
+              <h3>No orders found</h3>
+              <p>
+                {statusFilter === 'all' 
+                  ? "You haven't placed any orders yet. Start shopping to see your orders here!" 
+                  : `No ${statusFilter} orders found. Try changing the filter.`}
+              </p>
+              <button 
+                className="btn btn-primary btn-large"
+                onClick={() => window.location.href = '#products'}
+              >
+                🛒 Start Shopping
+              </button>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Order Detail Modal */}
+      {selectedOrder && (
+        <div className="order-modal-overlay" onClick={() => setSelectedOrder(null)}>
+          <div className="order-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Contact Seller - Order #{selectedOrder.orderNumber}</h3>
+              <button 
+                className="modal-close-btn"
+                onClick={() => setSelectedOrder(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="seller-contact-info">
+                <h4>Seller Information</h4>
+                <p>For any questions about this order, you can contact the seller directly:</p>
+                <div className="contact-options">
+                  <button className="contact-btn email-btn">
+                    📧 Send Email
+                  </button>
+                  <button className="contact-btn phone-btn">
+                    📞 Call Seller
+                  </button>
+                  <button className="contact-btn message-btn">
+                    💬 Send Message
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

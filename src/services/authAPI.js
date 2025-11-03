@@ -1,7 +1,7 @@
 // Auth API Service for VegRuit Marketplace
 // Handles all authentication-related API calls
 
-const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api'}/auth`;
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:50011/api'}/auth`;
 
 // Storage keys for local storage
 export const STORAGE_KEYS = {

@@ -1,10 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import BackButton from '../components/BackButton';
 import '../styles/Explore.css';
 
 const ExplorePage = () => {
   const [activeCategory, setActiveCategory] = useState('all');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
   
   const categories = [
     {
@@ -161,54 +181,64 @@ const ExplorePage = () => {
   const featuredProducts = products.slice(0, 4);
 
   return (
-    <div className="explore-page">
+    <motion.div 
+      className="explore-page"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
       {/* Hero Section */}
-      <section className="explore-hero">
+      <motion.section className="explore-hero" variants={fadeInUp}>
         <div className="hero-overlay">
           <div className="hero-content">
             <BackButton />
-            <h1 className="hero-title">Explore Fresh Produce</h1>
-            <p className="hero-subtitle">
+            <motion.h1 className="hero-title" variants={fadeInUp}>
+              Explore Fresh Produce
+            </motion.h1>
+            <motion.p className="hero-subtitle" variants={fadeInUp}>
               Discover the finest selection of fruits and vegetables from local farmers in Nepal
-            </p>
-            <div className="hero-cta">
+            </motion.p>
+            <motion.div className="hero-cta" variants={fadeInUp}>
               <Link to="/auth" className="hero-button primary">
                 Start Shopping
               </Link>
               <Link to="/about" className="hero-button secondary">
                 Learn More
               </Link>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Categories Section */}
-      <section className="categories-section">
+      <motion.section className="categories-section" variants={fadeInUp}>
         <div className="container">
-          <div className="section-header">
+          <motion.div className="section-header" variants={fadeInUp}>
             <h2 className="section-title">Browse by Category</h2>
             <p className="section-subtitle">Find exactly what you're looking for</p>
-          </div>
-          <div className="categories-tabs">
+          </motion.div>
+          <motion.div className="categories-tabs" variants={staggerContainer}>
             {categories.map((category) => (
-              <button
+              <motion.button
                 key={category.id}
                 className={`category-tab ${activeCategory === category.id ? 'active' : ''}`}
                 onClick={() => setActiveCategory(category.id)}
+                variants={fadeInUp}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <span className="tab-icon">{category.icon}</span>
                 <span className="tab-name">{category.name}</span>
-              </button>
+              </motion.button>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Products Grid */}
-      <section className="products-section">
+      <motion.section className="products-section" variants={fadeInUp}>
         <div className="container">
-          <div className="section-header">
+          <motion.div className="section-header" variants={fadeInUp}>
             <h2 className="section-title">
               {activeCategory === 'all' 
                 ? 'All Fresh Products' 
@@ -219,11 +249,16 @@ const ExplorePage = () => {
                 ? 'Browse our entire collection of fresh produce' 
                 : categories.find(cat => cat.id === activeCategory)?.description}
             </p>
-          </div>
+          </motion.div>
 
-          <div className="products-grid">
+          <motion.div className="products-grid" variants={staggerContainer}>
             {filteredProducts.map((product) => (
-              <div key={product.id} className="product-card">
+              <motion.div 
+                key={product.id} 
+                className="product-card"
+                variants={fadeInUp}
+                whileHover={{ y: -10, transition: { duration: 0.3 } }}
+              >
                 {product.organic && (
                   <div className="organic-badge">
                     <span>🌱 Organic</span>
@@ -256,15 +291,27 @@ const ExplorePage = () => {
                   </div>
                   
                   <div className="product-actions">
-                    <button className="add-to-cart-btn">🛒 Add to Cart</button>
-                    <button className="wishlist-btn">❤️</button>
+                    <motion.button 
+                      className="add-to-cart-btn"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      🛒 Add to Cart
+                    </motion.button>
+                    <motion.button 
+                      className="wishlist-btn"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      ❤️
+                    </motion.button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Features Section */}
       <section className="explore-features">
@@ -317,7 +364,7 @@ const ExplorePage = () => {
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 };
 

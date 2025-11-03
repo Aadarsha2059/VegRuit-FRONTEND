@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FiShoppingBag, FiInfo, FiChevronRight } from 'react-icons/fi';
+import { FiShoppingBag, FiInfo, FiChevronRight, FiStar, FiUsers, FiTruck } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 import basketImage from '../assets/basket.png';
 import '../styles/Hero.css';
 
@@ -16,27 +17,41 @@ const Hero = () => {
   };
 
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
         type: 'spring',
         stiffness: 100,
+        damping: 12,
       },
     },
   };
 
   const imageVariants = {
-    hidden: { scale: 0.8, opacity: 0 },
+    hidden: { scale: 0.8, opacity: 0, rotate: -5 },
     visible: {
       scale: 1,
       opacity: 1,
+      rotate: 0,
       transition: {
         type: 'spring',
         damping: 15,
         stiffness: 100,
         delay: 0.4,
+      },
+    },
+  };
+
+  const statsVariants = {
+    hidden: { y: 50, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        delay: 0.8,
+        duration: 0.6,
       },
     },
   };
@@ -49,51 +64,167 @@ const Hero = () => {
       initial="hidden"
       animate="visible"
     >
+      {/* Background Elements */}
+      <div className="hero-background">
+        <div className="bg-shape shape-1"></div>
+        <div className="bg-shape shape-2"></div>
+        <div className="bg-shape shape-3"></div>
+      </div>
+
       <div className="hero-container">
+        {/* Trust Indicators */}
+        <motion.div className="trust-indicators" variants={itemVariants}>
+          <div className="trust-item">
+            <FiStar className="trust-icon" />
+            <span>4.9/5 Rating</span>
+          </div>
+          <div className="trust-item">
+            <FiUsers className="trust-icon" />
+            <span>10,000+ Happy Customers</span>
+          </div>
+          <div className="trust-item">
+            <FiTruck className="trust-icon" />
+            <span>Same Day Delivery</span>
+          </div>
+        </motion.div>
+
         <div className="hero-content">
           <motion.div className="hero-text" variants={itemVariants}>
+            <motion.div className="hero-badge" variants={itemVariants}>
+              <span className="badge-text">🌟 Nepal's #1 Fresh Produce Marketplace</span>
+            </motion.div>
+            
             <motion.h1 className="hero-title" variants={itemVariants}>
-              Freshness Delivered,
+              Farm-Fresh Goodness
               <br />
-              <span className="highlight">From Farm to Your Fork</span>
+              <span className="highlight">Delivered to Your Doorstep</span>
             </motion.h1>
+            
             <motion.p className="hero-subtitle" variants={itemVariants}>
-              Experience the taste of locally sourced, farm-fresh fruits and vegetables, brought to you with care from the fields of Kathmandu.
+              Connect directly with local farmers in Nepal and enjoy the freshest fruits and vegetables. 
+              Supporting sustainable agriculture while bringing nature's best to your table.
             </motion.p>
+
+            <motion.div className="hero-highlights" variants={itemVariants}>
+              <div className="highlight-item">
+                <span className="highlight-icon">✅</span>
+                <span>100% Organic & Fresh</span>
+              </div>
+              <div className="highlight-item">
+                <span className="highlight-icon">✅</span>
+                <span>Direct from Local Farmers</span>
+              </div>
+              <div className="highlight-item">
+                <span className="highlight-icon">✅</span>
+                <span>Same Day Delivery in Kathmandu</span>
+              </div>
+            </motion.div>
+            
             <motion.div className="hero-buttons" variants={itemVariants}>
-              <motion.button
-                className="btn btn-primary"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Shop Now <FiShoppingBag className="btn-icon" />
-              </motion.button>
-              <motion.button
-                className="btn btn-secondary"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Learn More <FiInfo className="btn-icon" />
-              </motion.button>
+              <Link to="/explore">
+                <motion.button
+                  className="btn btn-primary"
+                  whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(34, 197, 94, 0.3)" }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FiShoppingBag className="btn-icon" />
+                  Start Shopping
+                  <FiChevronRight className="btn-arrow" />
+                </motion.button>
+              </Link>
+              
+              <Link to="/about">
+                <motion.button
+                  className="btn btn-secondary"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FiInfo className="btn-icon" />
+                  Learn More
+                </motion.button>
+              </Link>
+            </motion.div>
+
+            <motion.div className="hero-stats" variants={statsVariants}>
+              <div className="stat-item">
+                <span className="stat-number">500+</span>
+                <span className="stat-label">Local Farmers</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number">50+</span>
+                <span className="stat-label">Product Varieties</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number">5</span>
+                <span className="stat-label">Cities Served</span>
+              </div>
             </motion.div>
           </motion.div>
 
           <motion.div className="hero-image" variants={imageVariants}>
-            <img src={basketImage} alt="Fresh fruits and vegetables basket" />
-            <motion.div
-              className="floating-badge"
-              animate={{
-                y: [0, -10, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            >
-              <span>100%</span>
-              <span>Organic</span>
-            </motion.div>
+            <div className="image-container">
+              <img src={basketImage} alt="Fresh fruits and vegetables basket" />
+              
+              {/* Floating Elements */}
+              <motion.div
+                className="floating-badge organic-badge"
+                animate={{
+                  y: [0, -15, 0],
+                  rotate: [0, 5, 0],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              >
+                <span className="badge-icon">🌱</span>
+                <div className="badge-content">
+                  <span className="badge-title">100%</span>
+                  <span className="badge-subtitle">Organic</span>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="floating-badge fresh-badge"
+                animate={{
+                  y: [0, -10, 0],
+                  rotate: [0, -3, 0],
+                }}
+                transition={{
+                  duration: 3.5,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: 1,
+                }}
+              >
+                <span className="badge-icon">⚡</span>
+                <div className="badge-content">
+                  <span className="badge-title">Fresh</span>
+                  <span className="badge-subtitle">Daily</span>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="floating-badge delivery-badge"
+                animate={{
+                  y: [0, -12, 0],
+                  rotate: [0, 2, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: 2,
+                }}
+              >
+                <span className="badge-icon">🚚</span>
+                <div className="badge-content">
+                  <span className="badge-title">Fast</span>
+                  <span className="badge-subtitle">Delivery</span>
+                </div>
+              </motion.div>
+            </div>
           </motion.div>
         </div>
 
@@ -101,17 +232,22 @@ const Hero = () => {
           <motion.div className="feature" variants={itemVariants}>
             <div className="feature-icon">🌱</div>
             <h3>Sustainably Sourced</h3>
-            <p>From local Kathmandu farms</p>
+            <p>Supporting eco-friendly farming practices across Nepal</p>
           </motion.div>
           <motion.div className="feature" variants={itemVariants}>
             <div className="feature-icon">🚚</div>
             <h3>Reliable Delivery</h3>
-            <p>Fast, fresh, and on time</p>
+            <p>Fresh produce delivered within hours of harvest</p>
           </motion.div>
           <motion.div className="feature" variants={itemVariants}>
             <div className="feature-icon">✨</div>
-            <h3>Unbeatable Quality</h3>
-            <p>Hand-selected for freshness</p>
+            <h3>Premium Quality</h3>
+            <p>Hand-selected by farmers for maximum freshness</p>
+          </motion.div>
+          <motion.div className="feature" variants={itemVariants}>
+            <div className="feature-icon">💰</div>
+            <h3>Fair Pricing</h3>
+            <p>Direct trade ensures fair prices for farmers and customers</p>
           </motion.div>
         </motion.div>
       </div>

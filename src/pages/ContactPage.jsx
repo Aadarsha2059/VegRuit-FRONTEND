@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import BackButton from '../components/BackButton';
 import '../styles/ContactPage.css';
 
@@ -13,6 +15,25 @@ const ContactPage = () => {
     inquiryType: 'general'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -106,27 +127,34 @@ const ContactPage = () => {
   ];
 
   return (
-    <div className="contact-page">
+    <motion.div 
+      className="contact-page"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
       {/* Hero Section */}
-      <section className="contact-hero">
+      <motion.section className="contact-hero" variants={fadeInUp}>
         <div className="hero-overlay">
           <div className="hero-content">
             <BackButton />
-            <h1 className="hero-title">Get in Touch</h1>
-            <p className="hero-subtitle">
+            <motion.h1 className="hero-title" variants={fadeInUp}>
+              Get in Touch
+            </motion.h1>
+            <motion.p className="hero-subtitle" variants={fadeInUp}>
               We'd love to hear from you. Send us a message and we'll respond as soon as possible.
-            </p>
-            <div className="hero-cta">
+            </motion.p>
+            <motion.div className="hero-cta" variants={fadeInUp}>
               <Link to="/explore" className="hero-button primary">
                 Explore Products
               </Link>
               <Link to="/about" className="hero-button secondary">
                 About Us
               </Link>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Contact Form & Info Section */}
       <section className="contact-main">
@@ -313,7 +341,7 @@ const ContactPage = () => {
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 };
 

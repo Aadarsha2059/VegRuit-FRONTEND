@@ -150,7 +150,7 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
     { key: 'overview', label: 'Overview', icon: '📊' },
     { key: 'categories', label: 'Categories', icon: '📂' },
     { key: 'products', label: 'Products', icon: '🍎' },
-    { key: 'orders', label: 'Orders', icon: '📦' },
+    { key: 'orders', label: 'Recent Orders', icon: '📦' },
     { key: 'earnings', label: 'Earnings', icon: '💰' },
     { key: 'customers', label: 'Customers', icon: '👥' },
     { key: 'inventory', label: 'Inventory', icon: '📋' },
@@ -163,7 +163,7 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
       overview: 'Farm Dashboard Overview',
       categories: 'Category Management',
       products: 'Product Management',
-      orders: 'Order Management',
+      orders: 'Recent Orders & Customer Details',
       earnings: 'Earnings & Analytics',
       customers: 'Customer Management',
       inventory: 'Inventory Management',
@@ -424,7 +424,7 @@ const SellerCategoriesTab = ({ categories, onCreateCategory }) => {
             <div className="category-visual">
               {category.image ? (
                 <img 
-                  src={`http://localhost:5001${category.image}`} 
+                  src={`http://localhost:50011${category.image}`} 
                   alt={category.name}
                   className="category-image"
                 />
@@ -639,7 +639,7 @@ const SellerProductsTab = ({ products, categories, onCreateProduct }) => {
           <div key={product._id} className="product-card">
             <div className="product-image">
               {product.images && product.images.length > 0 ? (
-                <img src={`http://localhost:5001${product.images[0]}`} alt={product.name} />
+                <img src={`http://localhost:50011${product.images[0]}`} alt={product.name} />
               ) : (
                 <div className="placeholder-image">🥬</div>
               )}
@@ -664,50 +664,289 @@ const SellerProductsTab = ({ products, categories, onCreateProduct }) => {
 
 // Orders Tab
 const SellerOrdersTab = ({ orders }) => {
+  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('all')
+
+  const getStatusInfo = (status) => {
+    const statusMap = {
+      pending: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: '⏳' },
+      approved: { color: 'bg-green-100 text-green-800 border-green-200', icon: '✅' },
+      rejected: { color: 'bg-red-100 text-red-800 border-red-200', icon: '❌' },
+      confirmed: { color: 'bg-blue-100 text-blue-800 border-blue-200', icon: '✅' },
+      processing: { color: 'bg-purple-100 text-purple-800 border-purple-200', icon: '👨‍🍳' },
+      shipped: { color: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: '🚚' },
+      delivered: { color: 'bg-green-100 text-green-800 border-green-200', icon: '🎉' },
+      cancelled: { color: 'bg-red-100 text-red-800 border-red-200', icon: '❌' }
+    };
+    return statusMap[status] || statusMap.pending;
+  }
+
+  const filteredOrders = statusFilter === 'all' 
+    ? orders 
+    : orders.filter(order => order.status === statusFilter)
+
+  const handleAcceptOrder = async (orderId) => {
+    try {
+      const response = await orderAPI.acceptOrder(token, orderId)
+      if (response.success) {
+        toast.success('Order accepted successfully!')
+        loadOrders() // Reload orders to show updated status
+      } else {
+        toast.error(response.message)
+      }
+    } catch (error) {
+      console.error('Error accepting order:', error)
+      toast.error('Failed to accept order')
+    }
+  }
+
+  const handleRejectOrder = async (orderId, reason) => {
+    try {
+      const response = await orderAPI.rejectOrder(token, orderId, reason)
+      if (response.success) {
+        toast.success('Order rejected successfully!')
+        loadOrders() // Reload orders to show updated status
+      } else {
+        toast.error(response.message)
+      }
+    } catch (error) {
+      console.error('Error rejecting order:', error)
+      toast.error('Failed to reject order')
+    }
+  }
+
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    try {
+      const response = await orderAPI.updateOrderStatus(token, orderId, newStatus)
+      if (response.success) {
+        toast.success(`Order status updated to ${newStatus}`)
+        loadOrders() // Reload orders to show updated status
+      } else {
+        toast.error(response.message)
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error)
+      toast.error('Failed to update order status')
+    }
+  }
+
   return (
     <div className="orders-tab">
       <div className="tab-header">
-        <h3>Order Management</h3>
+        <div className="header-content">
+          <h3>Recent Orders & Customer Details</h3>
+          <p>Manage your orders and communicate with customers</p>
+        </div>
+        <div className="header-actions">
+          <select 
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">All Orders ({orders.length})</option>
+            <option value="pending">Pending ({orders.filter(o => o.status === 'pending').length})</option>
+            <option value="confirmed">Confirmed ({orders.filter(o => o.status === 'confirmed').length})</option>
+            <option value="processing">Processing ({orders.filter(o => o.status === 'processing').length})</option>
+            <option value="shipped">Shipped ({orders.filter(o => o.status === 'shipped').length})</option>
+            <option value="delivered">Delivered ({orders.filter(o => o.status === 'delivered').length})</option>
+          </select>
+        </div>
       </div>
       
-      <div className="orders-list">
-        {orders.map((order) => (
-          <div key={order._id} className="order-item">
-            <div className="order-header">
-              <h4>Order #{order.orderNumber}</h4>
-              <span className={`order-status ${order.status.toLowerCase()}`}>
-                {order.status}
-              </span>
-            </div>
-            <div className="order-customer">
-              <p><strong>Customer:</strong> {order.buyerName}</p>
-              <p><strong>Email:</strong> {order.buyerEmail}</p>
-            </div>
-            <div className="order-items">
-              {order.items?.map((item, index) => (
-                <div key={index} className="order-item-detail">
-                  <span>{item.productName}</span>
-                  <span>Qty: {item.quantity}</span>
-                  <span>Rs. {item.price}</span>
+      <div className="orders-grid">
+        {filteredOrders.length > 0 ? (
+          filteredOrders.map((order) => {
+            const statusInfo = getStatusInfo(order.status)
+            return (
+              <div key={order._id} className="enhanced-order-card">
+                <div className="order-card-header">
+                  <div className="order-info">
+                    <h4 className="order-number">#{order.orderNumber}</h4>
+                    <p className="order-date">
+                      {new Date(order.orderDate).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                  <div className={`order-status-badge ${statusInfo.color}`}>
+                    <span className="status-icon">{statusInfo.icon}</span>
+                    <span className="status-text">{order.status}</span>
+                  </div>
                 </div>
-              ))}
+
+                <div className="customer-section">
+                  <div className="customer-header">
+                    <h5>👤 Customer Information</h5>
+                  </div>
+                  <div className="customer-details">
+                    <div className="customer-info">
+                      <div className="info-row">
+                        <span className="info-label">Name:</span>
+                        <span className="info-value">{order.buyerName}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-label">Email:</span>
+                        <span className="info-value">{order.buyerEmail}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-label">Phone:</span>
+                        <span className="info-value">{order.buyerPhone}</span>
+                      </div>
+                    </div>
+                    <div className="customer-actions">
+                      <button className="contact-btn email">
+                        📧 Email
+                      </button>
+                      <button className="contact-btn phone">
+                        📞 Call
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="delivery-section">
+                  <div className="delivery-header">
+                    <h5>🏠 Delivery Address</h5>
+                  </div>
+                  <div className="delivery-address">
+                    <p>{order.deliveryAddress?.street}</p>
+                    <p>{order.deliveryAddress?.city}, {order.deliveryAddress?.state}</p>
+                    {order.deliveryAddress?.landmark && (
+                      <p className="landmark">📍 {order.deliveryAddress.landmark}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="order-items-section">
+                  <div className="items-header">
+                    <h5>🛒 Order Items ({order.items?.length || 0})</h5>
+                    <span className="total-amount">Rs. {order.total}</span>
+                  </div>
+                  <div className="items-list">
+                    {order.items?.slice(0, 3).map((item, index) => (
+                      <div key={index} className="item-row">
+                        <div className="item-info">
+                          <span className="item-name">{item.productName}</span>
+                          <span className="item-quantity">×{item.quantity}</span>
+                        </div>
+                        <span className="item-price">Rs. {item.total}</span>
+                      </div>
+                    ))}
+                    {order.items?.length > 3 && (
+                      <div className="more-items">
+                        +{order.items.length - 3} more items
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="order-actions-section">
+                  {order.status === 'pending' ? (
+                    <div className="pending-actions">
+                      <button 
+                        className="btn btn-success btn-sm"
+                        onClick={() => handleAcceptOrder(order._id)}
+                      >
+                        ✅ Accept Order
+                      </button>
+                      <button 
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleRejectOrder(order._id, 'Order rejected by seller')}
+                      >
+                        ❌ Reject Order
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="status-update">
+                      <label>Update Status:</label>
+                      <select 
+                        value={order.status}
+                        onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
+                        className="status-select"
+                        disabled={order.status === 'rejected'}
+                      >
+                        <option value="approved">✅ Approved</option>
+                        <option value="confirmed">✅ Confirmed</option>
+                        <option value="processing">👨‍🍳 Processing</option>
+                        <option value="shipped">🚚 Shipped</option>
+                        <option value="delivered">🎉 Delivered</option>
+                      </select>
+                    </div>
+                  )}
+                  <div className="action-buttons">
+                    <button 
+                      className="btn btn-outline btn-sm"
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      View Full Details
+                    </button>
+                    <button className="btn btn-primary btn-sm">
+                      💬 Message Customer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
+          })
+        ) : (
+          <div className="no-orders-state">
+            <div className="no-orders-icon">📦</div>
+            <h3>No orders found</h3>
+            <p>
+              {statusFilter === 'all' 
+                ? "You haven't received any orders yet" 
+                : `No ${statusFilter} orders found`}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Order Detail Modal */}
+      {selectedOrder && (
+        <div className="order-modal-overlay" onClick={() => setSelectedOrder(null)}>
+          <div className="order-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Order Details - #{selectedOrder.orderNumber}</h3>
+              <button 
+                className="close-btn"
+                onClick={() => setSelectedOrder(null)}
+              >
+                ×
+              </button>
             </div>
-            <div className="order-footer">
-              <span>Total: Rs. {order.total}</span>
-              <span>Date: {new Date(order.orderDate).toLocaleDateString()}</span>
-              <div className="order-actions">
-                <select className="status-select">
-                  <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
-                  <option value="shipped">Shipped</option>
-                  <option value="delivered">Delivered</option>
-                </select>
-                <button className="btn btn-outline">View Details</button>
+            <div className="modal-content">
+              <div className="modal-section">
+                <h4>Customer Information</h4>
+                <div className="customer-full-details">
+                  <p><strong>Name:</strong> {selectedOrder.buyerName}</p>
+                  <p><strong>Email:</strong> {selectedOrder.buyerEmail}</p>
+                  <p><strong>Phone:</strong> {selectedOrder.buyerPhone}</p>
+                  <p><strong>Address:</strong> {selectedOrder.deliveryAddress?.street}, {selectedOrder.deliveryAddress?.city}</p>
+                </div>
+              </div>
+              <div className="modal-section">
+                <h4>Order Items</h4>
+                <div className="modal-items">
+                  {selectedOrder.items?.map((item, index) => (
+                    <div key={index} className="modal-item">
+                      <span>{item.productName}</span>
+                      <span>Qty: {item.quantity}</span>
+                      <span>Rs. {item.total}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="modal-total">
+                  <strong>Total: Rs. {selectedOrder.total}</strong>
+                </div>
               </div>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
