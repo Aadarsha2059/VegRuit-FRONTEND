@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
+import Calendar from '../Calendar'
 import './DashboardLayout.css'
 
 const DashboardLayout = ({ 
@@ -123,9 +124,7 @@ const DashboardLayout = ({
               <button className="action-btn help-btn" onClick={onHelpClick} title="Help">
                 <span className="icon">❓</span>
               </button>
-              <button className="action-btn calendar-btn" onClick={onCalendarClick} title="Calendar">
-                <span className="icon">📅</span>
-              </button>
+              <Calendar compact={true} />
             </div>
             
             <div className="user-menu">

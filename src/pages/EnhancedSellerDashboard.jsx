@@ -687,6 +687,12 @@ const SellerOrdersTab = ({ orders }) => {
 
   const handleAcceptOrder = async (orderId) => {
     try {
+      const token = localStorage.getItem('sellerToken') || authAPI.getAuthToken();
+      if (!token) {
+        toast.error('Please login to accept orders');
+        return;
+      }
+      
       const response = await orderAPI.acceptOrder(token, orderId)
       if (response.success) {
         toast.success('Order accepted successfully!')
@@ -702,6 +708,12 @@ const SellerOrdersTab = ({ orders }) => {
 
   const handleRejectOrder = async (orderId, reason) => {
     try {
+      const token = localStorage.getItem('sellerToken') || authAPI.getAuthToken();
+      if (!token) {
+        toast.error('Please login to reject orders');
+        return;
+      }
+      
       const response = await orderAPI.rejectOrder(token, orderId, reason)
       if (response.success) {
         toast.success('Order rejected successfully!')
@@ -717,6 +729,12 @@ const SellerOrdersTab = ({ orders }) => {
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
+      const token = localStorage.getItem('sellerToken') || authAPI.getAuthToken();
+      if (!token) {
+        toast.error('Please login to update order status');
+        return;
+      }
+      
       const response = await orderAPI.updateOrderStatus(token, orderId, newStatus)
       if (response.success) {
         toast.success(`Order status updated to ${newStatus}`)

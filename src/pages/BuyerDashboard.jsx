@@ -5,6 +5,7 @@ import { cartAPI } from '../services/cartAPI';
 import { orderAPI } from '../services/orderAPI';
 import { authAPI } from '../services/authAPI';
 import { productAPI } from '../services/productAPI';
+import Calendar from '../components/Calendar';
 
 const BuyerDashboard = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -146,6 +147,35 @@ const BuyerDashboard = ({ user, onLogout }) => {
     }
   };
 
+  // Toggle favorite function
+  const handleToggleFavorite = async (productId) => {
+    try {
+      // For now, just show a success message since we don't have backend favorites
+      const isCurrentlyFavorite = favorites.some(fav => fav.id === productId);
+      
+      if (isCurrentlyFavorite) {
+        setFavorites(prev => prev.filter(fav => fav.id !== productId));
+        toast.success('Removed from favorites!');
+      } else {
+        // Find the product and add to favorites
+        const product = products.find(p => p._id === productId);
+        if (product) {
+          setFavorites(prev => [...prev, {
+            id: product._id,
+            name: product.name,
+            price: `Rs. ${product.price}/${product.unit}`,
+            image: product.images?.[0] || '',
+            farmer: 'Local Farmer'
+          }]);
+          toast.success('Added to favorites!');
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast.error('Failed to update favorites');
+    }
+  };
+
   // Proceed to checkout with Cash on Delivery
   const handleProceedToCheckout = () => {
     navigate('/checkout');
@@ -168,15 +198,22 @@ const BuyerDashboard = ({ user, onLogout }) => {
       case 'orders':
         return <OrdersTab orders={orders} loading={loading.orders} />;
       case 'favorites':
-        return <FavoritesTab favorites={favorites} />;
+        return <FavoritesTab 
+          favorites={favorites} 
+          onAddToCart={handleAddToCart}
+          onRemoveFromFavorites={(productId) => {
+            setFavorites(prev => prev.filter(fav => fav.id !== productId));
+            toast.success('Removed from favorites!');
+          }}
+        />;
       case 'payments':
         return <PaymentsTab />;
       case 'delivery':
         return <DeliveryTab user={user} />;
       case 'reviews':
-        return <ReviewsTab />;
+        return <ReviewsTab orders={orders} />;
       case 'profile':
-        return <ProfileTab user={user} />;
+        return <ProfileTab user={user} orders={orders} />;
       case 'settings':
         return <SettingsTab user={user} />;
       default:
@@ -218,6 +255,7 @@ const BuyerDashboard = ({ user, onLogout }) => {
           <div className="dashboard-header">
             <h1>{getTabTitle(activeTab)}</h1>
             <div className="header-actions">
+              <Calendar compact={true} />
               <button 
                 className="btn btn-secondary" 
                 onClick={() => setActiveTab('cart')}
@@ -395,10 +433,18 @@ const ProductsTab = ({ products, onAddToCart }) => {
               <div key={product._id} className="product-item">
                 <div className="product-image">
                   {product.images && product.images.length > 0 ? (
-                    <img src={product.images[0]} alt={product.name} />
-                  ) : (
-                    <div className="placeholder-image">🥬</div>
-                  )}
+                    <img 
+                      src={product.images[0]} 
+                      alt={product.name}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className="placeholder-image" style={{display: product.images && product.images.length > 0 ? 'none' : 'flex'}}>
+                    🥬
+                  </div>
                 </div>
                 <div className="product-info">
                   <h4>{product.name}</h4>
@@ -416,6 +462,13 @@ const ProductsTab = ({ products, onAddToCart }) => {
                     disabled={product.stock === 0}
                   >
                     {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  </button>
+                  <button 
+                    className="btn btn-outline favorite-btn"
+                    onClick={() => handleToggleFavorite(product._id)}
+                    title="Add to Favorites"
+                  >
+                    ❤️
                   </button>
                 </div>
               </div>
@@ -527,10 +580,18 @@ const CartTab = ({ cartItems, loading, onProceedToCheckout }) => {
               <div key={item.product._id} className="cart-item">
                 <div className="item-image">
                   {item.product.images && item.product.images.length > 0 ? (
-                    <img src={item.product.images[0]} alt={item.product.name} />
-                  ) : (
-                    <div className="placeholder-image">🥬</div>
-                  )}
+                    <img 
+                      src={item.product.images[0]} 
+                      alt={item.product.name}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className="placeholder-image" style={{display: item.product.images && item.product.images.length > 0 ? 'none' : 'flex'}}>
+                    🥬
+                  </div>
                 </div>
                 <div className="item-details">
                   <h4>{item.product.name}</h4>
@@ -650,10 +711,27 @@ const OrdersTab = ({ orders, loading }) => {
                 <h5>Items Ordered</h5>
                 {order.items?.map((item, index) => (
                   <div key={index} className="order-item-detail">
-                    <span className="item-name">{item.productName}</span>
-                    <span className="item-quantity">Qty: {item.quantity} {item.unit || 'kg'}</span>
-                    <span className="item-price">Rs. {item.price}</span>
-                    <span className="item-total">Total: Rs. {(item.price * item.quantity).toFixed(2)}</span>
+                    <div className="order-item-image">
+                      {item.productImage ? (
+                        <img 
+                          src={item.productImage} 
+                          alt={item.productName}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className="order-placeholder-image" style={{display: item.productImage ? 'none' : 'flex'}}>
+                        🥬
+                      </div>
+                    </div>
+                    <div className="order-item-info">
+                      <span className="item-name">{item.productName}</span>
+                      <span className="item-quantity">Qty: {item.quantity} {item.unit || 'kg'}</span>
+                      <span className="item-price">Rs. {item.price}</span>
+                      <span className="item-total">Total: Rs. {(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -690,40 +768,62 @@ const OrdersTab = ({ orders, loading }) => {
 };
 
 // Favorites Tab
-const FavoritesTab = () => {
-  // Mock favorites data
-  const mockFavorites = [
-    { id: 1, name: 'Organic Tomatoes', price: 'Rs. 80/kg', farmer: 'Green Farm' },
-    { id: 2, name: 'Fresh Spinach', price: 'Rs. 60/bunch', farmer: 'Leafy Greens Co.' }
-  ];
-
+const FavoritesTab = ({ favorites, onAddToCart, onRemoveFromFavorites }) => {
   return (
     <div className="favorites-tab">
       <div className="tab-header">
-        <h3>Favorite Items</h3>
-        <p>{mockFavorites.length} items in your favorites</p>
+        <h3>❤️ Favorite Items</h3>
+        <p>{favorites.length} items in your favorites</p>
       </div>
       
       <div className="favorites-grid">
-        {mockFavorites.length > 0 ? (
-          mockFavorites.map((item) => (
+        {favorites.length > 0 ? (
+          favorites.map((item) => (
             <div key={item.id} className="favorite-item">
-              <div className="favorite-icon">🥬</div>
-              <h4>{item.name}</h4>
-              <p className="item-price">{item.price}</p>
-              <small>Farmer: {item.farmer}</small>
-              <div className="item-actions">
-                <button className="btn btn-primary">Add to Cart</button>
-                <button className="btn btn-outline remove-btn">Remove</button>
+              <div className="favorite-image">
+                {item.image ? (
+                  <img 
+                    src={item.image} 
+                    alt={item.name}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className="favorite-placeholder" style={{display: item.image ? 'none' : 'flex'}}>
+                  🥬
+                </div>
+              </div>
+              <div className="favorite-content">
+                <h4>{item.name}</h4>
+                <p className="item-price">{item.price}</p>
+                <small>Farmer: {item.farmer}</small>
+                <div className="item-actions">
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => onAddToCart(item.id)}
+                  >
+                    🛒 Add to Cart
+                  </button>
+                  <button 
+                    className="btn btn-outline remove-btn"
+                    onClick={() => onRemoveFromFavorites(item.id)}
+                  >
+                    💔 Remove
+                  </button>
+                </div>
               </div>
             </div>
           ))
         ) : (
           <div className="no-data">
-            <p>No favorite items yet</p>
+            <div className="empty-icon">💔</div>
+            <h3>No Favorite Items Yet</h3>
+            <p>Start adding products to your favorites by clicking the ❤️ button on products you love!</p>
             <button 
               className="btn btn-primary" 
-              onClick={() => window.location.hash = '#/products'}
+              onClick={() => setActiveTab('products')}
             >
               Browse Products
             </button>
@@ -734,158 +834,1367 @@ const FavoritesTab = () => {
   );
 };
 
-// Payments Tab
-const PaymentsTab = () => (
-  <div className="payments-tab">
-    <h3>Payment Methods</h3>
-    <div className="payment-methods">
-      <div className="payment-method">
-        <h4>Khalti</h4>
-        <p>Digital wallet payment</p>
-        <button className="btn btn-primary">Connect Khalti</button>
+// Enhanced Payments Tab
+const PaymentsTab = () => {
+  const navigate = useNavigate();
+  const [paymentMethods, setPaymentMethods] = useState([
+    { id: 'cod', name: 'Cash on Delivery', connected: true, default: true },
+    { id: 'khalti', name: 'Khalti', connected: false, default: false },
+    { id: 'esewa', name: 'eSewa', connected: false, default: false }
+  ]);
+  const [transactions, setTransactions] = useState([
+    { id: 1, orderId: 'TS240001', amount: 1250, method: 'Cash on Delivery', date: '2024-11-01', status: 'completed' },
+    { id: 2, orderId: 'TS240002', amount: 890, method: 'Cash on Delivery', date: '2024-10-28', status: 'completed' }
+  ]);
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const handleConnectPayment = (methodId) => {
+    setPaymentMethods(prev => 
+      prev.map(method => 
+        method.id === methodId 
+          ? { ...method, connected: !method.connected }
+          : method
+      )
+    );
+    toast.success(`Payment method ${methodId === 'khalti' ? 'Khalti' : 'eSewa'} ${paymentMethods.find(m => m.id === methodId)?.connected ? 'disconnected' : 'connected'}!`);
+  };
+
+  const handleSetDefault = (methodId) => {
+    setPaymentMethods(prev => 
+      prev.map(method => ({
+        ...method,
+        default: method.id === methodId
+      }))
+    );
+    toast.success('Default payment method updated!');
+  };
+
+  return (
+    <div className="enhanced-payments-tab">
+      <div className="payments-header">
+        <div className="header-left">
+          <button className="back-button" onClick={handleGoBack}>
+            ← Back
+          </button>
+          <div className="header-content">
+            <h2>💳 Payment Methods</h2>
+            <p>Manage your payment options and transaction history</p>
+          </div>
+        </div>
       </div>
-      <div className="payment-method">
-        <h4>eSewa</h4>
-        <p>Online payment gateway</p>
-        <button className="btn btn-primary">Connect eSewa</button>
-      </div>
-      <div className="payment-method">
-        <h4>Cash on Delivery</h4>
-        <p>Pay when you receive your order</p>
-        <button className="btn btn-outline">Default</button>
+
+      <div className="payments-content">
+        <div className="payment-methods-section">
+          <h3>Available Payment Methods</h3>
+          <div className="payment-methods-grid">
+            {paymentMethods.map((method) => (
+              <div key={method.id} className={`payment-method-card ${method.connected ? 'connected' : ''}`}>
+                <div className="method-icon">
+                  {method.id === 'cod' && '💵'}
+                  {method.id === 'khalti' && '📱'}
+                  {method.id === 'esewa' && '💳'}
+                </div>
+                <div className="method-info">
+                  <h4>{method.name}</h4>
+                  <p>
+                    {method.id === 'cod' && 'Pay when you receive your order'}
+                    {method.id === 'khalti' && 'Digital wallet payment'}
+                    {method.id === 'esewa' && 'Online payment gateway'}
+                  </p>
+                  <div className="method-status">
+                    {method.connected ? (
+                      <span className="status-badge connected">✅ Connected</span>
+                    ) : (
+                      <span className="status-badge disconnected">❌ Not Connected</span>
+                    )}
+                    {method.default && (
+                      <span className="default-badge">⭐ Default</span>
+                    )}
+                  </div>
+                </div>
+                <div className="method-actions">
+                  {method.id !== 'cod' && (
+                    <button 
+                      className={`connect-btn ${method.connected ? 'disconnect' : 'connect'}`}
+                      onClick={() => handleConnectPayment(method.id)}
+                    >
+                      {method.connected ? 'Disconnect' : 'Connect'}
+                    </button>
+                  )}
+                  {method.connected && !method.default && (
+                    <button 
+                      className="default-btn"
+                      onClick={() => handleSetDefault(method.id)}
+                    >
+                      Set as Default
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="transactions-section">
+          <h3>Recent Transactions</h3>
+          <div className="transactions-list">
+            {transactions.length > 0 ? (
+              transactions.map((transaction) => (
+                <div key={transaction.id} className="transaction-item">
+                  <div className="transaction-info">
+                    <h4>Order #{transaction.orderId}</h4>
+                    <p className="transaction-date">{new Date(transaction.date).toLocaleDateString()}</p>
+                    <p className="payment-method">via {transaction.method}</p>
+                  </div>
+                  <div className="transaction-amount">
+                    <span className="amount">Rs. {transaction.amount.toLocaleString()}</span>
+                    <span className={`status ${transaction.status}`}>
+                      {transaction.status === 'completed' ? '✅ Completed' : '⏳ Pending'}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="no-transactions">
+                <div className="empty-icon">💳</div>
+                <h4>No Transactions Yet</h4>
+                <p>Your payment history will appear here after you make purchases</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="payment-security">
+          <h3>🔒 Payment Security</h3>
+          <div className="security-features">
+            <div className="security-item">
+              <span className="security-icon">🛡️</span>
+              <div className="security-info">
+                <h4>Secure Transactions</h4>
+                <p>All payments are encrypted and secure</p>
+              </div>
+            </div>
+            <div className="security-item">
+              <span className="security-icon">🔐</span>
+              <div className="security-info">
+                <h4>Data Protection</h4>
+                <p>Your payment information is never stored</p>
+              </div>
+            </div>
+            <div className="security-item">
+              <span className="security-icon">💯</span>
+              <div className="security-info">
+                <h4>Money Back Guarantee</h4>
+                <p>100% refund if you're not satisfied</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};;
 
-// Delivery Tab
+// Enhanced Delivery Tab
 const DeliveryTab = ({ user }) => {
+  const navigate = useNavigate();
   const [addresses, setAddresses] = useState([
     {
       id: 1,
       type: 'Home',
-      address: user.address || 'Ward 5, Thamel, Kathmandu',
-      city: user.city || 'Kathmandu',
+      name: 'Home Address',
+      address: user?.address || 'Ward 5, Thamel, Kathmandu',
+      city: user?.city || 'Kathmandu',
+      phone: user?.phone || '+977 9841234567',
+      landmark: 'Near Ratna Park',
       isDefault: true
+    },
+    {
+      id: 2,
+      type: 'Office',
+      name: 'Office Address',
+      address: 'Putalisadak, Kathmandu',
+      city: 'Kathmandu',
+      phone: '+977 9841234567',
+      landmark: 'Near City Centre',
+      isDefault: false
     }
   ]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
+  const [newAddress, setNewAddress] = useState({
+    type: 'Home',
+    name: '',
+    address: '',
+    city: '',
+    phone: '',
+    landmark: ''
+  });
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const handleAddAddress = () => {
+    if (!newAddress.name || !newAddress.address || !newAddress.city) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const address = {
+      id: Date.now(),
+      ...newAddress,
+      isDefault: addresses.length === 0
+    };
+
+    setAddresses(prev => [...prev, address]);
+    setNewAddress({ type: 'Home', name: '', address: '', city: '', phone: '', landmark: '' });
+    setShowAddForm(false);
+    toast.success('Address added successfully!');
+  };
+
+  const handleSetDefault = (addressId) => {
+    setAddresses(prev => 
+      prev.map(addr => ({
+        ...addr,
+        isDefault: addr.id === addressId
+      }))
+    );
+    toast.success('Default address updated!');
+  };
+
+  const handleDeleteAddress = (addressId) => {
+    if (addresses.length === 1) {
+      toast.error('You must have at least one address');
+      return;
+    }
+    
+    setAddresses(prev => prev.filter(addr => addr.id !== addressId));
+    toast.success('Address deleted successfully!');
+  };
+
+  const deliveryZones = [
+    { area: 'Kathmandu Valley', fee: 'Free', time: '1-2 hours' },
+    { area: 'Bhaktapur', fee: 'Rs. 50', time: '2-3 hours' },
+    { area: 'Lalitpur', fee: 'Rs. 30', time: '1-2 hours' },
+    { area: 'Outside Valley', fee: 'Rs. 150', time: '1-2 days' }
+  ];
 
   return (
-    <div className="delivery-tab">
-      <div className="tab-header">
-        <h3>Delivery Addresses</h3>
-        <button className="btn btn-primary">
+    <div className="enhanced-delivery-tab">
+      <div className="delivery-header">
+        <div className="header-left">
+          <button className="back-button" onClick={handleGoBack}>
+            ← Back
+          </button>
+          <div className="header-content">
+            <h2>🚚 Delivery Management</h2>
+            <p>Manage your delivery addresses and preferences</p>
+          </div>
+        </div>
+        <button 
+          className="add-address-btn"
+          onClick={() => setShowAddForm(true)}
+        >
           + Add New Address
         </button>
       </div>
-      
-      <div className="delivery-addresses">
-        {addresses.map((address) => (
-          <div key={address.id} className="address-item">
-            <div className="address-header">
-              <h4>{address.type} Address</h4>
-              {address.isDefault && (
-                <span className="default-badge">Default</span>
-              )}
+
+      <div className="delivery-content">
+        <div className="addresses-section">
+          <h3>📍 Saved Addresses</h3>
+          <div className="addresses-grid">
+            {addresses.map((address) => (
+              <div key={address.id} className="address-card">
+                <div className="address-header">
+                  <div className="address-type">
+                    <span className="type-icon">
+                      {address.type === 'Home' ? '🏠' : address.type === 'Office' ? '🏢' : '📍'}
+                    </span>
+                    <h4>{address.name}</h4>
+                  </div>
+                  {address.isDefault && (
+                    <span className="default-badge">⭐ Default</span>
+                  )}
+                </div>
+                
+                <div className="address-details">
+                  <p className="address-text">📍 {address.address}</p>
+                  <p className="address-city">🏙️ {address.city}</p>
+                  <p className="address-phone">📞 {address.phone}</p>
+                  {address.landmark && (
+                    <p className="address-landmark">🗺️ {address.landmark}</p>
+                  )}
+                </div>
+                
+                <div className="address-actions">
+                  <button className="action-btn edit">✏️ Edit</button>
+                  {!address.isDefault && (
+                    <button 
+                      className="action-btn default"
+                      onClick={() => handleSetDefault(address.id)}
+                    >
+                      ⭐ Set Default
+                    </button>
+                  )}
+                  {addresses.length > 1 && (
+                    <button 
+                      className="action-btn delete"
+                      onClick={() => handleDeleteAddress(address.id)}
+                    >
+                      🗑️ Delete
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {showAddForm && (
+          <div className="add-address-form">
+            <h3>➕ Add New Address</h3>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Address Type</label>
+                <select 
+                  value={newAddress.type}
+                  onChange={(e) => setNewAddress({...newAddress, type: e.target.value})}
+                >
+                  <option value="Home">🏠 Home</option>
+                  <option value="Office">🏢 Office</option>
+                  <option value="Other">📍 Other</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Address Name *</label>
+                <input
+                  type="text"
+                  value={newAddress.name}
+                  onChange={(e) => setNewAddress({...newAddress, name: e.target.value})}
+                  placeholder="e.g., Home, Office, Mom's House"
+                />
+              </div>
+              <div className="form-group full-width">
+                <label>Full Address *</label>
+                <input
+                  type="text"
+                  value={newAddress.address}
+                  onChange={(e) => setNewAddress({...newAddress, address: e.target.value})}
+                  placeholder="House/Building number, Street, Ward"
+                />
+              </div>
+              <div className="form-group">
+                <label>City *</label>
+                <input
+                  type="text"
+                  value={newAddress.city}
+                  onChange={(e) => setNewAddress({...newAddress, city: e.target.value})}
+                  placeholder="Kathmandu"
+                />
+              </div>
+              <div className="form-group">
+                <label>Phone Number</label>
+                <input
+                  type="tel"
+                  value={newAddress.phone}
+                  onChange={(e) => setNewAddress({...newAddress, phone: e.target.value})}
+                  placeholder="+977 98XXXXXXXX"
+                />
+              </div>
+              <div className="form-group full-width">
+                <label>Landmark (Optional)</label>
+                <input
+                  type="text"
+                  value={newAddress.landmark}
+                  onChange={(e) => setNewAddress({...newAddress, landmark: e.target.value})}
+                  placeholder="Near temple, school, or any recognizable place"
+                />
+              </div>
             </div>
-            <p className="address-text">{address.address}</p>
-            <p className="address-city">{address.city}</p>
-            <div className="address-actions">
-              <button className="btn btn-outline">Edit</button>
-              {!address.isDefault && (
-                <button className="btn btn-outline">Set as Default</button>
-              )}
+            <div className="form-actions">
+              <button className="save-btn" onClick={handleAddAddress}>
+                💾 Save Address
+              </button>
+              <button className="cancel-btn" onClick={() => setShowAddForm(false)}>
+                ❌ Cancel
+              </button>
             </div>
           </div>
-        ))}
+        )}
+
+        <div className="delivery-zones-section">
+          <h3>🗺️ Delivery Zones & Charges</h3>
+          <div className="zones-grid">
+            {deliveryZones.map((zone, index) => (
+              <div key={index} className="zone-card">
+                <h4>{zone.area}</h4>
+                <div className="zone-details">
+                  <div className="zone-fee">
+                    <span className="label">Delivery Fee:</span>
+                    <span className="value">{zone.fee}</span>
+                  </div>
+                  <div className="zone-time">
+                    <span className="label">Delivery Time:</span>
+                    <span className="value">{zone.time}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="delivery-preferences">
+          <h3>⚙️ Delivery Preferences</h3>
+          <div className="preferences-grid">
+            <div className="preference-item">
+              <h4>🕐 Preferred Time Slot</h4>
+              <select className="preference-select">
+                <option value="anytime">Anytime (8AM - 8PM)</option>
+                <option value="morning">Morning (8AM - 12PM)</option>
+                <option value="afternoon">Afternoon (12PM - 5PM)</option>
+                <option value="evening">Evening (5PM - 8PM)</option>
+              </select>
+            </div>
+            <div className="preference-item">
+              <h4>📞 Contact Preference</h4>
+              <select className="preference-select">
+                <option value="call">Call before delivery</option>
+                <option value="sms">SMS notification only</option>
+                <option value="both">Both call and SMS</option>
+              </select>
+            </div>
+            <div className="preference-item">
+              <h4>📦 Special Instructions</h4>
+              <textarea 
+                className="preference-textarea"
+                placeholder="Any special delivery instructions..."
+                rows="3"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-// Reviews Tab
-const ReviewsTab = () => (
-  <div className="reviews-tab">
-    <h3>My Reviews</h3>
-    <div className="reviews-content">
-      <div className="review-form">
-        <h4>Write a Review</h4>
-        <textarea placeholder="Share your experience with the products and farmers..." />
-        <button className="btn btn-primary">Submit Review</button>
-      </div>
-      <div className="reviews-list">
-        <p>No reviews yet. Start shopping to leave reviews!</p>
-      </div>
-    </div>
-  </div>
-);
+// Enhanced Reviews Tab
+const ReviewsTab = ({ orders }) => {
+  const navigate = useNavigate();
+  const [reviews, setReviews] = useState([
+    {
+      id: 1,
+      orderId: 'TS240001',
+      productName: 'Organic Tomatoes',
+      productImage: '',
+      rating: 5,
+      review: 'Excellent quality tomatoes! Fresh and organic as promised. Will definitely order again.',
+      date: '2024-11-01',
+      farmerName: 'Green Valley Farm',
+      helpful: 12
+    },
+    {
+      id: 2,
+      orderId: 'TS240002',
+      productName: 'Fresh Spinach',
+      productImage: '',
+      rating: 4,
+      review: 'Good quality spinach, delivered fresh. Packaging could be better.',
+      date: '2024-10-28',
+      farmerName: 'Leafy Greens Co.',
+      helpful: 8
+    }
+  ]);
+  const [pendingReviews, setPendingReviews] = useState([
+    {
+      orderId: 'TS240003',
+      productName: 'Organic Carrots',
+      productImage: '',
+      deliveredDate: '2024-11-03'
+    }
+  ]);
+  const [activeTab, setActiveTab] = useState('my-reviews');
+  const [newReview, setNewReview] = useState({
+    rating: 5,
+    review: '',
+    orderId: ''
+  });
 
-// Profile Tab
-const ProfileTab = ({ user }) => (
-  <div className="profile-tab">
-    <div className="tab-header">
-      <h3>My Profile</h3>
-    </div>
-    
-    <div className="profile-content">
-      <div className="profile-info">
-        <div className="info-group">
-          <label>Full Name</label>
-          <p>{user.firstName} {user.lastName}</p>
-        </div>
-        <div className="info-group">
-          <label>Username</label>
-          <p>{user.username}</p>
-        </div>
-        <div className="info-group">
-          <label>Email</label>
-          <p>{user.email}</p>
-        </div>
-        <div className="info-group">
-          <label>Phone</label>
-          <p>{user.phone}</p>
-        </div>
-        <div className="info-group">
-          <label>Address</label>
-          <p>{user.address}</p>
-        </div>
-        <div className="info-group">
-          <label>City</label>
-          <p>{user.city}</p>
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const handleSubmitReview = (orderId) => {
+    if (!newReview.review.trim()) {
+      toast.error('Please write a review');
+      return;
+    }
+
+    const review = {
+      id: Date.now(),
+      orderId,
+      productName: pendingReviews.find(p => p.orderId === orderId)?.productName,
+      productImage: pendingReviews.find(p => p.orderId === orderId)?.productImage || '',
+      rating: newReview.rating,
+      review: newReview.review,
+      date: new Date().toISOString().split('T')[0],
+      farmerName: 'Local Farm',
+      helpful: 0
+    };
+
+    setReviews(prev => [review, ...prev]);
+    setPendingReviews(prev => prev.filter(p => p.orderId !== orderId));
+    setNewReview({ rating: 5, review: '', orderId: '' });
+    toast.success('Review submitted successfully!');
+  };
+
+  const renderStars = (rating, interactive = false, onRatingChange = null) => {
+    return (
+      <div className="star-rating">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            className={`star ${star <= rating ? 'filled' : ''} ${interactive ? 'interactive' : ''}`}
+            onClick={interactive ? () => onRatingChange(star) : undefined}
+          >
+            ⭐
+          </span>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="enhanced-reviews-tab">
+      <div className="reviews-header">
+        <div className="header-left">
+          <button className="back-button" onClick={handleGoBack}>
+            ← Back
+          </button>
+          <div className="header-content">
+            <h2>⭐ Reviews & Ratings</h2>
+            <p>Share your experience and help other customers</p>
+          </div>
         </div>
       </div>
-      <button className="btn btn-primary">Edit Profile</button>
+
+      <div className="reviews-stats">
+        <div className="stat-card">
+          <div className="stat-icon">⭐</div>
+          <div className="stat-content">
+            <h3>{reviews.length}</h3>
+            <p>Reviews Written</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">👍</div>
+          <div className="stat-content">
+            <h3>{reviews.reduce((sum, r) => sum + r.helpful, 0)}</h3>
+            <p>Helpful Votes</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">📝</div>
+          <div className="stat-content">
+            <h3>{pendingReviews.length}</h3>
+            <p>Pending Reviews</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">🌟</div>
+          <div className="stat-content">
+            <h3>{reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : '0'}</h3>
+            <p>Average Rating</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="reviews-tabs">
+        <button 
+          className={`tab-btn ${activeTab === 'my-reviews' ? 'active' : ''}`}
+          onClick={() => setActiveTab('my-reviews')}
+        >
+          📝 My Reviews ({reviews.length})
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
+          onClick={() => setActiveTab('pending')}
+        >
+          ⏳ Pending Reviews ({pendingReviews.length})
+        </button>
+      </div>
+
+      <div className="reviews-content">
+        {activeTab === 'my-reviews' && (
+          <div className="my-reviews-section">
+            {reviews.length > 0 ? (
+              <div className="reviews-list">
+                {reviews.map((review) => (
+                  <div key={review.id} className="review-card">
+                    <div className="review-header">
+                      <div className="product-info">
+                        <div className="product-image">
+                          {review.productImage ? (
+                            <img src={review.productImage} alt={review.productName} />
+                          ) : (
+                            <div className="placeholder">🥬</div>
+                          )}
+                        </div>
+                        <div className="product-details">
+                          <h4>{review.productName}</h4>
+                          <p>Order #{review.orderId}</p>
+                          <p className="farmer-name">by {review.farmerName}</p>
+                        </div>
+                      </div>
+                      <div className="review-meta">
+                        {renderStars(review.rating)}
+                        <span className="review-date">{new Date(review.date).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="review-content">
+                      <p>{review.review}</p>
+                    </div>
+                    
+                    <div className="review-footer">
+                      <div className="helpful-section">
+                        <span className="helpful-count">👍 {review.helpful} people found this helpful</span>
+                      </div>
+                      <div className="review-actions">
+                        <button className="action-btn edit">✏️ Edit</button>
+                        <button className="action-btn delete">🗑️ Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-reviews">
+                <div className="empty-icon">⭐</div>
+                <h3>No Reviews Yet</h3>
+                <p>Start shopping and leave reviews to help other customers!</p>
+                <button 
+                  className="browse-btn"
+                  onClick={() => setActiveTab('products')}
+                >
+                  🛒 Browse Products
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'pending' && (
+          <div className="pending-reviews-section">
+            {pendingReviews.length > 0 ? (
+              <div className="pending-list">
+                {pendingReviews.map((item) => (
+                  <div key={item.orderId} className="pending-review-card">
+                    <div className="pending-header">
+                      <div className="product-info">
+                        <div className="product-image">
+                          {item.productImage ? (
+                            <img src={item.productImage} alt={item.productName} />
+                          ) : (
+                            <div className="placeholder">🥬</div>
+                          )}
+                        </div>
+                        <div className="product-details">
+                          <h4>{item.productName}</h4>
+                          <p>Order #{item.orderId}</p>
+                          <p className="delivered-date">Delivered on {new Date(item.deliveredDate).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="review-form">
+                      <div className="rating-section">
+                        <label>Rate this product:</label>
+                        {renderStars(newReview.orderId === item.orderId ? newReview.rating : 5, true, (rating) => 
+                          setNewReview(prev => ({ ...prev, rating, orderId: item.orderId }))
+                        )}
+                      </div>
+                      
+                      <div className="review-input">
+                        <textarea
+                          placeholder="Share your experience with this product..."
+                          value={newReview.orderId === item.orderId ? newReview.review : ''}
+                          onChange={(e) => setNewReview(prev => ({ ...prev, review: e.target.value, orderId: item.orderId }))}
+                          rows="4"
+                        />
+                      </div>
+                      
+                      <button 
+                        className="submit-review-btn"
+                        onClick={() => handleSubmitReview(item.orderId)}
+                      >
+                        📝 Submit Review
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-pending">
+                <div className="empty-icon">✅</div>
+                <h3>All Caught Up!</h3>
+                <p>You've reviewed all your recent purchases. Thank you for your feedback!</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};;
+
+// Enhanced Profile Tab
+const ProfileTab = ({ user, orders }) => {
+  const navigate = useNavigate();
+  const [editMode, setEditMode] = useState(false);
+  const [profileData, setState({
+    firstN
+    || '',
+    username: user?.username || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    city: user?.city || '',
+    bio: user?
+    preferences: user?.preferences || {
+      organic: true,
+      local: true,
+      notifica
+    }
+  });
+
+  const handle) => {
+    navigate(-1);
+  };
+
+  const handle{
+    // Save profile data logic here
+    setEditMode(false);
+    toast.success('Profile upda
+  };
+
+  const handleInputChange = (
+    setProfileData(prev => ({
+      ...prev,
+      [fieldlue
+    }));
+  };
+
+   {
+{
+      ...prev,
+      preferences: {
+        ...prev.preferences,
+        [preference]: !prev.p]
+      }
+    }));
+  };
+
+  const memberSince = user?.createdAt ? new Date(user.crear();
+  const tota || 0;
+  const totalSpent = orders?.reduce((s
+
+  return (
+    <div className="enhanced-profile-tab">
+      <div c>
+        <div className="header-left">
+          <button className="b}>
+            ← Back
+          </button>
+          <dntent">
+            <h2>👤 My Profile</h2>
+            <p>Manage yo
+          </div>
+        </div>
+        <button 
+          btn"
+        tMode)}
+        >
+ofile'}
+        </button> </div> class
+  );
+};>   </divdiv>
+      </v>
+ di   </    iv>
+     </d
+      nt</button>e Accou">🗑️ Delette-btn dele"actionsName=clas <button            tton>
+ta</bu Export Da">📥-btn exportction"asName= clas    <button
+        /button>tings<et Privacy Sy">🛡️n-btn privace="actioassNamclbutton         <n>
+    buttosword</nge Pashay">🔒 Cecuritn son-bt="actissName<button cla         grid">
+   "actions-e=am <div classN
+         >s</h4Actioncount  Ac<h4>🔧       s">
+   ionount-actame="acciv classN  <d            )}
+
+v>
+      </di
+      >tton       </bu    ancel
+    ❌ C         )}>
+  (falsetEditMode=> se={() nClick otn"="cancel-bon classNameutt        <b
+    on> </butt          
+ anges  💾 Save Ch            dleSave}>
+nClick={hanve-btn" oame="satton classN       <bu
+     ns">le-actioe="profiv classNam      <di(
+    ode &&      {editMdiv>
+
+          </ </div>
+ 
+         /div>      <        </div>
+          
+   </label>            
+   ></span>r"me="slidespan classNa           <   />
+                 ode}
+     {!editMsabled=  di               )}
+   ions'tificatChange('noceenPrefer handle={() =>hangeonC                   alse}
+ ns || f.notificatios?ncerefeeData.prerofilked={p        chec         
+   kbox" hec="ctype                      <input 
+        
+        ">ch"toggle-switame=abel classN  <l          iv>
+     </d         
+      rs</p>ur ordeut yoabos ateupd<p>Receive          
+         5>/hfications<r Notide  <h5>🔔 Or             ">
+   nforence-ime="prefeNa  <div class           tem">
+   reference-iName="pdiv class    <  
+                  iv>
+          </d    label>
+          </       /span>
+   slider"><lassName="n c   <spa             />
+                 e}
+   Moditbled={!ed       disa            al')}
+ nge('locreferenceChaleP hande={() =>Chang   on                | false}
+ ocal |?.lferencesleData.preofid={prchecke                 ox" 
+   checkb     type="             input 
+     <             
+  ch">ittoggle-swe="l classNam <labe            >
+          </div   
+      rs</p>l farme loca fromize productsPriorit         <p>        </h5>
+ ocal Farmersrt L🏠 Suppo     <h5>         nfo">
+    erence-ime="prefssNa claiv     <d   
+        m">erence-iteme="preflassNa<div c        
+           
+          </div>          bel>
+   /la   <     
+        "></span>"sliderassName= <span cl        
+                   />    
+    ode}{!editMbled=  disa             
+     }anic')hange('orgPreferenceC=> handleChange={()         on          false}
+    ||s?.organiccea.preferenleDatecked={profi    ch          x" 
+      botype="check                   
+ ut np   <i              ">
+ -switchtogglessName="la c<label        >
+           </div            ults</p>
+ ch resarst in ses firoductc pr organi<p>Show          
+        s</h5>uctanic Prod Prefer Org  <h5>🌱       
+         ">nfoference-i="preameassN    <div cl         
+   ce-item">"preferensName=<div clas            -list">
+  erencesme="pref<div classNa            >
+erences</h4ng Pref Shoppi<h4>⚙️        on">
+    ecti-sncesfere"preName=v class    <di  
+
+    >    </divdiv>
+            </       )}
+            /span>
+ d yet'}<bio addeio || 'No eData.brofilspan>{p          <      : (
+       )       
+      />          ws="3"
+     ro            ..."
+  urselfyoout s ab="Tell uplaceholder                  alue)}
+e.target.v'bio', nputChange( handleInge={(e) =>nCha        o       o}
+   Data.bifile={pro  value            tarea
+        <tex           de ? (
+ ditMo      {e     abel>
+   label>Bio</l       <      >
+ ll-width"tem ful-ie="detaidiv classNam           <         
+    </div>
+      }
+          )         '}</span>
+ fiedpeci || 'Not sddressrofileData.a  <span>{p          (
+            ) :  />
+              "
+       ="2  rows                
+alue)}rget.vs', e.tadresutChange('adandleInp => hge={(e)onChan               dress}
+   .adfileDataprolue={      va            <textarea
+             
+    (e ?Mod       {edit  el>
+     ess</label>Addr    <lab         width">
+ ull-tem f"detail-ilassName=   <div c        
+             
+v> </di       iv>
+      </d          
+   )}        
+       </span>ified'}ot spec || 'NleData.cityspan>{profi       <             ) : (
+               />
+                 t.value)}
+.targey', e'cittChange(> handleInpunge={(e) =     onCha            ity}
+   a.catleDe={profi     valu     
+          ""textype=  t             ut
+          <inp      
+        ? ({editMode           el>
+     el>City</lab <lab               em">
+etail-itssName="div cla<d           
+           iv>
+               </d   )}
+             span>
+     '}</cified || 'Not speonea.phileDat <span>{prof         
+         (       ) :        />
+                  
+ lue)}.va', e.targetge('phoneInputChan handle) =>={(engeonCha                one}
+    ata.pheD={profil     value              l"
+  type="te           
+        put   <in        
+       e ? (ditMod     {e
+           bel>r</laone NumbePh     <label>          -item">
+ "detailName=lass      <div c     
+                 v>
+   </di         
+          )}>
+        /spanspecified'}< 'Not mail ||.eeDatan>{profil<spa                 : (
+             ) />
+              )}
+        valuee.target.', hange('emailtCInpule(e) => handhange={      onC           
+   eData.email}={profil  value               "
+   "email    type=       
+            <input             (
+   ditMode ?    {e  
+          </label>essl>Email Addr     <labe
+           l-item">detaime="lassNaiv c    <d
+                     
+       </div>             )}
+             n>
+}</spa specified'e || 'NotrnamfileData.useroan>{p   <sp                 ) : (
+                    />
+          alue)}
+  et.vrgme', e.tasernage('unputChandleIange={(e) => honChan             e}
+       amData.usernleue={profi val                  text"
+ "   type=         
+           <input          (
+      Mode ?it  {ed           bel>
+   sername</la<label>U             tem">
+   il-iame="detaiv classN    <d          
+         v>
+       </di             )}
+            
+   d'}</span>cifiet spetName || 'Noa.las{profileDatan>  <sp                 (
+    ) :          />
+                  e)}
+  .value.targetame', ge('lastNhanputC=> handleIne={(e)    onChang          
+       lastName}rofileData.value={p                  text"
+  pe="          ty      put
+            <in          (
+Mode ?     {edit   
+         me</label>st Naabel>La         <l>
+       item"me="detail-classNadiv      <                 
+     v>
+         </di        )}
+             '}</span>
+ ied'Not specifame || stNeData.firpan>{profil<s                     ) : (
+                   />
+         }
+   arget.value)tName', e.trs('fiutChangeInp => handleange={(e)Ch     on              }
+ Name.firstileDataprofue={      val          
+    pe="text"       ty          
+   put    <in              ode ? (
+ {editM            bel>
+   st Name</lael>Fir      <lab        ">
+  detail-item="Namev class     <di
+         s-grid">"detailassName=    <div cl4>
+        tion</hal InformaPerson<h4>📋        
+     section">ils-Name="detaassdiv cl          <">
+ailsdet"profile- className=     <div   </div>
+
+ >
+        </div    v>
+           </din>
+      /spaints Earned<-label">Po"statclassName=  <span             </span>
+100)}nt / talSper(to{Math.flooe">lu="stat-van className        <spam">
+      e="stat-itev classNam  <di         >
+   </div       </span>
+   l Spentabel">Totastat-lme=" classNaan   <sp         >
+  ng()}</spanrialeStLoct.tootalSpen>Rs. {te"stat-valusName="  <span clas          tem">
+  e="stat-issNam   <div cla
+           </div>         n>
+ s</spabel">Order"stat-lame=lassNa    <span c     n>
+     rders}</spaue">{totalOtat-val"s className=span    <          
+-item">statsName="v clas         <di   e-stats">
+"profilName=ass  <div cl       div>
+
+  </       /div>
+            <  }
+Lover</span>ganic anic">🌱 Or"badge orgame=n classN& <spa.organic &eferences?eData.pr    {profil   
+       span>}</mertol Cus Loyaoyal">⭐e l"badg className= && <span 10ders >Or   {total      pan>
+     ified</s">✅ Verifieddge verbae="sNamn clas       <spa
+       e-badges">filro"pclassName=iv     <d>
+        nce}</p {memberSisinceber e">🗓️ Memember-sinclassName="m    <p c>
+        }</pmeData.usernaileof>@{pr"username"e= <p classNam           >
+ame}</h3tN.lastafileDa{proe} tNamfirsData.le>{profi     <h3     
+  mmary">rofile-su"pssName=<div cla   
+          
+       v>/di    <>
+      uttonPhoto</b">📷 Change -avatar-btnme="uploadassNabutton cl        <>
+    </div           
+ se() || 'U'}.toUpperCa0)??.charAt(irstNamea.frofileDat       {p      rcle">
+ -citarme="avassNav cla<di        
+    ">avatarprofile-me="div classNa
+          <verview">e-oprofilclassName="       <div ">
+ entfile-contro"pName=
+      <div
+
+     it Pr '✏️ EdChanges' :💾 Save  ? '{editMode          ode(!ediitM => setEdClick={()  onprofile-"edit-sName=clasferences</p>tion and preformainl narsour peeader-coe="hlassNamiv chandleGoBack={Clickton" onack-butheader"profile-Name="lass 0; 0), 0) ||al ||der.tot=> sum + (or order) um,ders?.lengthders = orlOretFullYete().g: new DaullYear() dAt).getFateerencerences[prefrefea(prev => (tProfileDat    seerence) =>prefhange = (PreferenceC handlestcon;
 
 // Settings Tab
-const SettingsTab = () => (
-  <div className="settings-tab">
-    <h3>Account Settings</h3>
-    <div className="settings-options">
-      <div className="setting-option">
-        <h4>Personal Information</h4>
-        <p>Update your name, email, and phone number</p>
-        <button className="btn btn-outline">Edit</button>
+// Enhanced Settings Tab
+const SettingsTab = ({ user }) => {
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('account');
+  const [notifications, setNotifications] = useState({
+    orderUpdates: true,
+    promotions: false,
+    newsletter: true,
+    sms: false
+  });
+  const [privacy, setPrivacy] = useState({
+    profileVisible: true,
+    shareData: false,
+    marketingEmails: false
+  });
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const handleNotificationChange = (key) => {
+    setNotifications(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+    toast.success('Notification preferences updated!');
+  };
+
+  const handlePrivacyChange = (key) => {
+    setPrivacy(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+    toast.success('Privacy settings updated!');
+  };
+
+  return (
+    <div className="enhanced-settings-tab">
+      <div className="settings-header">
+        <div className="header-left">
+          <button className="back-button" onClick={handleGoBack}>
+            ← Back
+          </button>
+          <div className="header-content">
+            <h2>⚙️ Account Settings</h2>
+            <p>Manage your account preferences and security</p>
+          </div>
+        </div>
       </div>
-      <div className="setting-option">
-        <h4>Delivery Preferences</h4>
-        <p>Manage your delivery addresses and preferences</p>
-        <button className="btn btn-outline">Configure</button>
-      </div>
-      <div className="setting-option">
-        <h4>Notifications</h4>
-        <p>Manage your notification preferences</p>
-        <button className="btn btn-outline">Configure</button>
-      </div>
-      <div className="setting-option">
-        <h4>Privacy</h4>
-        <p>Control your privacy settings</p>
-        <button className="btn btn-outline">Configure</button>
+
+      <div className="settings-layout">
+        <div className="settings-sidebar">
+          <div className="settings-nav">
+            <button 
+              className={`nav-item ${activeSection === 'account' ? 'active' : ''}`}
+              onClick={() => setActiveSection('account')}
+            >
+              👤 Account
+            </button>
+            <button 
+              className={`nav-item ${activeSection === 'notifications' ? 'active' : ''}`}
+              onClick={() => setActiveSection('notifications')}
+            >
+              🔔 Notifications
+            </button>
+            <button 
+              className={`nav-item ${activeSection === 'privacy' ? 'active' : ''}`}
+              onClick={() => setActiveSection('privacy')}
+            >
+              🛡️ Privacy
+            </button>
+            <button 
+              className={`nav-item ${activeSection === 'security' ? 'active' : ''}`}
+              onClick={() => setActiveSection('security')}
+            >
+              🔒 Security
+            </button>
+            <button 
+              className={`nav-item ${activeSection === 'preferences' ? 'active' : ''}`}
+              onClick={() => setActiveSection('preferences')}
+            >
+              🎯 Preferences
+            </button>
+          </div>
+        </div>
+
+        <div className="settings-content">
+          {activeSection === 'account' && (
+            <div className="settings-section">
+              <h3>👤 Account Information</h3>
+              <div className="account-settings">
+                <div className="setting-card">
+                  <div className="setting-info">
+                    <h4>Personal Details</h4>
+                    <p>Update your name, email, and contact information</p>
+                  </div>
+                  <button className="setting-btn">✏️ Edit Profile</button>
+                </div>
+                
+                <div className="setting-card">
+                  <div className="setting-info">
+                    <h4>Change Password</h4>
+                    <p>Update your password to keep your account secure</p>
+                  </div>
+                  <button className="setting-btn">🔑 Change Password</button>
+                </div>
+                
+                <div className="setting-card">
+                  <div className="setting-info">
+                    <h4>Two-Factor Authentication</h4>
+                    <p>Add an extra layer of security to your account</p>
+                  </div>
+                  <button className="setting-btn">🛡️ Enable 2FA</button>
+                </div>
+                
+                <div className="setting-card">
+                  <div className="setting-info">
+                    <h4>Account Verification</h4>
+                    <p>Verify your phone number and email address</p>
+                  </div>
+                  <button className="setting-btn">✅ Verify Account</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'notifications' && (
+            <div className="settings-section">
+              <h3>🔔 Notification Preferences</h3>
+              <div className="notification-settings">
+                <div className="notification-group">
+                  <h4>Order Notifications</h4>
+                  <div className="notification-item">
+                    <div className="notification-info">
+                      <h5>Order Updates</h5>
+                      <p>Get notified about order status changes</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input 
+                        type="checkbox" 
+                        checked={notifications.orderUpdates}
+                        onChange={() => handleNotificationChange('orderUpdates')}
+                      />
+                      <span className="slider"></span>
+                    </label>
+                  </div>
+                  
+                  <div className="notification-item">
+                    <div className="notification-info">
+                      <h5>SMS Notifications</h5>
+                      <p>Receive text messages for important updates</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input 
+                        type="checkbox" 
+                        checked={notifications.sms}
+                        onChange={() => handleNotificationChange('sms')}
+                      />
+                      <span className="slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="notification-group">
+                  <h4>Marketing Communications</h4>
+                  <div className="notification-item">
+                    <div className="notification-info">
+                      <h5>Promotional Offers</h5>
+                      <p>Receive notifications about deals and discounts</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input 
+                        type="checkbox" 
+                        checked={notifications.promotions}
+                        onChange={() => handleNotificationChange('promotions')}
+                      />
+                      <span className="slider"></span>
+                    </label>
+                  </div>
+                  
+                  <div className="notification-item">
+                    <div className="notification-info">
+                      <h5>Newsletter</h5>
+                      <p>Stay updated with our weekly newsletter</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input 
+                        type="checkbox" 
+                        checked={notifications.newsletter}
+                        onChange={() => handleNotificationChange('newsletter')}
+                      />
+                      <span className="slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'privacy' && (
+            <div className="settings-section">
+              <h3>🛡️ Privacy Settings</h3>
+              <div className="privacy-settings">
+                <div className="privacy-item">
+                  <div className="privacy-info">
+                    <h4>Profile Visibility</h4>
+                    <p>Control who can see your profile information</p>
+                  </div>
+                  <select className="privacy-select">
+                    <option value="public">Public</option>
+                    <option value="friends">Friends Only</option>
+                    <option value="private">Private</option>
+                  </select>
+                </div>
+                
+                <div className="privacy-item">
+                  <div className="privacy-info">
+                    <h4>Data Sharing</h4>
+                    <p>Allow us to share anonymized data for research</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={privacy.shareData}
+                      onChange={() => handlePrivacyChange('shareData')}
+                    />
+                    <span className="slider"></span>
+                  </label>
+                </div>
+                
+                <div className="privacy-item">
+                  <div className="privacy-info">
+                    <h4>Marketing Emails</h4>
+                    <p>Receive personalized marketing emails</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={privacy.marketingEmails}
+                      onChange={() => handlePrivacyChange('marketingEmails')}
+                    />
+                    <span className="slider"></span>
+                  </label>
+                </div>
+                
+                <div className="privacy-actions">
+                  <h4>Data Management</h4>
+                  <div className="data-actions">
+                    <button className="data-btn export">📥 Export My Data</button>
+                    <button className="data-btn delete">🗑️ Delete Account</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'security' && (
+            <div className="settings-section">
+              <h3>🔒 Security Settings</h3>
+              <div className="security-settings">
+                <div className="security-item">
+                  <div className="security-info">
+                    <h4>Login Sessions</h4>
+                    <p>Manage your active login sessions</p>
+                  </div>
+                  <button className="security-btn">👁️ View Sessions</button>
+                </div>
+                
+                <div className="security-item">
+                  <div className="security-info">
+                    <h4>Login Alerts</h4>
+                    <p>Get notified of suspicious login attempts</p>
+                  </div>
+                  <label className="toggle-switch">
+                    <input type="checkbox" defaultChecked />
+                    <span className="slider"></span>
+                  </label>
+                </div>
+                
+                <div className="security-item">
+                  <div className="security-info">
+                    <h4>Account Recovery</h4>
+                    <p>Set up account recovery options</p>
+                  </div>
+                  <button className="security-btn">🔧 Configure</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'preferences' && (
+            <div className="settings-section">
+              <h3>🎯 Shopping Preferences</h3>
+              <div className="preferences-settings">
+                <div className="preference-group">
+                  <h4>Product Preferences</h4>
+                  <div className="preference-item">
+                    <label>Preferred Categories</label>
+                    <div className="category-tags">
+                      <span className="tag active">🥬 Vegetables</span>
+                      <span className="tag">🍎 Fruits</span>
+                      <span className="tag active">🌱 Organic</span>
+                      <span className="tag">🥛 Dairy</span>
+                    </div>
+                  </div>
+                  
+                  <div className="preference-item">
+                    <label>Budget Range</label>
+                    <select className="preference-select">
+                      <option value="any">Any Budget</option>
+                      <option value="low">Under Rs. 500</option>
+                      <option value="medium">Rs. 500 - 2000</option>
+                      <option value="high">Above Rs. 2000</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="preference-group">
+                  <h4>Delivery Preferences</h4>
+                  <div className="preference-item">
+                    <label>Preferred Delivery Time</label>
+                    <select className="preference-select">
+                      <option value="anytime">Anytime</option>
+                      <option value="morning">Morning (8AM - 12PM)</option>
+                      <option value="afternoon">Afternoon (12PM - 5PM)</option>
+                      <option value="evening">Evening (5PM - 8PM)</option>
+                    </select>
+                  </div>
+                  
+                  <div className="preference-item">
+                    <label>Special Instructions</label>
+                    <textarea 
+                      className="preference-textarea"
+                      placeholder="Any special delivery instructions..."
+                      rows="3"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default BuyerDashboard;

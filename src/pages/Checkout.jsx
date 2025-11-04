@@ -509,17 +509,24 @@ const Checkout = () => {
               {cart.items.map((item) => (
                 <div key={item.productId} className="summary-item">
                   <div className="item-image">
-                    <img 
-                      src={item.productImage || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop'} 
-                      alt={item.productName}
-                      onError={(e) => {
-                        e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop';
-                      }}
-                    />
+                    {item.productImage ? (
+                      <img 
+                        src={item.productImage} 
+                        alt={item.productName}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className="item-placeholder" style={{display: item.productImage ? 'none' : 'flex'}}>
+                      🥬
+                    </div>
                   </div>
                   <div className="item-details">
                     <h4>{item.productName}</h4>
-                    <p>Rs. {item.price} × {item.quantity}</p>
+                    <p>Rs. {item.price} × {item.quantity} {item.unit}</p>
+                    <small className="seller-name">by {item.sellerName || 'Local Farmer'}</small>
                   </div>
                   <div className="item-total">
                     Rs. {item.total}

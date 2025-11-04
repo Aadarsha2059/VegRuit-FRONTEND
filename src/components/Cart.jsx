@@ -21,10 +21,26 @@ const Cart = () => {
                 {cartItems.map(item => (
                     <div key={item._id} className="flex items-center justify-between border-b pb-4">
                         <div className="flex items-center">
-                            <img src={`http://localhost:50011${item.image}`} alt={item.name} className="w-20 h-20 object-cover rounded-md mr-4" />
+                            <div className="w-20 h-20 rounded-md mr-4 overflow-hidden bg-gray-100 flex items-center justify-center">
+                                {item.productImage || item.image ? (
+                                    <img 
+                                        src={item.productImage || `http://localhost:50011${item.image}`} 
+                                        alt={item.productName || item.name} 
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                ) : null}
+                                <div className="text-2xl text-gray-400" style={{display: item.productImage || item.image ? 'none' : 'flex'}}>
+                                    🥬
+                                </div>
+                            </div>
                             <div>
-                                <h3 className="font-semibold">{item.name}</h3>
+                                <h3 className="font-semibold">{item.productName || item.name}</h3>
                                 <p className="text-gray-600">Rs. {item.price.toFixed(2)}</p>
+                                {item.unit && <p className="text-sm text-gray-500">per {item.unit}</p>}
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
