@@ -37,3 +37,71 @@
 .testimonials-swiper .swiper-pagination-bullet-active {
   background: #28a745;
 }
+/* Avatar Icon Styles */
+.avatar-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.product-name {
+  font-size: 0.8rem;
+  color: #4caf50;
+  margin: 0.25rem 0;
+  font-weight: 500;
+}
+
+/* Loading state */
+.testimonials-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+/* Real review indicator */
+.testimonial-card.real-review {
+  border-left: 4px solid #4caf50;
+}
+
+.testimonial-card.real-review .testimonial-content::before {
+  content: "✓ Verified Review";
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: #4caf50;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.testimonial-content {
+  position: relative;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .avatar-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+  
+  .testimonial-author {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .avatar-icon {
+    margin: 0 auto 1rem auto;
+  }
+}

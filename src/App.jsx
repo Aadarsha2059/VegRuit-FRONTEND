@@ -26,6 +26,7 @@ import BuyerLogin from './pages/BuyerLogin'
 import SellerLogin from './pages/SellerLogin'
 import BuyerSignup from './pages/BuyerSignup'
 import SellerSignup from './pages/SellerSignup'
+import BackgroundAnimation from './components/BackgroundAnimation'
 import { STORAGE_KEYS, USER_TYPES } from './services/authAPI'
 import './App.css'
 
@@ -143,14 +144,17 @@ function App() {
         >
           <Routes>
             <Route path="/" element={
-              <main>
-                <Hero />
-                <Products />
-                <Farmers />
-                <Testimonials />
-                <Explore />
-                <About />
-              </main>
+              <>
+                <BackgroundAnimation />
+                <main>
+                  <Hero />
+                  <Products />
+                  <Farmers />
+                  <Testimonials />
+                  <Explore />
+                  <About />
+                </main>
+              </>
             } />
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/about" element={<AboutPage />} />

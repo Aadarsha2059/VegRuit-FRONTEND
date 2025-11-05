@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:50011/api/favorites'
+const API_BASE_URL = 'http://localhost:5001/api/favorites'
 
 // Favorites API functions
 export const favoritesAPI = {

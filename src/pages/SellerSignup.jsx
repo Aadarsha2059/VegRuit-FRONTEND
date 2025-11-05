@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { authAPI } from '../services/authAPI';
 import AttractiveAuth from '../components/auth/AttractiveAuth';
 import { FaUser, FaEnvelope, FaLock, FaPhone, FaStore, FaMapMarkerAlt, FaCity } from 'react-icons/fa';
+import BackgroundAnimation from '../components/BackgroundAnimation';
 import '../styles/SellerSignup.css';
 
 const SellerSignup = () => {
@@ -114,7 +115,9 @@ const SellerSignup = () => {
   };
 
   return (
-    <AttractiveAuth title="Create Seller Account">
+    <>
+      <BackgroundAnimation />
+      <AttractiveAuth title="Create Seller Account">
       <form onSubmit={handleSubmit} className="seller-signup-form">
         <div className="form-row">
           <div className="form-group">
@@ -311,6 +314,7 @@ const SellerSignup = () => {
         </div>
       </form>
     </AttractiveAuth>
+    </>
   );
 };
 

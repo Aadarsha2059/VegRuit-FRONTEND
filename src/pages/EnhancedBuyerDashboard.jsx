@@ -8,7 +8,10 @@ import { cartAPI } from '../services/cartAPI'
 import { orderAPI } from '../services/orderAPI'
 import { productAPI } from '../services/productAPI'
 import { categoryAPI } from '../services/categoryAPI'
-import { STORAGE_KEYS } from '../services/authAPI'
+import { authAPI, STORAGE_KEYS } from '../services/authAPI'
+import { reviewAPI } from '../services/reviewAPI'
+import BackgroundAnimation from '../components/BackgroundAnimation'
+import ReviewForm from '../components/ReviewForm'
 import './EnhancedBuyerDashboard.css'
 
 const EnhancedBuyerDashboard = ({ user, onLogout }) => {
@@ -20,6 +23,10 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
   const [categories, setCategories] = useState([])
   const [cart, setCart] = useState(null)
   const [orders, setOrders] = useState([])
+  const [reviewableProducts, setReviewableProducts] = useState([])
+  const [myReviews, setMyReviews] = useState([])
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
 
   const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
 
@@ -34,6 +41,9 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
       loadCart()
     } else if (activeTab === 'orders') {
       loadOrders()
+    } else if (activeTab === 'reviews') {
+      loadReviewableProducts()
+      loadMyReviews()
     }
   }, [activeTab])
 
@@ -197,6 +207,67 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
     }
   }
 
+  // Review Functions
+  const loadReviewableProducts = async () => {
+    try {
+      const response = await reviewAPI.getReviewableProducts(token)
+      if (response.success) {
+        setReviewableProducts(response.data.reviewableItems)
+      } else {
+        toast.error(response.message)
+      }
+    } catch (error) {
+      console.error('Error loading reviewable products:', error)
+      toast.error('Failed to load reviewable products')
+    }
+  }
+
+  const loadMyReviews = async () => {
+    try {
+      const response = await reviewAPI.getBuyerReviews(token)
+      if (response.success) {
+        setMyReviews(response.data.reviews)
+      } else {
+        toast.error(response.message)
+      }
+    } catch (error) {
+      console.error('Error loading reviews:', error)
+      toast.error('Failed to load your reviews')
+    }
+  }
+
+  const handleWriteReview = (product) => {
+    setSelectedProduct(product)
+    setShowReviewForm(true)
+  }
+
+  const handleReviewSubmitted = (newReview) => {
+    setMyReviews(prev => [newReview, ...prev])
+    setReviewableProducts(prev => prev.filter(p => 
+      !(p.productId === newReview.product && p.orderId === newReview.order)
+    ))
+    toast.success('Review submitted successfully!')
+  }
+
+  const handleConfirmReceipt = async (orderId) => {
+    try {
+      const response = await orderAPI.confirmOrderReceipt(token, orderId)
+      if (response.success) {
+        setOrders(prev => prev.map(order => 
+          order._id === orderId ? { ...order, status: 'received', receivedAt: new Date() } : order
+        ))
+        toast.success('Order receipt confirmed! You can now write reviews.')
+        // Reload reviewable products
+        loadReviewableProducts()
+      } else {
+        toast.error(response.message || 'Failed to confirm receipt')
+      }
+    } catch (error) {
+      console.error('Error confirming receipt:', error)
+      toast.error('Failed to confirm receipt')
+    }
+  }
+
   const sidebarItems = [
     { key: 'overview', label: 'Overview', icon: '📊' },
     { key: 'products', label: 'Browse Products', icon: '🛒' },
@@ -239,7 +310,7 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
       case 'cart':
         return <BuyerCartTab cart={cart} onUpdateItem={handleUpdateCartItem} onRemoveItem={handleRemoveFromCart} onClearCart={handleClearCart} onCreateOrder={handleCreateOrder} />
       case 'orders':
-        return <BuyerOrdersTab orders={orders} />
+        return <BuyerOrdersTab orders={orders} onConfirmReceipt={handleConfirmReceipt} />
       case 'favorites':
         return <BuyerFavoritesTab />
       case 'payments':
@@ -247,7 +318,11 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
       case 'delivery':
         return <BuyerDeliveryTab user={user} />
       case 'reviews':
-        return <BuyerReviewsTab />
+        return <BuyerReviewsTab 
+          reviewableProducts={reviewableProducts}
+          myReviews={myReviews}
+          onWriteReview={handleWriteReview}
+        />
       case 'profile':
         return <BuyerProfileTab user={user} />
       case 'settings':
@@ -258,16 +333,31 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
   }
 
   return (
-    <DashboardLayout
-      user={user}
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      onLogout={onLogout}
-      sidebarItems={sidebarItems}
-      headerTitle={getTabTitle(activeTab)}
-    >
-      {renderTabContent()}
-    </DashboardLayout>
+    <>
+      <BackgroundAnimation />
+      <DashboardLayout
+        user={user}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onLogout={onLogout}
+        sidebarItems={sidebarItems}
+        headerTitle={getTabTitle(activeTab)}
+      >
+        {renderTabContent()}
+      </DashboardLayout>
+
+      {/* Review Form Modal */}
+      {showReviewForm && selectedProduct && (
+        <ReviewForm
+          product={selectedProduct}
+          onClose={() => {
+            setShowReviewForm(false)
+            setSelectedProduct(null)
+          }}
+          onSubmit={handleReviewSubmitted}
+        />
+      )}
+    </>
   )
 }
 
@@ -389,7 +479,7 @@ const BuyerOverviewTab = ({ user, data, products }) => {
                 <div className="product-image">
                   {product.images && product.images.length > 0 ? (
                     <img 
-                      src={`http://localhost:50011${product.images[0]}`} 
+                      src={`http://localhost:5001${product.images[0]}`} 
                       alt={product.name}
                       onError={(e) => {
                         e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop'
@@ -409,7 +499,7 @@ const BuyerOverviewTab = ({ user, data, products }) => {
                 </div>
                 <div className="product-actions">
                   <button className="favorite-btn">❤️</button>
-                  <button className="add-cart-btn" onClick={() => handleAddToCart(product._id)}>Add to Cart</button>
+                  <button className="add-cart-btn" onClick={() => onAddToCart(product._id)}>Add to Cart</button>
                 </div>
               </div>
             ))}
@@ -536,7 +626,7 @@ const BuyerProductsTab = ({ products, categories, onAddToCart }) => {
                 <div className="product-image-container">
                   {product.images && product.images.length > 0 ? (
                     <img 
-                      src={`http://localhost:50011${product.images[0]}`} 
+                      src={`http://localhost:5001${product.images[0]}`} 
                       alt={product.name}
                       className="product-image"
                       onError={(e) => {
@@ -693,7 +783,13 @@ const BuyerCartTab = ({ cart, onUpdateItem, onRemoveItem, onClearCart, onCreateO
         {cart.items.map((item) => (
           <div key={item.productId} className="cart-item">
             <div className="item-image">
-              <img src={item.productImage || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop'} alt={item.productName} />
+              <img 
+                src={item.productImage ? `http://localhost:5001${item.productImage}` : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop'} 
+                alt={item.productName}
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop';
+                }}
+              />
             </div>
             <div className="item-details">
               <h4>{item.productName}</h4>
@@ -777,10 +873,11 @@ const BuyerCartTab = ({ cart, onUpdateItem, onRemoveItem, onClearCart, onCreateO
 }
 
 // Orders Tab Component
-const BuyerOrdersTab = ({ orders }) => {
+const BuyerOrdersTab = ({ orders, onConfirmReceipt }) => {
   const navigate = useNavigate()
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [confirmReceiptDialog, setConfirmReceiptDialog] = useState({ isOpen: false, order: null })
 
   const getStatusInfo = (status) => {
     const statusMap = {
@@ -790,7 +887,8 @@ const BuyerOrdersTab = ({ orders }) => {
       confirmed: { color: 'status-confirmed', icon: '✅', label: 'Confirmed' },
       processing: { color: 'status-processing', icon: '👨‍🍳', label: 'Processing' },
       shipped: { color: 'status-shipped', icon: '🚚', label: 'Shipped' },
-      delivered: { color: 'status-delivered', icon: '🎉', label: 'Delivered' },
+      delivered: { color: 'status-delivered', icon: '📦', label: 'Delivered' },
+      received: { color: 'status-received', icon: '🎉', label: 'Received' },
       cancelled: { color: 'status-cancelled', icon: '❌', label: 'Cancelled' }
     };
     return statusMap[status] || statusMap.pending;
@@ -867,7 +965,10 @@ const BuyerOrdersTab = ({ orders }) => {
                         <div key={index} className="order-item-card">
                           <div className="item-image">
                             <img 
-                              src={item.productImage || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop'} 
+                              src={item.productImage ? `http://localhost:5001${item.productImage}` : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop'}
+                              onError={(e) => {
+                                e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop';
+                              }} 
                               alt={item.productName}
                               onError={(e) => {
                                 e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop';
@@ -912,6 +1013,14 @@ const BuyerOrdersTab = ({ orders }) => {
                         📋 View Details
                       </button>
                       {order.status === 'delivered' && (
+                        <button 
+                          className="btn btn-success"
+                          onClick={() => setConfirmReceiptDialog({ isOpen: true, order })}
+                        >
+                          ✅ Confirm Receipt
+                        </button>
+                      )}
+                      {order.status === 'received' && (
                         <button className="btn btn-primary">
                           ⭐ Write Review
                         </button>
@@ -1046,25 +1155,377 @@ const BuyerDeliveryTab = ({ user }) => (
   </div>
 )
 
-const BuyerReviewsTab = () => (
-  <div className="reviews-tab">
-    <h3>My Reviews</h3>
-    <p>No reviews yet. Start shopping to leave reviews!</p>
-  </div>
-)
+const BuyerReviewsTab = ({ reviewableProducts, myReviews, onWriteReview }) => {
+  const [activeReviewTab, setActiveReviewTab] = useState('write')
 
-const BuyerProfileTab = ({ user }) => (
-  <div className="profile-tab">
-    <h3>My Profile</h3>
-    <div className="profile-info">
-      <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
-      <p><strong>Email:</strong> {user.email}</p>
-      <p><strong>Phone:</strong> {user.phone}</p>
-      <p><strong>Address:</strong> {user.address}</p>
-      <p><strong>City:</strong> {user.city}</p>
+  return (
+    <div className="reviews-tab">
+      <div className="reviews-header">
+        <h3>📝 Reviews & Feedback</h3>
+        <div className="review-tabs">
+          <button 
+            className={`review-tab-btn ${activeReviewTab === 'write' ? 'active' : ''}`}
+            onClick={() => setActiveReviewTab('write')}
+          >
+            ✍️ Write Reviews ({reviewableProducts.length})
+          </button>
+          <button 
+            className={`review-tab-btn ${activeReviewTab === 'my-reviews' ? 'active' : ''}`}
+            onClick={() => setActiveReviewTab('my-reviews')}
+          >
+            ⭐ My Reviews ({myReviews.length})
+          </button>
+        </div>
+      </div>
+
+      {activeReviewTab === 'write' && (
+        <div className="reviewable-products">
+          {reviewableProducts.length > 0 ? (
+            <>
+              <div className="section-header">
+                <h4>Products Ready for Review</h4>
+                <p>Share your experience with these delivered products</p>
+              </div>
+              <div className="reviewable-grid">
+                {reviewableProducts.map((product) => (
+                  <div key={`${product.orderId}-${product.productId}`} className="reviewable-card">
+                    <div className="product-image">
+                      <img 
+                        src={product.productImage ? `http://localhost:5001${product.productImage}` : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop'} 
+                        alt={product.productName}
+                      />
+                    </div>
+                    <div className="product-info">
+                      <h5>{product.productName}</h5>
+                      <p className="order-info">Order #{product.orderNumber}</p>
+                      <p className="order-date">
+                        Delivered: {new Date(product.orderDate).toLocaleDateString()}
+                      </p>
+                      <p className="quantity">Qty: {product.quantity}</p>
+                    </div>
+                    <div className="review-action">
+                      <button 
+                        className="write-review-btn"
+                        onClick={() => onWriteReview(product)}
+                      >
+                        ✍️ Write Review
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-icon">📝</div>
+              <h4>No Products to Review</h4>
+              <p>You'll see delivered products here that you can review.</p>
+              <p>Start shopping to share your experiences!</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeReviewTab === 'my-reviews' && (
+        <div className="my-reviews">
+          {myReviews.length > 0 ? (
+            <>
+              <div className="section-header">
+                <h4>Your Reviews</h4>
+                <p>Reviews you've written for products</p>
+              </div>
+              <div className="reviews-list">
+                {myReviews.map((review) => (
+                  <div key={review._id} className="review-card">
+                    <div className="review-header">
+                      <div className="product-info">
+                        <img 
+                          src={review.product?.images?.[0] ? `http://localhost:5001${review.product.images[0]}` : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop'} 
+                          alt={review.product?.name}
+                          className="product-thumb"
+                        />
+                        <div>
+                          <h5>{review.product?.name}</h5>
+                          <div className="rating-display">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span key={star} className={`star ${star <= review.rating ? 'filled' : ''}`}>
+                                ★
+                              </span>
+                            ))}
+                            <span className="rating-text">({review.rating}/5)</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="review-date">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="review-content">
+                      <h6>{review.title}</h6>
+                      <p>{review.comment}</p>
+                      {review.isRecommended !== null && (
+                        <div className="recommendation">
+                          {review.isRecommended ? '👍 Recommended' : '👎 Not Recommended'}
+                        </div>
+                      )}
+                    </div>
+                    {review.sellerResponse && (
+                      <div className="seller-response">
+                        <h6>Seller Response:</h6>
+                        <p>{review.sellerResponse.comment}</p>
+                        <small>
+                          Responded on {new Date(review.sellerResponse.respondedAt).toLocaleDateString()}
+                        </small>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-icon">⭐</div>
+              <h4>No Reviews Yet</h4>
+              <p>You haven't written any reviews yet.</p>
+              <p>Check the "Write Reviews" tab to review your delivered products!</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
-  </div>
-)
+  )
+}
+
+const BuyerProfileTab = ({ user }) => {
+  const [isEditing, setIsEditing] = useState(false)
+  const [profileData, setProfileData] = useState({
+    firstName: user.firstName || '',
+    lastName: user.lastName || '',
+    email: user.email || '',
+    phone: user.phone || '',
+    address: user.address || '',
+    city: user.city || ''
+  })
+  const [loading, setLoading] = useState(false)
+
+  const handleInputChange = (field, value) => {
+    setProfileData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSaveProfile = async () => {
+    setLoading(true)
+    try {
+      const token = authAPI.getAuthToken()
+      const response = await authAPI.updateProfile(profileData)
+      
+      if (response.success) {
+        toast.success('Profile updated successfully!')
+        setIsEditing(false)
+        // Update user data in parent component if needed
+      } else {
+        toast.error(response.message || 'Failed to update profile')
+      }
+    } catch (error) {
+      toast.error('Failed to update profile')
+      console.error('Update profile error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setProfileData({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      address: user.address || '',
+      city: user.city || ''
+    })
+    setIsEditing(false)
+  }
+
+  return (
+    <div className="profile-tab">
+      <div className="profile-header">
+        <div className="profile-avatar">
+          <div className="avatar-circle">
+            {user.firstName?.[0]}{user.lastName?.[0]}
+          </div>
+        </div>
+        <div className="profile-title">
+          <h3>👤 My Profile</h3>
+          <p>Manage your personal information</p>
+        </div>
+        <div className="profile-actions">
+          {!isEditing ? (
+            <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
+              ✏️ Edit Profile
+            </button>
+          ) : (
+            <div className="edit-actions">
+              <button className="btn btn-secondary" onClick={handleCancel}>
+                Cancel
+              </button>
+              <button 
+                className="btn btn-primary" 
+                onClick={handleSaveProfile}
+                disabled={loading}
+              >
+                {loading ? 'Saving...' : '💾 Save Changes'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="profile-content">
+        <div className="profile-section">
+          <h4>Personal Information</h4>
+          <div className="profile-grid">
+            <div className="profile-field">
+              <label>First Name</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={profileData.firstName}
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  placeholder="Enter first name"
+                />
+              ) : (
+                <div className="field-value">{user.firstName || 'Not provided'}</div>
+              )}
+            </div>
+
+            <div className="profile-field">
+              <label>Last Name</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={profileData.lastName}
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  placeholder="Enter last name"
+                />
+              ) : (
+                <div className="field-value">{user.lastName || 'Not provided'}</div>
+              )}
+            </div>
+
+            <div className="profile-field">
+              <label>Email Address</label>
+              {isEditing ? (
+                <input
+                  type="email"
+                  value={profileData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="Enter email address"
+                />
+              ) : (
+                <div className="field-value">{user.email}</div>
+              )}
+            </div>
+
+            <div className="profile-field">
+              <label>Phone Number</label>
+              {isEditing ? (
+                <input
+                  type="tel"
+                  value={profileData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  placeholder="Enter phone number"
+                />
+              ) : (
+                <div className="field-value">{user.phone || 'Not provided'}</div>
+              )}
+            </div>
+
+            <div className="profile-field full-width">
+              <label>Address</label>
+              {isEditing ? (
+                <textarea
+                  value={profileData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  placeholder="Enter your address"
+                  rows={3}
+                />
+              ) : (
+                <div className="field-value">{user.address || 'Not provided'}</div>
+              )}
+            </div>
+
+            <div className="profile-field">
+              <label>City</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={profileData.city}
+                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  placeholder="Enter city"
+                />
+              ) : (
+                <div className="field-value">{user.city || 'Not provided'}</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="profile-section">
+          <h4>Account Statistics</h4>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon">📦</div>
+              <div className="stat-info">
+                <div className="stat-value">12</div>
+                <div className="stat-label">Total Orders</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">⭐</div>
+              <div className="stat-info">
+                <div className="stat-value">8</div>
+                <div className="stat-label">Reviews Written</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">❤️</div>
+              <div className="stat-info">
+                <div className="stat-value">25</div>
+                <div className="stat-label">Favorite Products</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">🎯</div>
+              <div className="stat-info">
+                <div className="stat-value">Gold</div>
+                <div className="stat-label">Member Status</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="profile-section">
+          <h4>Account Security</h4>
+          <div className="security-options">
+            <div className="security-item">
+              <div className="security-info">
+                <h5>Password</h5>
+                <p>Last changed 3 months ago</p>
+              </div>
+              <button className="btn btn-outline">Change Password</button>
+            </div>
+            <div className="security-item">
+              <div className="security-info">
+                <h5>Two-Factor Authentication</h5>
+                <p>Add an extra layer of security</p>
+              </div>
+              <button className="btn btn-outline">Enable 2FA</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const BuyerSettingsTab = ({ user }) => (
   <div className="settings-tab">

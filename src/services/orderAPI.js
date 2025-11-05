@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:50011/api/orders'
+const API_BASE_URL = 'http://localhost:5001/api/orders'
 
 // Order API functions
 export const orderAPI = {
@@ -298,4 +298,28 @@ export const orderAPI = {
       }
     }
   }
-}
+} 
+ // Confirm order receipt
+  async confirmOrderReceipt(token, orderId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${orderId}/confirm-receipt`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to confirm order receipt')
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Confirm order receipt error:', error)
+      return {
+        success: false,
+        message: error.message || 'Failed to confirm order receipt'
+      }
+    }
+  },

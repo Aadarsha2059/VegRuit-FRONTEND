@@ -22,17 +22,20 @@ const Cart = () => {
                     <div key={item._id} className="flex items-center justify-between border-b pb-4">
                         <div className="flex items-center">
                             <div className="w-20 h-20 rounded-md mr-4 overflow-hidden bg-gray-100 flex items-center justify-center">
-                                {item.productImage || item.image ? (
+                                {item.productImage ? (
                                     <img 
-                                        src={item.productImage || `http://localhost:50011${item.image}`} 
+                                        src={`http://localhost:5001${item.productImage}`} 
                                         alt={item.productName || item.name} 
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                            e.target.style.display = 'none';
-                                            e.target.nextSibling.style.display = 'flex';
+                                            e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop';
                                         }}
                                     />
-                                ) : null}
+                                ) : (
+                                    <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-2xl">
+                                        🥬
+                                    </div>
+                                )}
                                 <div className="text-2xl text-gray-400" style={{display: item.productImage || item.image ? 'none' : 'flex'}}>
                                     🥬
                                 </div>

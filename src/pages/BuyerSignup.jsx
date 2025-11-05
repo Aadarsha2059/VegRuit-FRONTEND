@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI } from '../services/authAPI';
 import AttractiveAuth from '../components/auth/AttractiveAuth';
+import BackgroundAnimation from '../components/BackgroundAnimation';
 
 const BuyerSignup = () => {
   const navigate = useNavigate();
@@ -94,7 +95,9 @@ const BuyerSignup = () => {
   };
 
   return (
-    <AttractiveAuth title="Create Buyer Account">
+    <>
+      <BackgroundAnimation />
+      <AttractiveAuth title="Create Buyer Account">
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="firstName">First Name</label>
@@ -215,6 +218,7 @@ const BuyerSignup = () => {
         </div>
       </form>
     </AttractiveAuth>
+    </>
   );
 };
 

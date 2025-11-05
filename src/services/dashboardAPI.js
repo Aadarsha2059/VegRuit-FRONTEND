@@ -1,7 +1,7 @@
 // Dashboard API Service Layer for MERN stack integration
 // This layer provides dashboard-specific API calls
 
-const API_BASE_URL = 'http://localhost:50011/api'
+const API_BASE_URL = 'http://localhost:5001/api'
 
 // Get auth token from localStorage
 const getAuthToken = () => {

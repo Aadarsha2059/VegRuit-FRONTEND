@@ -213,7 +213,7 @@ const OrderDetail = () => {
                                     >
                                         <div className="item-image">
                                             <img 
-                                                src={item.productImage || `http://localhost:50011${item.productImage}` || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop'} 
+                                                src={item.productImage ? `http://localhost:5001${item.productImage}` : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop'} 
                                                 alt={item.productName}
                                                 onError={(e) => {
                                                     e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop';

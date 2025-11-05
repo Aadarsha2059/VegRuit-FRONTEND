@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { authAPI } from '../services/authAPI';
 import AttractiveAuth from '../components/auth/AttractiveAuth';
 import { FaUser, FaLock } from 'react-icons/fa';
+import BackgroundAnimation from '../components/BackgroundAnimation';
 import '../styles/SellerSignup.css';
 
 const SellerLogin = ({ onAuthSuccess }) => {
@@ -92,7 +93,9 @@ const SellerLogin = ({ onAuthSuccess }) => {
   };
 
   return (
-    <AttractiveAuth title="Seller Login">
+    <>
+      <BackgroundAnimation />
+      <AttractiveAuth title="Seller Login">
       <form onSubmit={handleLogin} className="seller-signup-form">
         <div className="form-group">
           <label htmlFor="username">Username or Email</label>
@@ -146,6 +149,7 @@ const SellerLogin = ({ onAuthSuccess }) => {
         </div>
       </form>
     </AttractiveAuth>
+    </>
   );
 };
 

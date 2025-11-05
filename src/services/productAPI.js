@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:50011/api/products'
+const API_BASE_URL = 'http://localhost:5001/api/products'
 
 // Product API functions
 export const productAPI = {
