@@ -3,6 +3,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay } from 'swiper/modules';
 import { FaStar, FaQuoteLeft, FaUser } from 'react-icons/fa';
 import { reviewAPI } from '../services/reviewAPI';
+import { feedbackAPI } from '../services/feedbackAPI';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -46,35 +47,53 @@ const Testimonials = () => {
 
   const loadReviews = async () => {
     try {
-      // Get recent reviews from multiple products
-      const reviewPromises = [];
+      // Get feedbacks from homepage API
+      const feedbackResponse = await feedbackAPI.getHomepageFeedbacks(10);
       
-      // Try to get reviews from different products (we'll implement a general endpoint)
-      // For now, let's create a simple approach
-      const response = await fetch('http://localhost:5001/api/reviews/recent-public');
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data.reviews.length > 0) {
-          const formattedReviews = data.data.reviews.map(review => ({
-            id: review._id,
-            name: `${review.buyer?.firstName} ${review.buyer?.lastName}`,
-            location: review.buyer?.city || 'Nepal',
-            rating: review.rating,
-            comment: review.comment,
-            productName: review.product?.name,
-            isReal: true,
-            createdAt: review.createdAt
-          }));
-          setReviews(formattedReviews);
-        } else {
+      if (feedbackResponse.success && feedbackResponse.data.feedbacks.length > 0) {
+        const formattedFeedbacks = feedbackResponse.data.feedbacks.map(feedback => ({
+          id: feedback._id,
+          name: `${feedback.user?.firstName} ${feedback.user?.lastName}`,
+          location: feedback.user?.city || 'Nepal',
+          rating: feedback.rating || 5,
+          comment: feedback.message,
+          subject: feedback.subject,
+          isReal: true,
+          createdAt: feedback.createdAt
+        }));
+        setReviews(formattedFeedbacks);
+      } else {
+        // Fallback to product reviews if no feedbacks
+        try {
+          const response = await fetch('http://localhost:5001/api/reviews/recent-public');
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data.reviews.length > 0) {
+              const formattedReviews = data.data.reviews.map(review => ({
+                id: review._id,
+                name: `${review.buyer?.firstName} ${review.buyer?.lastName}`,
+                location: review.buyer?.city || 'Nepal',
+                rating: review.rating,
+                comment: review.comment,
+                productName: review.product?.name,
+                isReal: true,
+                createdAt: review.createdAt
+              }));
+              setReviews(formattedReviews);
+            } else {
+              setReviews(fallbackTestimonials);
+            }
+          } else {
+            setReviews(fallbackTestimonials);
+          }
+        } catch (reviewError) {
+          console.error('Error loading reviews:', reviewError);
           setReviews(fallbackTestimonials);
         }
-      } else {
-        setReviews(fallbackTestimonials);
       }
     } catch (error) {
-      console.error('Error loading reviews:', error);
+      console.error('Error loading feedbacks:', error);
       setReviews(fallbackTestimonials);
     } finally {
       setLoading(false);
@@ -93,8 +112,8 @@ const Testimonials = () => {
     <section className="testimonials" id="testimonials">
       <div className="container">
         <div className="section-header">
-          <h2>Voices of Our Happy Customers</h2>
-          <p>Discover why families across the valley trust us for their daily dose of freshness.</p>
+          <h2>What Our Customers Say</h2>
+          <p>Real feedback from our valued customers about their experience with TarkariShop.</p>
         </div>
 
         {loading ? (
@@ -132,6 +151,9 @@ const Testimonials = () => {
                   <div className="author-info">
                     <h4 className="name">{testimonial.name}</h4>
                     <p className="location">{testimonial.location}</p>
+                    {testimonial.subject && (
+                      <p className="feedback-subject">{testimonial.subject}</p>
+                    )}
                     {testimonial.productName && (
                       <p className="product-name">Reviewed: {testimonial.productName}</p>
                     )}

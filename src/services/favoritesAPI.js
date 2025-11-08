@@ -1,107 +1,114 @@
-const API_BASE_URL = 'http://localhost:5001/api/favorites'
+import axios from 'axios';
 
-// Favorites API functions
-export const favoritesAPI = {
-  // Get user's favorites
-  async getFavorites(token) {
-    try {
-      const response = await fetch(`${API_BASE_URL}`, {
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
+// Add product to favorites
+export const addToFavorites = async (token, productId) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/favorites/add`,
+      { productId },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to add to favorites'
+    };
+  }
+};
+
+// Remove product from favorites
+export const removeFromFavorites = async (token, productId) => {
+  try {
+    const response = await axios.delete(
+      `${API_URL}/favorites/remove/${productId}`,
+      {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      })
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch favorites')
       }
-      
-      return data
-    } catch (error) {
-      console.error('Get favorites error:', error);
-      // For now, return mock data since backend might not have favorites endpoint
-      return {
-        success: true,
-        data: {
-          favorites: []
-        }
-      }
-    }
-  },
+    );
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to remove from favorites'
+    };
+  }
+};
 
-  // Add to favorites
-  async addToFavorites(token, productId) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/add`, {
-        method: 'POST',
+// Get user's favorites
+export const getUserFavorites = async (token, params = {}) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/favorites/my-favorites`,
+      {
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ productId })
-      })
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to add to favorites')
+        params
       }
-      
-      return data
-    } catch (error) {
-      // Mock success for now
-      return {
-        success: true,
-        message: 'Added to favorites!'
-      }
-    }
-  },
-
-  // Remove from favorites
-  async removeFromFavorites(token, productId) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/remove/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to remove from favorites')
-      }
-      
-      return data
-    } catch (error) {
-      // Mock success for now
-      return {
-        success: true,
-        message: 'Removed from favorites!'
-      }
-    }
-  },
-
-  // Check if product is in favorites
-  async isFavorite(token, productId) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/check/${productId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to check favorite status')
-      }
-      
-      return data
-    } catch (error) {
-      // Mock response for now
-      return {
-        success: true,
-        isFavorite: false
-      }
-    }
+    );
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to fetch favorites'
+    };
   }
-}
+};
+
+// Check if product is favorited
+export const checkFavorite = async (token, productId) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/favorites/check/${productId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to check favorite status'
+    };
+  }
+};
+
+// Get favorite count
+export const getFavoriteCount = async (token) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/favorites/count`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to get favorite count'
+    };
+  }
+};
+
+export const favoritesAPI = {
+  addToFavorites,
+  removeFromFavorites,
+  getUserFavorites,
+  checkFavorite,
+  getFavoriteCount
+};

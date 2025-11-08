@@ -10,8 +10,11 @@ import { productAPI } from '../services/productAPI'
 import { categoryAPI } from '../services/categoryAPI'
 import { authAPI, STORAGE_KEYS } from '../services/authAPI'
 import { reviewAPI } from '../services/reviewAPI'
+import { feedbackAPI } from '../services/feedbackAPI'
+import { favoritesAPI } from '../services/favoritesAPI'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import ReviewForm from '../components/ReviewForm'
+import FeedbackForm from '../components/FeedbackForm'
 import './EnhancedBuyerDashboard.css'
 
 const EnhancedBuyerDashboard = ({ user, onLogout }) => {
@@ -27,6 +30,11 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
   const [myReviews, setMyReviews] = useState([])
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false)
+  const [feedbackType, setFeedbackType] = useState('general_feedback')
+  const [confirmReceiptDialog, setConfirmReceiptDialog] = useState({ isOpen: false, order: null })
+  const [favorites, setFavorites] = useState([])
+  const [favoriteIds, setFavoriteIds] = useState(new Set())
 
   const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
 
@@ -44,6 +52,8 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
     } else if (activeTab === 'reviews') {
       loadReviewableProducts()
       loadMyReviews()
+    } else if (activeTab === 'favorites') {
+      loadFavorites()
     }
   }, [activeTab])
 
@@ -268,6 +278,73 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
     }
   }
 
+  const handleOpenFeedbackForm = (type = 'general_feedback') => {
+    setFeedbackType(type)
+    setShowFeedbackForm(true)
+  }
+
+  const handleFeedbackSubmitted = (feedback) => {
+    toast.success('Thank you for your feedback!')
+    setShowFeedbackForm(false)
+  }
+
+  // Favorites Functions
+  const loadFavorites = async () => {
+    setLoading(true)
+    try {
+      const response = await favoritesAPI.getUserFavorites(token)
+      if (response.success) {
+        setFavorites(response.data.favorites)
+        // Create a Set of favorite product IDs for quick lookup
+        const ids = new Set(response.data.favorites.map(fav => fav.product._id))
+        setFavoriteIds(ids)
+      } else {
+        toast.error(response.message)
+      }
+    } catch (error) {
+      console.error('Error loading favorites:', error)
+      toast.error('Failed to load favorites')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleToggleFavorite = async (productId) => {
+    try {
+      if (favoriteIds.has(productId)) {
+        // Remove from favorites
+        const response = await favoritesAPI.removeFromFavorites(token, productId)
+        if (response.success) {
+          setFavoriteIds(prev => {
+            const newSet = new Set(prev)
+            newSet.delete(productId)
+            return newSet
+          })
+          setFavorites(prev => prev.filter(fav => fav.product._id !== productId))
+          toast.success('Removed from favorites')
+        } else {
+          toast.error(response.message)
+        }
+      } else {
+        // Add to favorites
+        const response = await favoritesAPI.addToFavorites(token, productId)
+        if (response.success) {
+          setFavoriteIds(prev => new Set([...prev, productId]))
+          toast.success('Added to favorites!')
+          // Reload favorites if on favorites tab
+          if (activeTab === 'favorites') {
+            loadFavorites()
+          }
+        } else {
+          toast.error(response.message)
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      toast.error('Failed to update favorites')
+    }
+  }
+
   const sidebarItems = [
     { key: 'overview', label: 'Overview', icon: '📊' },
     { key: 'products', label: 'Browse Products', icon: '🛒' },
@@ -276,7 +353,7 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
     { key: 'favorites', label: 'Favorites', icon: '❤️' },
     { key: 'payments', label: 'Payments', icon: '💳' },
     { key: 'delivery', label: 'Delivery', icon: '🚚' },
-    { key: 'reviews', label: 'Reviews', icon: '⭐' },
+    { key: 'feedback', label: 'Give Feedback', icon: '💬' },
     { key: 'profile', label: 'Profile', icon: '👤' },
     { key: 'settings', label: 'Settings', icon: '⚙️' }
   ]
@@ -290,7 +367,7 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
       favorites: 'Favorite Items',
       payments: 'Payment Methods',
       delivery: 'Delivery Addresses',
-      reviews: 'My Reviews & Ratings',
+      feedback: 'Give Feedback & Suggestions',
       profile: 'My Profile',
       settings: 'Account Settings'
     }
@@ -306,19 +383,34 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
       case 'overview':
         return <BuyerOverviewTab user={user} data={dashboardData} products={products} />
       case 'products':
-        return <BuyerProductsTab products={products} categories={categories} onAddToCart={handleAddToCart} />
+        return <BuyerProductsTab 
+          products={products} 
+          categories={categories} 
+          onAddToCart={handleAddToCart}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={handleToggleFavorite}
+        />
       case 'cart':
         return <BuyerCartTab cart={cart} onUpdateItem={handleUpdateCartItem} onRemoveItem={handleRemoveFromCart} onClearCart={handleClearCart} onCreateOrder={handleCreateOrder} />
       case 'orders':
-        return <BuyerOrdersTab orders={orders} onConfirmReceipt={handleConfirmReceipt} />
+        return <BuyerOrdersTab 
+          orders={orders} 
+          onConfirmReceipt={handleConfirmReceipt}
+          onOpenConfirmDialog={(order) => setConfirmReceiptDialog({ isOpen: true, order })}
+        />
       case 'favorites':
-        return <BuyerFavoritesTab />
+        return <BuyerFavoritesTab 
+          favorites={favorites}
+          onToggleFavorite={handleToggleFavorite}
+          onAddToCart={handleAddToCart}
+        />
       case 'payments':
         return <BuyerPaymentsTab />
       case 'delivery':
         return <BuyerDeliveryTab user={user} />
-      case 'reviews':
-        return <BuyerReviewsTab 
+      case 'feedback':
+        return <BuyerFeedbackTab 
+          onOpenFeedbackForm={handleOpenFeedbackForm}
           reviewableProducts={reviewableProducts}
           myReviews={myReviews}
           onWriteReview={handleWriteReview}
@@ -356,6 +448,58 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
           }}
           onSubmit={handleReviewSubmitted}
         />
+      )}
+
+      {/* Feedback Form Modal */}
+      {showFeedbackForm && (
+        <FeedbackForm
+          feedbackType={feedbackType}
+          onClose={() => setShowFeedbackForm(false)}
+          onSubmit={handleFeedbackSubmitted}
+        />
+      )}
+
+      {/* Confirm Receipt Dialog */}
+      {confirmReceiptDialog.isOpen && confirmReceiptDialog.order && (
+        <div className="confirm-dialog-overlay" onClick={() => setConfirmReceiptDialog({ isOpen: false, order: null })}>
+          <div className="confirm-dialog-content" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-dialog-header">
+              <h3>📦 Confirm Order Receipt</h3>
+              <button 
+                className="dialog-close-btn"
+                onClick={() => setConfirmReceiptDialog({ isOpen: false, order: null })}
+              >
+                ×
+              </button>
+            </div>
+            <div className="confirm-dialog-body">
+              <p className="confirm-question">
+                Did you receive your order <strong>#{confirmReceiptDialog.order.orderNumber}</strong>?
+              </p>
+              <p className="confirm-info">
+                By confirming, you acknowledge that you have received all items in good condition.
+                You'll then be able to write reviews for the products.
+              </p>
+            </div>
+            <div className="confirm-dialog-actions">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setConfirmReceiptDialog({ isOpen: false, order: null })}
+              >
+                Not Yet
+              </button>
+              <button 
+                className="btn btn-success"
+                onClick={() => {
+                  handleConfirmReceipt(confirmReceiptDialog.order._id)
+                  setConfirmReceiptDialog({ isOpen: false, order: null })
+                }}
+              >
+                ✅ Yes, I Received It
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )
@@ -511,7 +655,7 @@ const BuyerOverviewTab = ({ user, data, products }) => {
 }
 
 // Products Tab Component
-const BuyerProductsTab = ({ products, categories, onAddToCart }) => {
+const BuyerProductsTab = ({ products, categories, onAddToCart, favoriteIds, onToggleFavorite }) => {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('name')
@@ -873,11 +1017,10 @@ const BuyerCartTab = ({ cart, onUpdateItem, onRemoveItem, onClearCart, onCreateO
 }
 
 // Orders Tab Component
-const BuyerOrdersTab = ({ orders, onConfirmReceipt }) => {
+const BuyerOrdersTab = ({ orders, onConfirmReceipt, onOpenConfirmDialog }) => {
   const navigate = useNavigate()
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [statusFilter, setStatusFilter] = useState('all')
-  const [confirmReceiptDialog, setConfirmReceiptDialog] = useState({ isOpen: false, order: null })
 
   const getStatusInfo = (status) => {
     const statusMap = {
@@ -966,9 +1109,6 @@ const BuyerOrdersTab = ({ orders, onConfirmReceipt }) => {
                           <div className="item-image">
                             <img 
                               src={item.productImage ? `http://localhost:5001${item.productImage}` : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop'}
-                              onError={(e) => {
-                                e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop';
-                              }} 
                               alt={item.productName}
                               onError={(e) => {
                                 e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=60&h=60&fit=crop';
@@ -1015,7 +1155,7 @@ const BuyerOrdersTab = ({ orders, onConfirmReceipt }) => {
                       {order.status === 'delivered' && (
                         <button 
                           className="btn btn-success"
-                          onClick={() => setConfirmReceiptDialog({ isOpen: true, order })}
+                          onClick={() => onOpenConfirmDialog(order)}
                         >
                           ✅ Confirm Receipt
                         </button>
@@ -1549,5 +1689,173 @@ const BuyerSettingsTab = ({ user }) => (
     </div>
   </div>
 )
+
+const BuyerFeedbackTab = ({ onOpenFeedbackForm, reviewableProducts, myReviews, onWriteReview }) => {
+  const [myFeedbacks, setMyFeedbacks] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [activeSubTab, setActiveSubTab] = useState('feedback')
+  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+
+  useEffect(() => {
+    loadMyFeedbacks()
+  }, [])
+
+  const loadMyFeedbacks = async () => {
+    setLoading(true)
+    try {
+      const response = await feedbackAPI.getUserFeedbacks(token)
+      if (response.success) {
+        setMyFeedbacks(response.data.feedbacks)
+      }
+    } catch (error) {
+      console.error('Load feedbacks error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getStatusBadge = (status) => {
+    const badges = {
+      pending: { color: 'status-pending', label: 'Pending', icon: '⏳' },
+      in_progress: { color: 'status-processing', label: 'In Progress', icon: '🔄' },
+      resolved: { color: 'status-success', label: 'Resolved', icon: '✅' },
+      closed: { color: 'status-closed', label: 'Closed', icon: '🔒' }
+    }
+    return badges[status] || badges.pending
+  }
+
+  const getFeedbackTypeLabel = (type) => {
+    const labels = {
+      general_feedback: 'General Feedback',
+      product_feedback: 'Product Feedback',
+      seller_feedback: 'Seller Feedback',
+      system_complaint: 'System Complaint'
+    }
+    return labels[type] || type
+  }
+
+  return (
+    <div className="feedback-tab">
+      <div className="feedback-header">
+        <div className="header-content">
+          <h2>💬 Feedback & Reviews</h2>
+          <p>Share your experience and help us improve</p>
+        </div>
+        <div className="feedback-subtabs">
+          <button 
+            className={`subtab-btn ${activeSubTab === 'feedback' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('feedback')}
+          >
+            💬 Feedback
+          </button>
+          <button 
+            className={`subtab-btn ${activeSubTab === 'reviews' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('reviews')}
+          >
+            ⭐ Reviews
+          </button>
+        </div>
+      </div>
+
+      {activeSubTab === 'feedback' && (
+        <>
+          <div className="feedback-actions-grid">
+        <div className="feedback-action-card" onClick={() => onOpenFeedbackForm('general_feedback')}>
+          <div className="action-icon">💬</div>
+          <h4>General Feedback</h4>
+          <p>Share your overall experience with TarkariShop</p>
+          <button className="btn btn-primary">Give Feedback</button>
+        </div>
+
+        <div className="feedback-action-card" onClick={() => onOpenFeedbackForm('seller_feedback')}>
+          <div className="action-icon">⭐</div>
+          <h4>Seller Feedback</h4>
+          <p>Rate and review your experience with sellers</p>
+          <button className="btn btn-primary">Rate Seller</button>
+        </div>
+
+        <div className="feedback-action-card" onClick={() => onOpenFeedbackForm('system_complaint')}>
+          <div className="action-icon">📝</div>
+          <h4>System Complaint</h4>
+          <p>Report issues with delivery, payment, or service</p>
+          <button className="btn btn-warning">Report Issue</button>
+        </div>
+      </div>
+
+      <div className="my-feedbacks-section">
+        <h3>My Feedback History</h3>
+        {loading ? (
+          <div className="loading-state">Loading feedbacks...</div>
+        ) : myFeedbacks.length > 0 ? (
+          <div className="feedbacks-list">
+            {myFeedbacks.map((feedback) => {
+              const statusBadge = getStatusBadge(feedback.status)
+              return (
+                <div key={feedback._id} className="feedback-card">
+                  <div className="feedback-card-header">
+                    <div className="feedback-type-badge">
+                      {getFeedbackTypeLabel(feedback.feedbackType)}
+                    </div>
+                    <div className={`feedback-status-badge ${statusBadge.color}`}>
+                      <span>{statusBadge.icon}</span>
+                      <span>{statusBadge.label}</span>
+                    </div>
+                  </div>
+                  <div className="feedback-card-body">
+                    <h4>{feedback.subject}</h4>
+                    <p>{feedback.message}</p>
+                    {feedback.rating && (
+                      <div className="feedback-rating">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span key={star} className={`star ${star <= feedback.rating ? 'filled' : ''}`}>
+                            ★
+                          </span>
+                        ))}
+                        <span className="rating-text">({feedback.rating}/5)</span>
+                      </div>
+                    )}
+                    <div className="feedback-date">
+                      Submitted on {new Date(feedback.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  </div>
+                  {feedback.adminResponse && (
+                    <div className="admin-response">
+                      <h5>📢 Admin Response:</h5>
+                      <p>{feedback.adminResponse.message}</p>
+                      <small>
+                        Responded on {new Date(feedback.adminResponse.respondedAt).toLocaleDateString()}
+                      </small>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <div className="empty-icon">💬</div>
+            <h4>No Feedback Yet</h4>
+            <p>You haven't submitted any feedback yet.</p>
+            <p>Share your experience to help us improve!</p>
+          </div>
+        )}
+      </div>
+        </>
+      )}
+
+      {activeSubTab === 'reviews' && (
+        <BuyerReviewsTab 
+          reviewableProducts={reviewableProducts}
+          myReviews={myReviews}
+          onWriteReview={onWriteReview}
+        />
+      )}
+    </div>
+  )
+}
 
 export default EnhancedBuyerDashboard

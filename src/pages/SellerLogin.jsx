@@ -55,16 +55,17 @@ const SellerLogin = ({ onAuthSuccess }) => {
           return;
         }
         
+        // Store login state and user data in localStorage (for backward compatibility)
+        localStorage.setItem('sellerLoggedIn', 'true');
+        localStorage.setItem('sellerData', JSON.stringify(response.user));
+        localStorage.setItem('sellerToken', response.token);
+        
         // Call onAuthSuccess if provided
         if (onAuthSuccess) {
           onAuthSuccess(response.user);
         }
         
         toast.success(`Welcome back, ${response.user.firstName}! 🌾`);
-        
-        // Store login state and user data in localStorage
-        localStorage.setItem('sellerLoggedIn', 'true');
-        localStorage.setItem('sellerData', JSON.stringify(response.user));
         
         // Clear any existing errors
         setErrors({});

@@ -8,8 +8,10 @@ import { categoryAPI } from '../services/categoryAPI'
 import { productAPI } from '../services/productAPI'
 import { orderAPI } from '../services/orderAPI'
 import { authAPI, STORAGE_KEYS } from '../services/authAPI'
+import { feedbackAPI } from '../services/feedbackAPI'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import { ConfirmDialog, FormDialog } from '../components/Dialog'
+import FeedbackForm from '../components/FeedbackForm'
 import './EnhancedSellerDashboard.css'
 
 const EnhancedSellerDashboard = ({ user, onLogout }) => {
@@ -26,10 +28,29 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
   const [editDialog, setEditDialog] = useState({ isOpen: false, type: '', item: null })
   const [editFormData, setEditFormData] = useState({})
   const [editLoading, setEditLoading] = useState(false)
+  
+  // Feedback states
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false)
+  const [feedbackType, setFeedbackType] = useState('general_feedback')
+  
+  // Add/Create dialog states
+  const [showAddCategory, setShowAddCategory] = useState(false)
+  const [showAddProduct, setShowAddProduct] = useState(false)
+  const [newCategoryData, setNewCategoryData] = useState({ name: '', description: '', icon: '🥬', color: '#4caf50' })
+  const [newProductData, setNewProductData] = useState({ name: '', description: '', price: '', unit: 'kg', stock: '', organic: false, category: '' })
+  const [productImages, setProductImages] = useState([])
+  const [imagePreview, setImagePreview] = useState([])
 
-  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+  // Get token with fallback
+  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) || localStorage.getItem('sellerToken') || authAPI.getAuthToken()
 
   useEffect(() => {
+    // Check if token exists
+    if (!token) {
+      toast.error('Please login to access the dashboard')
+      navigate('/seller-login')
+      return
+    }
     loadDashboardData()
   }, [])
 
@@ -222,7 +243,6 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
 
   const handleAcceptOrder = async (orderId) => {
     try {
-      const token = localStorage.getItem('sellerToken') || authAPI.getAuthToken()
       if (!token) {
         toast.error('Please login to accept orders')
         return
@@ -234,6 +254,7 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
           order._id === orderId ? { ...order, status: 'confirmed' } : order
         ))
         toast.success('Order accepted successfully!')
+        loadOrders() // Reload to get updated data
       } else {
         toast.error(response.message || 'Failed to accept order')
       }
@@ -243,6 +264,102 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
     }
   }
 
+  const handleViewOrderDetails = (orderId) => {
+    navigate(`/order/${orderId}`)
+  }
+
+  const handleViewProductDetails = (productId) => {
+    navigate(`/product/${productId}`)
+  }
+
+  const handleAddCategory = async () => {
+    if (!newCategoryData.name.trim()) {
+      toast.error('Category name is required')
+      return
+    }
+
+    setEditLoading(true)
+    try {
+      const response = await categoryAPI.createCategory(token, newCategoryData)
+      if (response.success) {
+        setCategories(prev => [...prev, response.data.category])
+        toast.success('Category created successfully!')
+        setShowAddCategory(false)
+        setNewCategoryData({ name: '', description: '', icon: '🥬', color: '#4caf50' })
+        loadCategories() // Reload to get updated data
+      } else {
+        toast.error(response.message || 'Failed to create category')
+      }
+    } catch (error) {
+      console.error('Create category error:', error)
+      toast.error('Failed to create category')
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
+  const handleAddProduct = async () => {
+    if (!newProductData.name.trim() || !newProductData.price || !newProductData.category) {
+      toast.error('Please fill in all required fields')
+      return
+    }
+
+    setEditLoading(true)
+    try {
+      // Create FormData for file upload
+      const formData = new FormData()
+      formData.append('name', newProductData.name)
+      formData.append('description', newProductData.description)
+      formData.append('price', newProductData.price)
+      formData.append('unit', newProductData.unit)
+      formData.append('stock', newProductData.stock)
+      formData.append('category', newProductData.category)
+      formData.append('organic', newProductData.organic)
+      
+      // Append images
+      productImages.forEach((image) => {
+        formData.append('images', image)
+      })
+
+      const response = await productAPI.createProduct(token, formData)
+      if (response.success) {
+        setProducts(prev => [...prev, response.data.product])
+        toast.success('Product created successfully!')
+        setShowAddProduct(false)
+        setNewProductData({ name: '', description: '', price: '', unit: 'kg', stock: '', organic: false, category: '' })
+        setProductImages([])
+        setImagePreview([])
+        loadProducts() // Reload to get updated data
+      } else {
+        toast.error(response.message || 'Failed to create product')
+      }
+    } catch (error) {
+      console.error('Create product error:', error)
+      toast.error('Failed to create product')
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files)
+    if (files.length > 5) {
+      toast.error('Maximum 5 images allowed')
+      return
+    }
+
+    setProductImages(files)
+
+    // Create preview URLs
+    const previews = files.map(file => URL.createObjectURL(file))
+    setImagePreview(previews)
+  }
+
+  const removeImage = (index) => {
+    setProductImages(prev => prev.filter((_, i) => i !== index))
+    setImagePreview(prev => prev.filter((_, i) => i !== index))
+  }
+
   const sidebarItems = [
     { key: 'overview', label: 'Overview', icon: '📊' },
     { key: 'categories', label: 'Categories', icon: '📂' },
@@ -250,7 +367,7 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
     { key: 'orders', label: 'Orders', icon: '📦' },
     { key: 'analytics', label: 'Analytics', icon: '📈' },
     { key: 'customers', label: 'Customers', icon: '👥' },
-    { key: 'reviews', label: 'Reviews', icon: '⭐' },
+    { key: 'feedback', label: 'Give Suggestions', icon: '💬' },
     { key: 'settings', label: 'Settings', icon: '⚙️' }
   ]
 
@@ -262,7 +379,7 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
       orders: 'Order Management',
       analytics: 'Sales Analytics',
       customers: 'Customer Management',
-      reviews: 'Customer Reviews',
+      feedback: 'Give Suggestions & Feedback',
       settings: 'Account Settings'
     }
     return titles[tab] || 'Seller Dashboard'
@@ -281,21 +398,27 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
           categories={categories} 
           onEdit={handleEditCategory}
           onDelete={handleDeleteCategory}
+          onAdd={() => setShowAddCategory(true)}
         />
       case 'products':
         return <ProductsTab 
           products={products}
           onEdit={handleEditProduct}
           onDelete={handleDeleteProduct}
+          onAdd={() => setShowAddProduct(true)}
+          onViewDetails={handleViewProductDetails}
         />
       case 'orders':
-        return <OrdersTab orders={orders} onAcceptOrder={handleAcceptOrder} />
+        return <OrdersTab orders={orders} onAcceptOrder={handleAcceptOrder} onViewDetails={handleViewOrderDetails} />
       case 'analytics':
         return <AnalyticsTab />
       case 'customers':
         return <CustomersTab />
-      case 'reviews':
-        return <ReviewsTab />
+      case 'feedback':
+        return <SellerFeedbackTab onOpenFeedbackForm={(type) => {
+          setFeedbackType(type)
+          setShowFeedbackForm(true)
+        }} />
       case 'settings':
         return <SellerSettingsTab user={user} />
       default:
@@ -438,6 +561,204 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
           </>
         )}
       </FormDialog>
+
+      {/* Feedback Form Modal */}
+      {showFeedbackForm && (
+        <FeedbackForm
+          feedbackType={feedbackType}
+          onClose={() => setShowFeedbackForm(false)}
+          onSubmit={(feedback) => {
+            toast.success('Thank you for your feedback!')
+            setShowFeedbackForm(false)
+          }}
+        />
+      )}
+
+      {/* Add Category Dialog */}
+      <FormDialog
+        isOpen={showAddCategory}
+        onClose={() => {
+          setShowAddCategory(false)
+          setNewCategoryData({ name: '', description: '', icon: '🥬', color: '#4caf50' })
+        }}
+        onSubmit={handleAddCategory}
+        title="Add New Category"
+        loading={editLoading}
+      >
+        <div className="form-group">
+          <label>Category Name *</label>
+          <input
+            type="text"
+            value={newCategoryData.name}
+            onChange={(e) => setNewCategoryData(prev => ({ ...prev, name: e.target.value }))}
+            placeholder="Enter category name"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Description</label>
+          <textarea
+            value={newCategoryData.description}
+            onChange={(e) => setNewCategoryData(prev => ({ ...prev, description: e.target.value }))}
+            placeholder="Enter category description"
+            rows="3"
+          />
+        </div>
+        <div className="form-group">
+          <label>Icon (Emoji)</label>
+          <input
+            type="text"
+            value={newCategoryData.icon}
+            onChange={(e) => setNewCategoryData(prev => ({ ...prev, icon: e.target.value }))}
+            placeholder="Enter emoji icon (e.g., 🥬)"
+            maxLength="2"
+          />
+        </div>
+        <div className="form-group">
+          <label>Color</label>
+          <input
+            type="color"
+            value={newCategoryData.color}
+            onChange={(e) => setNewCategoryData(prev => ({ ...prev, color: e.target.value }))}
+          />
+        </div>
+      </FormDialog>
+
+      {/* Add Product Dialog */}
+      <FormDialog
+        isOpen={showAddProduct}
+        onClose={() => {
+          setShowAddProduct(false)
+          setNewProductData({ name: '', description: '', price: '', unit: 'kg', stock: '', organic: false, category: '' })
+          setProductImages([])
+          setImagePreview([])
+        }}
+        onSubmit={handleAddProduct}
+        title="Add New Product"
+        loading={editLoading}
+      >
+        <div className="form-group">
+          <label>Product Images (Max 5)</label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageChange}
+            style={{ display: 'block', marginBottom: '10px' }}
+          />
+          {imagePreview.length > 0 && (
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
+              {imagePreview.map((preview, index) => (
+                <div key={index} style={{ position: 'relative', width: '100px', height: '100px' }}>
+                  <img 
+                    src={preview} 
+                    alt={`Preview ${index + 1}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    style={{
+                      position: 'absolute',
+                      top: '-5px',
+                      right: '-5px',
+                      background: 'red',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '24px',
+                      height: '24px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="form-group">
+          <label>Product Name *</label>
+          <input
+            type="text"
+            value={newProductData.name}
+            onChange={(e) => setNewProductData(prev => ({ ...prev, name: e.target.value }))}
+            placeholder="Enter product name"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Description</label>
+          <textarea
+            value={newProductData.description}
+            onChange={(e) => setNewProductData(prev => ({ ...prev, description: e.target.value }))}
+            placeholder="Enter product description"
+            rows="3"
+          />
+        </div>
+        <div className="form-group">
+          <label>Category *</label>
+          <select
+            value={newProductData.category}
+            onChange={(e) => setNewProductData(prev => ({ ...prev, category: e.target.value }))}
+            required
+          >
+            <option value="">Select a category</option>
+            {categories.map(cat => (
+              <option key={cat._id} value={cat._id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Price (Rs.) *</label>
+          <input
+            type="number"
+            step="0.01"
+            value={newProductData.price}
+            onChange={(e) => setNewProductData(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
+            placeholder="Enter price"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Unit *</label>
+          <select
+            value={newProductData.unit}
+            onChange={(e) => setNewProductData(prev => ({ ...prev, unit: e.target.value }))}
+          >
+            <option value="kg">Kilogram (kg)</option>
+            <option value="piece">Piece</option>
+            <option value="bunch">Bunch</option>
+            <option value="dozen">Dozen</option>
+            <option value="liter">Liter</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Stock Quantity *</label>
+          <input
+            type="number"
+            value={newProductData.stock}
+            onChange={(e) => setNewProductData(prev => ({ ...prev, stock: parseInt(e.target.value) }))}
+            placeholder="Enter stock quantity"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={newProductData.organic}
+              onChange={(e) => setNewProductData(prev => ({ ...prev, organic: e.target.checked }))}
+            />
+            <span>Organic Product</span>
+          </label>
+        </div>
+      </FormDialog>
     </>
   )
 }
@@ -512,12 +833,12 @@ const SellerOverviewTab = ({ user, data }) => {
 }
 
 // Categories Tab
-const CategoriesTab = ({ categories, onEdit, onDelete }) => {
+const CategoriesTab = ({ categories, onEdit, onDelete, onAdd }) => {
   return (
     <div className="categories-tab">
       <div className="tab-header">
         <h3>📂 Manage Categories</h3>
-        <button className="btn btn-primary">+ Add Category</button>
+        <button className="btn btn-primary" onClick={onAdd}>+ Add Category</button>
       </div>
 
       <div className="categories-grid">
@@ -547,12 +868,12 @@ const CategoriesTab = ({ categories, onEdit, onDelete }) => {
 }
 
 // Products Tab
-const ProductsTab = ({ products, onEdit, onDelete }) => {
+const ProductsTab = ({ products, onEdit, onDelete, onAdd, onViewDetails }) => {
   return (
     <div className="products-tab">
       <div className="tab-header">
         <h3>🥬 Manage Products</h3>
-        <button className="btn btn-primary">+ Add Product</button>
+        <button className="btn btn-primary" onClick={onAdd}>+ Add Product</button>
       </div>
 
       <div className="products-grid">
@@ -572,6 +893,7 @@ const ProductsTab = ({ products, onEdit, onDelete }) => {
               {product.organic && <span className="organic-badge">🌱 Organic</span>}
             </div>
             <div className="product-actions">
+              <button onClick={() => onViewDetails(product._id)} className="view-btn">👁️ View</button>
               <button onClick={() => onEdit(product)} className="edit-btn">✏️ Edit</button>
               <button onClick={() => onDelete(product)} className="delete-btn">🗑️ Delete</button>
             </div>
@@ -583,7 +905,7 @@ const ProductsTab = ({ products, onEdit, onDelete }) => {
 }
 
 // Orders Tab
-const OrdersTab = ({ orders, onAcceptOrder }) => {
+const OrdersTab = ({ orders, onAcceptOrder, onViewDetails }) => {
   const [statusFilter, setStatusFilter] = useState('all')
 
   const getStatusInfo = (status) => {
@@ -665,7 +987,7 @@ const OrdersTab = ({ orders, onAcceptOrder }) => {
                       ✅ Accept Order
                     </button>
                   )}
-                  <button className="btn btn-outline">View Details</button>
+                  <button className="btn btn-outline" onClick={() => onViewDetails(order._id)}>👁️ View Details</button>
                 </div>
               </div>
             </div>
@@ -697,6 +1019,147 @@ const ReviewsTab = () => (
     <p>Review management coming soon...</p>
   </div>
 )
+
+const SellerFeedbackTab = ({ onOpenFeedbackForm }) => {
+  const [myFeedbacks, setMyFeedbacks] = useState([])
+  const [loading, setLoading] = useState(false)
+  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+
+  useEffect(() => {
+    loadMyFeedbacks()
+  }, [])
+
+  const loadMyFeedbacks = async () => {
+    setLoading(true)
+    try {
+      const response = await feedbackAPI.getUserFeedbacks(token)
+      if (response.success) {
+        setMyFeedbacks(response.data.feedbacks)
+      }
+    } catch (error) {
+      console.error('Load feedbacks error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getStatusBadge = (status) => {
+    const badges = {
+      pending: { color: 'status-pending', label: 'Pending', icon: '⏳' },
+      in_progress: { color: 'status-processing', label: 'In Progress', icon: '🔄' },
+      resolved: { color: 'status-success', label: 'Resolved', icon: '✅' },
+      closed: { color: 'status-closed', label: 'Closed', icon: '🔒' }
+    }
+    return badges[status] || badges.pending
+  }
+
+  const getFeedbackTypeLabel = (type) => {
+    const labels = {
+      general_feedback: 'General Feedback',
+      product_feedback: 'Product Feedback',
+      seller_feedback: 'Platform Feedback',
+      system_complaint: 'System Complaint'
+    }
+    return labels[type] || type
+  }
+
+  return (
+    <div className="feedback-tab">
+      <div className="feedback-header">
+        <div className="header-content">
+          <h2>💬 Give Suggestions & Feedback</h2>
+          <p>Share your experience and help us improve the platform</p>
+        </div>
+      </div>
+
+      <div className="feedback-actions-grid">
+        <div className="feedback-action-card" onClick={() => onOpenFeedbackForm('general_feedback')}>
+          <div className="action-icon">💬</div>
+          <h4>General Feedback</h4>
+          <p>Share your overall experience with TarkariShop platform</p>
+          <button className="btn btn-primary">Give Feedback</button>
+        </div>
+
+        <div className="feedback-action-card" onClick={() => onOpenFeedbackForm('seller_feedback')}>
+          <div className="action-icon">⭐</div>
+          <h4>Platform Suggestions</h4>
+          <p>Suggest improvements for sellers and the platform</p>
+          <button className="btn btn-primary">Give Suggestions</button>
+        </div>
+
+        <div className="feedback-action-card" onClick={() => onOpenFeedbackForm('system_complaint')}>
+          <div className="action-icon">📝</div>
+          <h4>Report Issue</h4>
+          <p>Report technical issues or problems with the platform</p>
+          <button className="btn btn-warning">Report Issue</button>
+        </div>
+      </div>
+
+      <div className="my-feedbacks-section">
+        <h3>My Feedback History</h3>
+        {loading ? (
+          <div className="loading-state">Loading feedbacks...</div>
+        ) : myFeedbacks.length > 0 ? (
+          <div className="feedbacks-list">
+            {myFeedbacks.map((feedback) => {
+              const statusBadge = getStatusBadge(feedback.status)
+              return (
+                <div key={feedback._id} className="feedback-card">
+                  <div className="feedback-card-header">
+                    <div className="feedback-type-badge">
+                      {getFeedbackTypeLabel(feedback.feedbackType)}
+                    </div>
+                    <div className={`feedback-status-badge ${statusBadge.color}`}>
+                      <span>{statusBadge.icon}</span>
+                      <span>{statusBadge.label}</span>
+                    </div>
+                  </div>
+                  <div className="feedback-card-body">
+                    <h4>{feedback.subject}</h4>
+                    <p>{feedback.message}</p>
+                    {feedback.rating && (
+                      <div className="feedback-rating">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span key={star} className={`star ${star <= feedback.rating ? 'filled' : ''}`}>
+                            ★
+                          </span>
+                        ))}
+                        <span className="rating-text">({feedback.rating}/5)</span>
+                      </div>
+                    )}
+                    <div className="feedback-date">
+                      Submitted on {new Date(feedback.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  </div>
+                  {feedback.adminResponse && (
+                    <div className="admin-response">
+                      <h5>📢 Admin Response:</h5>
+                      <p>{feedback.adminResponse.message}</p>
+                      <small>
+                        Responded on {new Date(feedback.adminResponse.respondedAt).toLocaleDateString()}
+                      </small>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <div className="empty-icon">💬</div>
+            <h4>No Feedback Yet</h4>
+            <p>You haven't submitted any feedback yet.</p>
+            <p>Share your experience to help us improve!</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 const SellerSettingsTab = ({ user }) => (
   <div className="settings-tab">

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5001/api/orders'
+const API_BASE_URL = 'http://localhost:5001/api/orders';
 
 // Order API functions
 export const orderAPI = {
@@ -12,107 +12,117 @@ export const orderAPI = {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(orderData)
-      })
-      
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
         console.error('Order creation failed:', data);
         throw new Error(data.message || `Failed to create order. Server responded with status ${response.status}`);
       }
-      
-      return data
+
+      return data;
     } catch (error) {
       console.error('Order creation error:', error);
       // Check if it's a connection error
-      if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (error instanceof TypeError && error.message && error.message.includes('fetch')) {
         return {
           success: false,
           message: 'Unable to connect to the server. Please make sure the backend server is running and try again.'
-        }
+        };
       }
       return {
         success: false,
         message: error.message || 'Failed to create order. Please check your network connection and try again.'
-      }
+      };
     }
   },
 
   // Get buyer orders
   async getBuyerOrders(token, params = {}) {
     try {
-      const queryParams = new URLSearchParams()
-      
+      const queryParams = new URLSearchParams();
+
       Object.keys(params).forEach(key => {
         if (params[key] !== undefined && params[key] !== '') {
-          queryParams.append(key, params[key])
+          queryParams.append(key, params[key]);
         }
-      })
-      
-      const response = await fetch(`${API_BASE_URL}/buyer?${queryParams.toString()}`, {
+      });
+
+      const url = queryParams.toString()
+        ? `${API_BASE_URL}/buyer?${queryParams.toString()}`
+        : `${API_BASE_URL}/buyer`;
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      })
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch orders')
+        throw new Error(data.message || 'Failed to fetch orders');
       }
-      
-      return data
+
+      return data;
     } catch (error) {
       console.error('Get buyer orders error:', error);
       // Check if it's a connection error
-      if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (error instanceof TypeError && error.message && error.message.includes('fetch')) {
         return {
           success: false,
           message: 'Unable to connect to the server. Please make sure the backend server is running.'
-        }
+        };
       }
       return {
         success: false,
         message: error.message || 'Failed to fetch orders'
-      }
+      };
     }
   },
 
   // Get seller orders
   async getSellerOrders(token, params = {}) {
     try {
-      const queryParams = new URLSearchParams()
-      
+      const queryParams = new URLSearchParams();
+
       Object.keys(params).forEach(key => {
         if (params[key] !== undefined && params[key] !== '') {
-          queryParams.append(key, params[key])
+          queryParams.append(key, params[key]);
         }
-      })
-      
-      const response = await fetch(`${API_BASE_URL}/seller?${queryParams.toString()}`, {
+      });
+
+      const url = queryParams.toString()
+        ? `${API_BASE_URL}/seller?${queryParams.toString()}`
+        : `${API_BASE_URL}/seller`;
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      })
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch orders')
+        throw new Error(data.message || 'Failed to fetch orders');
       }
-      
-      return data
+
+      return data;
     } catch (error) {
       console.error('Get seller orders error:', error);
       // Check if it's a connection error
-      if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (error instanceof TypeError && error.message && error.message.includes('fetch')) {
         return {
           success: false,
           message: 'Unable to connect to the server. Please make sure the backend server is running.'
-        }
+        };
       }
       return {
         success: false,
         message: error.message || 'Failed to fetch orders'
-      }
+      };
     }
   },
 
@@ -123,27 +133,28 @@ export const orderAPI = {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      })
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch order')
+        throw new Error(data.message || 'Failed to fetch order');
       }
-      
-      return data
+
+      return data;
     } catch (error) {
       console.error('Get order error:', error);
       // Check if it's a connection error
-      if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (error instanceof TypeError && error.message && error.message.includes('fetch')) {
         return {
           success: false,
           message: 'Unable to connect to the server. Please make sure the backend server is running.'
-        }
+        };
       }
       return {
         success: false,
         message: error.message || 'Failed to fetch order'
-      }
+      };
     }
   },
 
@@ -156,20 +167,21 @@ export const orderAPI = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
-      })
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to accept order')
+        throw new Error(data.message || 'Failed to accept order');
       }
-      
-      return data
+
+      return data;
     } catch (error) {
       console.error('Accept order error:', error);
       return {
         success: false,
         message: error.message || 'Failed to accept order'
-      }
+      };
     }
   },
 
@@ -183,20 +195,21 @@ export const orderAPI = {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ reason })
-      })
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to reject order')
+        throw new Error(data.message || 'Failed to reject order');
       }
-      
-      return data
+
+      return data;
     } catch (error) {
       console.error('Reject order error:', error);
       return {
         success: false,
         message: error.message || 'Failed to reject order'
-      }
+      };
     }
   },
 
@@ -210,27 +223,28 @@ export const orderAPI = {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ status, reason })
-      })
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to update order status')
+        throw new Error(data.message || 'Failed to update order status');
       }
-      
-      return data
+
+      return data;
     } catch (error) {
       console.error('Update order status error:', error);
       // Check if it's a connection error
-      if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (error instanceof TypeError && error.message && error.message.includes('fetch')) {
         return {
           success: false,
           message: 'Unable to connect to the server. Please make sure the backend server is running.'
-        }
+        };
       }
       return {
         success: false,
         message: error.message || 'Failed to update order status'
-      }
+      };
     }
   },
 
@@ -244,27 +258,28 @@ export const orderAPI = {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ reason })
-      })
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to cancel order')
+        throw new Error(data.message || 'Failed to cancel order');
       }
-      
-      return data
+
+      return data;
     } catch (error) {
       console.error('Cancel order error:', error);
       // Check if it's a connection error
-      if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (error instanceof TypeError && error.message && error.message.includes('fetch')) {
         return {
           success: false,
           message: 'Unable to connect to the server. Please make sure the backend server is running.'
-        }
+        };
       }
       return {
         success: false,
         message: error.message || 'Failed to cancel order'
-      }
+      };
     }
   },
 
@@ -275,51 +290,55 @@ export const orderAPI = {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      })
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch order statistics')
+        throw new Error(data.message || 'Failed to fetch order statistics');
       }
-      
-      return data
+
+      return data;
     } catch (error) {
       console.error('Get order stats error:', error);
       // Check if it's a connection error
-      if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (error instanceof TypeError && error.message && error.message.includes('fetch')) {
         return {
           success: false,
           message: 'Unable to connect to the server. Please make sure the backend server is running.'
-        }
+        };
       }
       return {
         success: false,
         message: error.message || 'Failed to fetch order statistics'
-      }
+      };
     }
-  }
-} 
- // Confirm order receipt
+  },
+
+  // Confirm order receipt (buyer only)
   async confirmOrderReceipt(token, orderId) {
     try {
       const response = await fetch(`${API_BASE_URL}/${orderId}/confirm-receipt`, {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
-      })
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to confirm order receipt')
+        throw new Error(data.message || 'Failed to confirm order receipt');
       }
-      
-      return data
+
+      return data;
     } catch (error) {
-      console.error('Confirm order receipt error:', error)
+      console.error('Confirm order receipt error:', error);
       return {
         success: false,
         message: error.message || 'Failed to confirm order receipt'
-      }
+      };
     }
-  },
+  }
+};
