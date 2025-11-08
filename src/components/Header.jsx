@@ -8,6 +8,10 @@ const Header = ({ user, onLogout, onAuthClick }) => {
   const location = useLocation()
   const navigate = useNavigate()
   const authModalRef = useRef(null)
+  
+  // Hide user menu on auth pages and homepage
+  const isAuthPage = location.pathname.includes('login') || location.pathname.includes('signup')
+  const isHomePage = location.pathname === '/'
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -107,24 +111,14 @@ const Header = ({ user, onLogout, onAuthClick }) => {
         </nav>
         
         <div className="auth-buttons">
-          {user ? (
-            <div className="user-menu">
-              <span className="user-name">Welcome, {user.firstName || user.username}</span>
-              <button
-                className="nav-link logout-btn"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
+          {!isAuthPage ? (
             <button 
               className="nav-link login-btn"
               onClick={openAuthModal}
             >
               Login / Sign Up
             </button>
-          )}
+          ) : null}
         </div>
         
         <div className="mobile-menu-btn" onClick={toggleMenu}>

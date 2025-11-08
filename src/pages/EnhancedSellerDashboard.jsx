@@ -9,6 +9,7 @@ import { productAPI } from '../services/productAPI'
 import { orderAPI } from '../services/orderAPI'
 import { authAPI, STORAGE_KEYS } from '../services/authAPI'
 import { feedbackAPI } from '../services/feedbackAPI'
+import { favoritesAPI } from '../services/favoritesAPI'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import { ConfirmDialog, FormDialog } from '../components/Dialog'
 import FeedbackForm from '../components/FeedbackForm'
@@ -40,6 +41,10 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
   const [newProductData, setNewProductData] = useState({ name: '', description: '', price: '', unit: 'kg', stock: '', organic: false, category: '' })
   const [productImages, setProductImages] = useState([])
   const [imagePreview, setImagePreview] = useState([])
+  
+  // Favorites states
+  const [favorites, setFavorites] = useState([])
+  const [favoriteIds, setFavoriteIds] = useState(new Set())
 
   // Get token with fallback
   const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) || localStorage.getItem('sellerToken') || authAPI.getAuthToken()
@@ -61,6 +66,10 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
       loadCategories()
     } else if (activeTab === 'orders') {
       loadOrders()
+    } else if (activeTab === 'favorites') {
+      loadFavorites()
+    } else if (activeTab === 'customers') {
+      loadOrders() // Load orders for customer data
     }
   }, [activeTab])
 
@@ -137,6 +146,54 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
       toast.error('Failed to load orders')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadFavorites = async () => {
+    setLoading(true)
+    try {
+      const response = await favoritesAPI.getUserFavorites(token)
+      if (response.success) {
+        setFavorites(response.data.favorites)
+        const ids = new Set(response.data.favorites.map(fav => fav.product._id))
+        setFavoriteIds(ids)
+      } else {
+        toast.error(response.message)
+      }
+    } catch (error) {
+      console.error('Error loading favorites:', error)
+      toast.error('Failed to load favorites')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleToggleFavorite = async (productId) => {
+    try {
+      if (favoriteIds.has(productId)) {
+        const response = await favoritesAPI.removeFromFavorites(token, productId)
+        if (response.success) {
+          setFavoriteIds(prev => {
+            const newSet = new Set(prev)
+            newSet.delete(productId)
+            return newSet
+          })
+          setFavorites(prev => prev.filter(fav => fav.product._id !== productId))
+          toast.success('Removed from favorites')
+        }
+      } else {
+        const response = await favoritesAPI.addToFavorites(token, productId)
+        if (response.success) {
+          setFavoriteIds(prev => new Set([...prev, productId]))
+          toast.success('Added to favorites!')
+          if (activeTab === 'favorites') {
+            loadFavorites()
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      toast.error('Failed to update favorites')
     }
   }
 
@@ -365,6 +422,7 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
     { key: 'categories', label: 'Categories', icon: '📂' },
     { key: 'products', label: 'Products', icon: '🥬' },
     { key: 'orders', label: 'Orders', icon: '📦' },
+    { key: 'favorites', label: 'Favorites', icon: '❤️' },
     { key: 'analytics', label: 'Analytics', icon: '📈' },
     { key: 'customers', label: 'Customers', icon: '👥' },
     { key: 'feedback', label: 'Give Suggestions', icon: '💬' },
@@ -377,6 +435,7 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
       categories: 'Manage Categories',
       products: 'Manage Products',
       orders: 'Order Management',
+      favorites: 'Favorite Products',
       analytics: 'Sales Analytics',
       customers: 'Customer Management',
       feedback: 'Give Suggestions & Feedback',
@@ -407,20 +466,24 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
           onDelete={handleDeleteProduct}
           onAdd={() => setShowAddProduct(true)}
           onViewDetails={handleViewProductDetails}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={handleToggleFavorite}
         />
       case 'orders':
         return <OrdersTab orders={orders} onAcceptOrder={handleAcceptOrder} onViewDetails={handleViewOrderDetails} />
+      case 'favorites':
+        return <SellerFavoritesTab favorites={favorites} onToggleFavorite={handleToggleFavorite} />
       case 'analytics':
-        return <AnalyticsTab />
+        return <AnalyticsTab orders={orders} products={products} />
       case 'customers':
-        return <CustomersTab />
+        return <CustomersTab orders={orders} />
       case 'feedback':
         return <SellerFeedbackTab onOpenFeedbackForm={(type) => {
           setFeedbackType(type)
           setShowFeedbackForm(true)
         }} />
       case 'settings':
-        return <SellerSettingsTab user={user} />
+        return <SellerSettingsTab user={user} onLogout={onLogout} />
       default:
         return <SellerOverviewTab user={user} data={dashboardData} />
     }
@@ -868,7 +931,7 @@ const CategoriesTab = ({ categories, onEdit, onDelete, onAdd }) => {
 }
 
 // Products Tab
-const ProductsTab = ({ products, onEdit, onDelete, onAdd, onViewDetails }) => {
+const ProductsTab = ({ products, onEdit, onDelete, onAdd, onViewDetails, favoriteIds, onToggleFavorite }) => {
   return (
     <div className="products-tab">
       <div className="tab-header">
@@ -878,24 +941,57 @@ const ProductsTab = ({ products, onEdit, onDelete, onAdd, onViewDetails }) => {
 
       <div className="products-grid">
         {products.map((product) => (
-          <div key={product._id} className="product-card">
-            <div className="product-image">
+          <div key={product._id} className="product-card-enhanced">
+            <div className="product-image-wrapper">
               {product.images && product.images.length > 0 ? (
-                <img src={`http://localhost:5001${product.images[0]}`} alt={product.name} />
+                <img src={`http://localhost:5001${product.images[0]}`} alt={product.name} className="product-image" />
               ) : (
                 <div className="placeholder-image">🥬</div>
               )}
+              <button 
+                className={`favorite-icon-btn ${favoriteIds.has(product._id) ? 'active' : ''}`}
+                onClick={() => onToggleFavorite(product._id)}
+                title={favoriteIds.has(product._id) ? "Remove from favorites" : "Add to favorites"}
+              >
+                {favoriteIds.has(product._id) ? '❤️' : '🤍'}
+              </button>
+              {product.organic && <span className="organic-badge-overlay">🌱 Organic</span>}
             </div>
-            <div className="product-info">
-              <h4>{product.name}</h4>
-              <p className="product-price">Rs. {product.price}/{product.unit}</p>
-              <p className="product-stock">Stock: {product.stock} {product.unit}</p>
-              {product.organic && <span className="organic-badge">🌱 Organic</span>}
+            <div className="product-info-detailed">
+              <div className="product-header-section">
+                <h4 className="product-title">{product.name}</h4>
+                {product.category && (
+                  <span className="category-tag">{product.category.name}</span>
+                )}
+              </div>
+              <p className="product-description">{product.description || 'No description'}</p>
+              <div className="product-meta-info">
+                <div className="price-section">
+                  <span className="product-price">Rs. {product.price}</span>
+                  <span className="price-unit">/{product.unit}</span>
+                </div>
+                <div className="stock-section">
+                  <span className={`stock-badge ${product.stock === 0 ? 'out-of-stock' : product.stock < 10 ? 'low-stock' : 'in-stock'}`}>
+                    {product.stock === 0 ? '❌ Out of Stock' : `✓ ${product.stock} ${product.unit}`}
+                  </span>
+                </div>
+              </div>
+              <div className="product-stats">
+                <span className="stat-item">⭐ {product.averageRating?.toFixed(1) || '0.0'}</span>
+                <span className="stat-item">💬 {product.totalReviews || 0} reviews</span>
+                <span className="stat-item">📦 {product.totalOrders || 0} orders</span>
+              </div>
             </div>
-            <div className="product-actions">
-              <button onClick={() => onViewDetails(product._id)} className="view-btn">👁️ View</button>
-              <button onClick={() => onEdit(product)} className="edit-btn">✏️ Edit</button>
-              <button onClick={() => onDelete(product)} className="delete-btn">🗑️ Delete</button>
+            <div className="product-actions-row">
+              <button onClick={() => onViewDetails(product._id)} className="action-btn view-btn" title="View Details">
+                👁️
+              </button>
+              <button onClick={() => onEdit(product)} className="action-btn edit-btn" title="Edit Product">
+                ✏️
+              </button>
+              <button onClick={() => onDelete(product)} className="action-btn delete-btn" title="Delete Product">
+                🗑️
+              </button>
             </div>
           </div>
         ))}
@@ -947,6 +1043,8 @@ const OrdersTab = ({ orders, onAcceptOrder, onViewDetails }) => {
       <div className="orders-list">
         {filteredOrders.map((order) => {
           const statusInfo = getStatusInfo(order.status)
+          const isAccepted = order.status !== 'pending' && order.status !== 'cancelled'
+          
           return (
             <div key={order._id} className="enhanced-order-card">
               <div className="order-card-header">
@@ -962,6 +1060,62 @@ const OrdersTab = ({ orders, onAcceptOrder, onViewDetails }) => {
                   <span className="status-text">{order.status}</span>
                 </div>
               </div>
+              
+              {/* Customer Details - Show for accepted orders */}
+              {isAccepted && (
+                <div className="customer-details-section">
+                  <h5 className="section-title">📋 Customer Details</h5>
+                  <div className="customer-info-grid">
+                    <div className="info-item">
+                      <span className="info-label">👤 Name:</span>
+                      <span className="info-value">{String(order.buyerName || 'N/A')}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">📧 Email:</span>
+                      <span className="info-value">{String(order.buyerEmail || 'N/A')}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">📱 Phone:</span>
+                      <span className="info-value">{String(order.buyerPhone || 'N/A')}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">📍 Address:</span>
+                      <span className="info-value">
+                        {(() => {
+                          if (!order.deliveryAddress) return 'N/A';
+                          if (typeof order.deliveryAddress === 'string') return order.deliveryAddress;
+                          if (typeof order.deliveryAddress === 'object') {
+                            const parts = [
+                              order.deliveryAddress.street,
+                              order.deliveryAddress.city,
+                              order.deliveryAddress.state,
+                              order.deliveryAddress.postalCode
+                            ].filter(Boolean);
+                            return parts.length > 0 ? parts.join(', ') : 'N/A';
+                          }
+                          return 'N/A';
+                        })()}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">🏙️ City:</span>
+                      <span className="info-value">
+                        {(() => {
+                          if (order.buyerCity) return String(order.buyerCity);
+                          if (order.deliveryAddress && typeof order.deliveryAddress === 'object') {
+                            return String(order.deliveryAddress.city || 'N/A');
+                          }
+                          return 'N/A';
+                        })()}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">💳 Payment:</span>
+                      <span className="info-value">{String(order.paymentMethod || 'COD')}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div className="order-items">
                 <h5>Items ({order.items?.length || 0})</h5>
@@ -998,20 +1152,366 @@ const OrdersTab = ({ orders, onAcceptOrder, onViewDetails }) => {
   )
 }
 
-// Placeholder tabs
-const AnalyticsTab = () => (
-  <div className="analytics-tab">
-    <h3>📈 Sales Analytics</h3>
-    <p>Analytics dashboard coming soon...</p>
-  </div>
-)
+// Seller Favorites Tab
+const SellerFavoritesTab = ({ favorites, onToggleFavorite }) => {
+  return (
+    <div className="favorites-tab">
+      <div className="tab-header">
+        <h3>❤️ Favorite Products</h3>
+        <p>Products you've marked as favorites for quick access</p>
+      </div>
 
-const CustomersTab = () => (
-  <div className="customers-tab">
-    <h3>👥 Customer Management</h3>
-    <p>Customer management features coming soon...</p>
-  </div>
-)
+      {favorites.length > 0 ? (
+        <div className="favorites-grid">
+          {favorites.map((favorite) => {
+            const product = favorite.product
+            if (!product) return null
+            
+            return (
+              <div key={favorite._id} className="favorite-card">
+                <div className="product-image">
+                  {product.images && product.images.length > 0 ? (
+                    <img src={`http://localhost:5001${product.images[0]}`} alt={product.name} />
+                  ) : (
+                    <div className="placeholder-image">🥬</div>
+                  )}
+                  <button 
+                    className="remove-favorite-btn"
+                    onClick={() => onToggleFavorite(product._id)}
+                    title="Remove from favorites"
+                  >
+                    ❤️
+                  </button>
+                </div>
+                <div className="product-info">
+                  <h4>{product.name}</h4>
+                  <p className="product-price">Rs. {product.price}/{product.unit}</p>
+                  <p className="product-stock">Stock: {product.stock} {product.unit}</p>
+                  {product.organic && <span className="organic-badge">🌱 Organic</span>}
+                  {product.category && (
+                    <span className="category-badge">{product.category.name}</span>
+                  )}
+                </div>
+                <div className="product-actions">
+                  <button 
+                    className="view-btn"
+                    onClick={() => window.open(`/product/${product._id}`, '_blank')}
+                  >
+                    👁️ View Details
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        <div className="empty-favorites">
+          <div className="empty-icon">❤️</div>
+          <h4>No Favorites Yet</h4>
+          <p>Browse products and add them to your favorites for quick access!</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Analytics Tab
+const AnalyticsTab = ({ orders, products }) => {
+  // Calculate analytics data
+  const analytics = React.useMemo(() => {
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+    const completedOrders = orders.filter(o => o.status === 'delivered').length;
+    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+    const cancelledOrders = orders.filter(o => o.status === 'cancelled').length;
+    
+    // Revenue by month (last 6 months)
+    const monthlyRevenue = {};
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    orders.forEach(order => {
+      const date = new Date(order.orderDate);
+      const monthKey = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+      monthlyRevenue[monthKey] = (monthlyRevenue[monthKey] || 0) + (order.total || 0);
+    });
+    
+    // Top selling products
+    const productSales = {};
+    orders.forEach(order => {
+      order.items?.forEach(item => {
+        const productId = item.product?._id || item.productId;
+        if (productId) {
+          if (!productSales[productId]) {
+            productSales[productId] = {
+              name: item.productName || item.product?.name || 'Unknown',
+              quantity: 0,
+              revenue: 0
+            };
+          }
+          productSales[productId].quantity += item.quantity || 0;
+          productSales[productId].revenue += (item.price * item.quantity) || 0;
+        }
+      });
+    });
+    
+    const topProducts = Object.values(productSales)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+    
+    // Order status distribution
+    const statusDistribution = {
+      pending: pendingOrders,
+      confirmed: orders.filter(o => o.status === 'confirmed').length,
+      processing: orders.filter(o => o.status === 'processing').length,
+      shipped: orders.filter(o => o.status === 'shipped').length,
+      delivered: completedOrders,
+      cancelled: cancelledOrders
+    };
+    
+    return {
+      totalRevenue,
+      completedOrders,
+      pendingOrders,
+      cancelledOrders,
+      averageOrderValue: orders.length > 0 ? totalRevenue / orders.length : 0,
+      monthlyRevenue: Object.entries(monthlyRevenue).slice(-6),
+      topProducts,
+      statusDistribution,
+      totalProducts: products.length,
+      lowStockProducts: products.filter(p => p.stock < 10).length
+    };
+  }, [orders, products]);
+
+  return (
+    <div className="analytics-tab">
+      <div className="analytics-header">
+        <h3>📈 Sales Analytics</h3>
+        <p>Comprehensive overview of your business performance</p>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="analytics-metrics-grid">
+        <div className="metric-card revenue">
+          <div className="metric-icon">💰</div>
+          <div className="metric-content">
+            <span className="metric-label">Total Revenue</span>
+            <span className="metric-value">Rs. {analytics.totalRevenue.toLocaleString()}</span>
+            <span className="metric-trend positive">↑ All time</span>
+          </div>
+        </div>
+        
+        <div className="metric-card orders">
+          <div className="metric-icon">📦</div>
+          <div className="metric-content">
+            <span className="metric-label">Total Orders</span>
+            <span className="metric-value">{orders.length}</span>
+            <span className="metric-trend">{analytics.completedOrders} completed</span>
+          </div>
+        </div>
+        
+        <div className="metric-card average">
+          <div className="metric-icon">💵</div>
+          <div className="metric-content">
+            <span className="metric-label">Avg Order Value</span>
+            <span className="metric-value">Rs. {Math.round(analytics.averageOrderValue).toLocaleString()}</span>
+            <span className="metric-trend">Per order</span>
+          </div>
+        </div>
+        
+        <div className="metric-card products">
+          <div className="metric-icon">🥬</div>
+          <div className="metric-content">
+            <span className="metric-label">Total Products</span>
+            <span className="metric-value">{analytics.totalProducts}</span>
+            <span className="metric-trend warning">{analytics.lowStockProducts} low stock</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="analytics-charts">
+        {/* Revenue Chart */}
+        <div className="chart-card">
+          <h4>📊 Monthly Revenue (Last 6 Months)</h4>
+          <div className="bar-chart">
+            {analytics.monthlyRevenue.map(([month, revenue]) => {
+              const maxRevenue = Math.max(...analytics.monthlyRevenue.map(([, r]) => r));
+              const height = maxRevenue > 0 ? (revenue / maxRevenue) * 100 : 0;
+              return (
+                <div key={month} className="bar-item">
+                  <div className="bar-wrapper">
+                    <div className="bar" style={{ height: `${height}%` }}>
+                      <span className="bar-value">Rs. {revenue.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <span className="bar-label">{month}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Order Status Distribution */}
+        <div className="chart-card">
+          <h4>📈 Order Status Distribution</h4>
+          <div className="status-chart">
+            {Object.entries(analytics.statusDistribution).map(([status, count]) => {
+              const total = orders.length;
+              const percentage = total > 0 ? (count / total) * 100 : 0;
+              const statusColors = {
+                pending: '#f59e0b',
+                confirmed: '#3b82f6',
+                processing: '#8b5cf6',
+                shipped: '#6366f1',
+                delivered: '#10b981',
+                cancelled: '#ef4444'
+              };
+              return (
+                <div key={status} className="status-item">
+                  <div className="status-info">
+                    <span className="status-name">{status}</span>
+                    <span className="status-count">{count} orders</span>
+                  </div>
+                  <div className="status-bar-bg">
+                    <div 
+                      className="status-bar-fill" 
+                      style={{ 
+                        width: `${percentage}%`,
+                        backgroundColor: statusColors[status]
+                      }}
+                    />
+                  </div>
+                  <span className="status-percentage">{percentage.toFixed(1)}%</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Top Products */}
+      <div className="top-products-section">
+        <h4>🏆 Top Selling Products</h4>
+        <div className="top-products-list">
+          {analytics.topProducts.map((product, index) => (
+            <div key={index} className="top-product-item">
+              <div className="product-rank">#{index + 1}</div>
+              <div className="product-info">
+                <span className="product-name">{product.name}</span>
+                <span className="product-stats">
+                  {product.quantity} units sold • Rs. {product.revenue.toLocaleString()}
+                </span>
+              </div>
+              <div className="product-revenue">
+                Rs. {product.revenue.toLocaleString()}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const CustomersTab = ({ orders }) => {
+  // Extract unique customers from orders
+  const customers = React.useMemo(() => {
+    const customerMap = new Map();
+    
+    orders.forEach(order => {
+      const customerId = order.buyer?._id || order.buyerId;
+      if (customerId && !customerMap.has(customerId)) {
+        customerMap.set(customerId, {
+          id: customerId,
+          name: order.buyerName || 'Unknown',
+          email: order.buyerEmail || 'N/A',
+          phone: order.buyerPhone || 'N/A',
+          city: order.buyerCity || 'N/A',
+          totalOrders: 0,
+          totalSpent: 0,
+          lastOrderDate: order.orderDate
+        });
+      }
+      
+      // Update customer stats
+      if (customerId && customerMap.has(customerId)) {
+        const customer = customerMap.get(customerId);
+        customer.totalOrders += 1;
+        customer.totalSpent += order.total || 0;
+        
+        // Update last order date if this order is more recent
+        if (new Date(order.orderDate) > new Date(customer.lastOrderDate)) {
+          customer.lastOrderDate = order.orderDate;
+        }
+      }
+    });
+    
+    return Array.from(customerMap.values()).sort((a, b) => b.totalSpent - a.totalSpent);
+  }, [orders]);
+
+  return (
+    <div className="customers-tab">
+      <div className="tab-header">
+        <h3>👥 Customer Management</h3>
+        <div className="customers-stats">
+          <span className="stat-badge">Total Customers: {customers.length}</span>
+        </div>
+      </div>
+
+      {customers.length > 0 ? (
+        <div className="customers-list">
+          {customers.map((customer, index) => (
+            <div key={customer.id} className="customer-card">
+              <div className="customer-rank">#{index + 1}</div>
+              <div className="customer-info-section">
+                <div className="customer-header">
+                  <div className="customer-avatar">
+                    {customer.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="customer-details">
+                    <h4 className="customer-name">{customer.name}</h4>
+                    <div className="customer-contact">
+                      <span className="contact-item">📧 {customer.email}</span>
+                      <span className="contact-item">📱 {customer.phone}</span>
+                      <span className="contact-item">🏙️ {customer.city}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="customer-stats-grid">
+                  <div className="stat-item">
+                    <span className="stat-label">Total Orders</span>
+                    <span className="stat-value">{customer.totalOrders}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Total Spent</span>
+                    <span className="stat-value">Rs. {customer.totalSpent.toLocaleString()}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Last Order</span>
+                    <span className="stat-value">
+                      {new Date(customer.lastOrderDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Avg Order Value</span>
+                    <span className="stat-value">
+                      Rs. {Math.round(customer.totalSpent / customer.totalOrders).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-customers">
+          <div className="empty-icon">👥</div>
+          <h4>No Customers Yet</h4>
+          <p>Customers will appear here once you receive orders</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const ReviewsTab = () => (
   <div className="reviews-tab">
@@ -1161,15 +1661,150 @@ const SellerFeedbackTab = ({ onOpenFeedbackForm }) => {
   )
 }
 
-const SellerSettingsTab = ({ user }) => (
-  <div className="settings-tab">
-    <h3>⚙️ Account Settings</h3>
-    <div className="settings-section">
-      <h4>Farm Information</h4>
-      <p><strong>Farm Name:</strong> {user.farmName}</p>
-      <p><strong>Location:</strong> {user.farmLocation}</p>
+const SellerSettingsTab = ({ user, onLogout }) => {
+  const navigate = useNavigate();
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    farmName: user?.farmName || '',
+    farmLocation: user?.farmLocation || '',
+    city: user?.city || ''
+  });
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      onLogout();
+      navigate('/');
+      toast.success('Logged out successfully!');
+    }
+  };
+
+  return (
+    <div className="settings-tab">
+      <div className="settings-header">
+        <h3>⚙️ Account Settings</h3>
+        <p>Manage your account and farm information</p>
+      </div>
+
+      {/* Profile Section */}
+      <div className="settings-card">
+        <div className="card-header">
+          <h4>👤 Profile Information</h4>
+          <button className="edit-btn-small" onClick={() => setEditMode(!editMode)}>
+            {editMode ? '❌ Cancel' : '✏️ Edit'}
+          </button>
+        </div>
+        <div className="settings-grid">
+          <div className="setting-item">
+            <label>First Name</label>
+            {editMode ? (
+              <input 
+                type="text" 
+                value={formData.firstName}
+                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+              />
+            ) : (
+              <span className="setting-value">{user?.firstName || 'N/A'}</span>
+            )}
+          </div>
+          <div className="setting-item">
+            <label>Last Name</label>
+            {editMode ? (
+              <input 
+                type="text" 
+                value={formData.lastName}
+                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+              />
+            ) : (
+              <span className="setting-value">{user?.lastName || 'N/A'}</span>
+            )}
+          </div>
+          <div className="setting-item">
+            <label>Email</label>
+            <span className="setting-value">{user?.email || 'N/A'}</span>
+          </div>
+          <div className="setting-item">
+            <label>Phone</label>
+            {editMode ? (
+              <input 
+                type="text" 
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              />
+            ) : (
+              <span className="setting-value">{user?.phone || 'N/A'}</span>
+            )}
+          </div>
+        </div>
+        {editMode && (
+          <div className="card-actions">
+            <button className="btn btn-primary">💾 Save Changes</button>
+          </div>
+        )}
+      </div>
+
+      {/* Farm Information */}
+      <div className="settings-card">
+        <div className="card-header">
+          <h4>🌾 Farm Information</h4>
+        </div>
+        <div className="settings-grid">
+          <div className="setting-item">
+            <label>Farm Name</label>
+            {editMode ? (
+              <input 
+                type="text" 
+                value={formData.farmName}
+                onChange={(e) => setFormData({...formData, farmName: e.target.value})}
+              />
+            ) : (
+              <span className="setting-value">{user?.farmName || 'N/A'}</span>
+            )}
+          </div>
+          <div className="setting-item">
+            <label>Farm Location</label>
+            {editMode ? (
+              <input 
+                type="text" 
+                value={formData.farmLocation}
+                onChange={(e) => setFormData({...formData, farmLocation: e.target.value})}
+              />
+            ) : (
+              <span className="setting-value">{user?.farmLocation || 'N/A'}</span>
+            )}
+          </div>
+          <div className="setting-item">
+            <label>City</label>
+            {editMode ? (
+              <input 
+                type="text" 
+                value={formData.city}
+                onChange={(e) => setFormData({...formData, city: e.target.value})}
+              />
+            ) : (
+              <span className="setting-value">{user?.city || 'N/A'}</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Account Actions */}
+      <div className="settings-card danger-zone">
+        <div className="card-header">
+          <h4>🔐 Account Actions</h4>
+        </div>
+        <div className="action-buttons">
+          <button className="btn btn-outline">🔑 Change Password</button>
+          <button className="btn btn-danger" onClick={handleLogout}>
+            🚪 Logout from Account
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-)
+  );
+}
 
 export default EnhancedSellerDashboard

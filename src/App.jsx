@@ -21,6 +21,7 @@ import AuthPage from './pages/Auth'
 import Checkout from './pages/Checkout'
 import OrderSuccess from './pages/OrderSuccess'
 import OrderDetail from './pages/OrderDetail'
+import ProductDetail from './pages/ProductDetail'
 // Add imports for new components
 import BuyerLogin from './pages/BuyerLogin'
 import SellerLogin from './pages/SellerLogin'
@@ -180,6 +181,12 @@ function App() {
             } />
             <Route path="/order-details/:orderId" element={
               <ProtectedRoute user={user} requiredUserType={USER_TYPES.BUYER} redirectTo="/buyer-login">
+                <OrderDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="/product/:productId" element={<ProductDetail />} />
+            <Route path="/order/:orderId" element={
+              <ProtectedRoute user={user} redirectTo="/buyer-login">
                 <OrderDetail />
               </ProtectedRoute>
             } />

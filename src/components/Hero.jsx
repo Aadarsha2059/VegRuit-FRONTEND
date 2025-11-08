@@ -1,11 +1,64 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { FiShoppingBag, FiInfo, FiChevronRight, FiStar, FiUsers, FiTruck } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiShoppingBag, FiInfo, FiChevronRight, FiStar, FiUsers, FiTruck, FiChevronLeft } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import basketImage from '../assets/basket.png';
 import '../styles/Hero.css';
 
+// Use a beautiful online image of fresh vegetables and fruits
+const heroVegetablesImage = 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=800&h=800&fit=crop&q=80';
+
 const Hero = () => {
+  // Image slider state
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // Hero images - using high-quality Unsplash images
+  const heroImages = [
+    {
+      url: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=1200&h=800&fit=crop&q=80',
+      alt: 'Fresh vegetables and fruits',
+      title: 'Farm-Fresh Goodness',
+      subtitle: 'Delivered to Your Doorstep'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&h=800&fit=crop&q=80',
+      alt: 'Organic vegetables',
+      title: 'Organic & Healthy',
+      subtitle: 'Straight from Local Farms'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1200&h=800&fit=crop&q=80',
+      alt: 'Fresh fruits',
+      title: 'Nature\'s Best',
+      subtitle: 'Handpicked for You'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=1200&h=800&fit=crop&q=80',
+      alt: 'Colorful produce',
+      title: 'Vibrant & Fresh',
+      subtitle: 'Quality You Can Trust'
+    }
+  ];
+
+  // Auto-advance slider
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(timer);
+  }, [heroImages.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+  };
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -162,8 +215,35 @@ const Hero = () => {
           </motion.div>
 
           <motion.div className="hero-image" variants={imageVariants}>
-            <div className="image-container">
-              <img src={basketImage} alt="Fresh fruits and vegetables basket" />
+            <div className="basket-image-container" style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              minHeight: '500px',
+              width: '100%'
+            }}>
+              <motion.img 
+                src={heroVegetablesImage} 
+                alt="Fresh vegetables and fruits"
+                className="basket-main-image"
+                style={{
+                  width: '100%',
+                  maxWidth: '550px',
+                  height: 'auto',
+                  display: 'block',
+                  borderRadius: '30px',
+                  boxShadow: '0 30px 60px rgba(0, 0, 0, 0.3)'
+                }}
+                animate={{
+                  y: [0, -15, 0],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              />
+              <div className="basket-glow"></div>
               
               {/* Floating Elements */}
               <motion.div

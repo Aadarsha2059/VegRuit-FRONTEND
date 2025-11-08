@@ -381,7 +381,7 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
 
     switch (activeTab) {
       case 'overview':
-        return <BuyerOverviewTab user={user} data={dashboardData} products={products} />
+        return <BuyerOverviewTab user={user} data={dashboardData} products={products} favoriteIds={favoriteIds} onToggleFavorite={handleToggleFavorite} onAddToCart={handleAddToCart} />
       case 'products':
         return <BuyerProductsTab 
           products={products} 
@@ -506,7 +506,8 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
 }
 
 // Enhanced Overview Tab Component
-const BuyerOverviewTab = ({ user, data, products }) => {
+const BuyerOverviewTab = ({ user, data, products, favoriteIds, onToggleFavorite, onAddToCart }) => {
+  const navigate = useNavigate()
   if (!data) return <LoadingSpinner message="Loading overview..." />
 
   const { stats, recentOrders } = data
@@ -642,7 +643,13 @@ const BuyerOverviewTab = ({ user, data, products }) => {
                   <div className="product-price">Rs. {product.price}/{product.unit}</div>
                 </div>
                 <div className="product-actions">
-                  <button className="favorite-btn">❤️</button>
+                  <button 
+                    className={`favorite-btn ${favoriteIds.has(product._id) ? 'active' : ''}`}
+                    onClick={() => onToggleFavorite(product._id)}
+                    title={favoriteIds.has(product._id) ? "Remove from favorites" : "Add to favorites"}
+                  >
+                    {favoriteIds.has(product._id) ? '❤️' : '🤍'}
+                  </button>
                   <button className="add-cart-btn" onClick={() => onAddToCart(product._id)}>Add to Cart</button>
                 </div>
               </div>
@@ -836,8 +843,12 @@ const BuyerProductsTab = ({ products, categories, onAddToCart, favoriteIds, onTo
                   >
                     {product.stock === 0 ? '❌ Out of Stock' : '🛒 Add to Cart'}
                   </button>
-                  <button className="favorite-btn" title="Add to Favorites">
-                    ❤️
+                  <button 
+                    className={`favorite-btn ${favoriteIds.has(product._id) ? 'active' : ''}`}
+                    onClick={() => onToggleFavorite(product._id)}
+                    title={favoriteIds.has(product._id) ? "Remove from Favorites" : "Add to Favorites"}
+                  >
+                    {favoriteIds.has(product._id) ? '❤️' : '🤍'}
                   </button>
                 </div>
               </div>
