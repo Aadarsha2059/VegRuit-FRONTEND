@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
 import StatCard from '../components/dashboard/StatCard'
 import LoadingSpinner from '../components/dashboard/LoadingSpinner'
+import SellerSettingsTab from '../components/dashboard/SellerSettingsTab'
 import { categoryAPI } from '../services/categoryAPI'
 import { productAPI } from '../services/productAPI'
 import { orderAPI } from '../services/orderAPI'
@@ -483,7 +484,14 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
           setShowFeedbackForm(true)
         }} />
       case 'settings':
-        return <SellerSettingsTab user={user} onLogout={onLogout} />
+        return <SellerSettingsTab 
+          user={user}
+          onUpdateProfile={async (profileData) => {
+            console.log('Update profile:', profileData)
+            // TODO: Implement profile update API call
+          }}
+          onLogout={onLogout}
+        />
       default:
         return <SellerOverviewTab user={user} data={dashboardData} />
     }
@@ -1661,150 +1669,6 @@ const SellerFeedbackTab = ({ onOpenFeedbackForm }) => {
   )
 }
 
-const SellerSettingsTab = ({ user, onLogout }) => {
-  const navigate = useNavigate();
-  const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    farmName: user?.farmName || '',
-    farmLocation: user?.farmLocation || '',
-    city: user?.city || ''
-  });
-
-  const handleLogout = () => {
-    if (window.confirm('Are you sure you want to logout?')) {
-      onLogout();
-      navigate('/');
-      toast.success('Logged out successfully!');
-    }
-  };
-
-  return (
-    <div className="settings-tab">
-      <div className="settings-header">
-        <h3>⚙️ Account Settings</h3>
-        <p>Manage your account and farm information</p>
-      </div>
-
-      {/* Profile Section */}
-      <div className="settings-card">
-        <div className="card-header">
-          <h4>👤 Profile Information</h4>
-          <button className="edit-btn-small" onClick={() => setEditMode(!editMode)}>
-            {editMode ? '❌ Cancel' : '✏️ Edit'}
-          </button>
-        </div>
-        <div className="settings-grid">
-          <div className="setting-item">
-            <label>First Name</label>
-            {editMode ? (
-              <input 
-                type="text" 
-                value={formData.firstName}
-                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-              />
-            ) : (
-              <span className="setting-value">{user?.firstName || 'N/A'}</span>
-            )}
-          </div>
-          <div className="setting-item">
-            <label>Last Name</label>
-            {editMode ? (
-              <input 
-                type="text" 
-                value={formData.lastName}
-                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-              />
-            ) : (
-              <span className="setting-value">{user?.lastName || 'N/A'}</span>
-            )}
-          </div>
-          <div className="setting-item">
-            <label>Email</label>
-            <span className="setting-value">{user?.email || 'N/A'}</span>
-          </div>
-          <div className="setting-item">
-            <label>Phone</label>
-            {editMode ? (
-              <input 
-                type="text" 
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              />
-            ) : (
-              <span className="setting-value">{user?.phone || 'N/A'}</span>
-            )}
-          </div>
-        </div>
-        {editMode && (
-          <div className="card-actions">
-            <button className="btn btn-primary">💾 Save Changes</button>
-          </div>
-        )}
-      </div>
-
-      {/* Farm Information */}
-      <div className="settings-card">
-        <div className="card-header">
-          <h4>🌾 Farm Information</h4>
-        </div>
-        <div className="settings-grid">
-          <div className="setting-item">
-            <label>Farm Name</label>
-            {editMode ? (
-              <input 
-                type="text" 
-                value={formData.farmName}
-                onChange={(e) => setFormData({...formData, farmName: e.target.value})}
-              />
-            ) : (
-              <span className="setting-value">{user?.farmName || 'N/A'}</span>
-            )}
-          </div>
-          <div className="setting-item">
-            <label>Farm Location</label>
-            {editMode ? (
-              <input 
-                type="text" 
-                value={formData.farmLocation}
-                onChange={(e) => setFormData({...formData, farmLocation: e.target.value})}
-              />
-            ) : (
-              <span className="setting-value">{user?.farmLocation || 'N/A'}</span>
-            )}
-          </div>
-          <div className="setting-item">
-            <label>City</label>
-            {editMode ? (
-              <input 
-                type="text" 
-                value={formData.city}
-                onChange={(e) => setFormData({...formData, city: e.target.value})}
-              />
-            ) : (
-              <span className="setting-value">{user?.city || 'N/A'}</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Account Actions */}
-      <div className="settings-card danger-zone">
-        <div className="card-header">
-          <h4>🔐 Account Actions</h4>
-        </div>
-        <div className="action-buttons">
-          <button className="btn btn-outline">🔑 Change Password</button>
-          <button className="btn btn-danger" onClick={handleLogout}>
-            🚪 Logout from Account
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+// SellerSettingsTab is now imported from '../components/dashboard/SellerSettingsTab'
 
 export default EnhancedSellerDashboard

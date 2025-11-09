@@ -429,11 +429,13 @@ const Checkout = () => {
                         onChange={handleInputChange}
                       />
                       <div className="payment-content">
-                        <div className="payment-icon">📱</div>
+                        <div className="payment-logo">
+                          <img src="https://web.khalti.com/static/img/logo1.png" alt="Khalti" style={{maxWidth: '80px', height: 'auto'}} />
+                        </div>
                         <div className="payment-details">
-                          <h4>Khalti</h4>
-                          <p>Digital wallet payment</p>
-                          <span className="payment-badge coming-soon">Coming Soon</span>
+                          <h4>Khalti Digital Wallet</h4>
+                          <p>Pay securely with Khalti - Nepal's most popular digital wallet</p>
+                          <span className="payment-badge active">Available</span>
                         </div>
                       </div>
                     </label>
@@ -447,11 +449,13 @@ const Checkout = () => {
                         onChange={handleInputChange}
                       />
                       <div className="payment-content">
-                        <div className="payment-icon">💳</div>
+                        <div className="payment-logo">
+                          <img src="https://esewa.com.np/common/images/esewa-logo.png" alt="eSewa" style={{maxWidth: '80px', height: 'auto'}} />
+                        </div>
                         <div className="payment-details">
-                          <h4>eSewa</h4>
-                          <p>Online payment gateway</p>
-                          <span className="payment-badge coming-soon">Coming Soon</span>
+                          <h4>eSewa Digital Wallet</h4>
+                          <p>Pay with eSewa - Trusted digital payment solution in Nepal</p>
+                          <span className="payment-badge active">Available</span>
                         </div>
                       </div>
                     </label>

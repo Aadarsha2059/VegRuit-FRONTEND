@@ -4,6 +4,11 @@ import { toast } from 'react-hot-toast'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
 import StatCard from '../components/dashboard/StatCard'
 import LoadingSpinner from '../components/dashboard/LoadingSpinner'
+import FavoritesTab from '../components/dashboard/FavoritesTab'
+import PaymentsTab from '../components/dashboard/PaymentsTab'
+import DeliveryTab from '../components/dashboard/DeliveryTab'
+import ProfileTab from '../components/dashboard/ProfileTab'
+import BuyerSettingsTab from '../components/dashboard/BuyerSettingsTab'
 import { cartAPI } from '../services/cartAPI'
 import { orderAPI } from '../services/orderAPI'
 import { productAPI } from '../services/productAPI'
@@ -137,6 +142,54 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
       toast.error('Failed to load orders')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadFavorites = async () => {
+    setLoading(true)
+    try {
+      const response = await favoritesAPI.getUserFavorites(token)
+      if (response.success) {
+        setFavorites(response.data.favorites)
+        const ids = new Set(response.data.favorites.map(fav => fav.product._id))
+        setFavoriteIds(ids)
+      } else {
+        toast.error(response.message)
+      }
+    } catch (error) {
+      console.error('Error loading favorites:', error)
+      toast.error('Failed to load favorites')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleToggleFavorite = async (productId) => {
+    try {
+      if (favoriteIds.has(productId)) {
+        const response = await favoritesAPI.removeFromFavorites(token, productId)
+        if (response.success) {
+          setFavoriteIds(prev => {
+            const newSet = new Set(prev)
+            newSet.delete(productId)
+            return newSet
+          })
+          setFavorites(prev => prev.filter(fav => fav.product._id !== productId))
+          toast.success('Removed from favorites')
+        }
+      } else {
+        const response = await favoritesAPI.addToFavorites(token, productId)
+        if (response.success) {
+          setFavoriteIds(prev => new Set([...prev, productId]))
+          toast.success('Added to favorites!')
+          if (activeTab === 'favorites') {
+            loadFavorites()
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      toast.error('Failed to update favorites')
     }
   }
 
@@ -288,62 +341,7 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
     setShowFeedbackForm(false)
   }
 
-  // Favorites Functions
-  const loadFavorites = async () => {
-    setLoading(true)
-    try {
-      const response = await favoritesAPI.getUserFavorites(token)
-      if (response.success) {
-        setFavorites(response.data.favorites)
-        // Create a Set of favorite product IDs for quick lookup
-        const ids = new Set(response.data.favorites.map(fav => fav.product._id))
-        setFavoriteIds(ids)
-      } else {
-        toast.error(response.message)
-      }
-    } catch (error) {
-      console.error('Error loading favorites:', error)
-      toast.error('Failed to load favorites')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleToggleFavorite = async (productId) => {
-    try {
-      if (favoriteIds.has(productId)) {
-        // Remove from favorites
-        const response = await favoritesAPI.removeFromFavorites(token, productId)
-        if (response.success) {
-          setFavoriteIds(prev => {
-            const newSet = new Set(prev)
-            newSet.delete(productId)
-            return newSet
-          })
-          setFavorites(prev => prev.filter(fav => fav.product._id !== productId))
-          toast.success('Removed from favorites')
-        } else {
-          toast.error(response.message)
-        }
-      } else {
-        // Add to favorites
-        const response = await favoritesAPI.addToFavorites(token, productId)
-        if (response.success) {
-          setFavoriteIds(prev => new Set([...prev, productId]))
-          toast.success('Added to favorites!')
-          // Reload favorites if on favorites tab
-          if (activeTab === 'favorites') {
-            loadFavorites()
-          }
-        } else {
-          toast.error(response.message)
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error)
-      toast.error('Failed to update favorites')
-    }
-  }
+  // Favorites Functions (already defined earlier in the file)
 
   const sidebarItems = [
     { key: 'overview', label: 'Overview', icon: '📊' },
@@ -399,15 +397,21 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
           onOpenConfirmDialog={(order) => setConfirmReceiptDialog({ isOpen: true, order })}
         />
       case 'favorites':
-        return <BuyerFavoritesTab 
+        return <FavoritesTab 
           favorites={favorites}
           onToggleFavorite={handleToggleFavorite}
           onAddToCart={handleAddToCart}
         />
       case 'payments':
-        return <BuyerPaymentsTab />
+        return <PaymentsTab 
+          cart={cart}
+          onCheckout={(paymentData) => {
+            console.log('Payment data:', paymentData)
+            navigate('/checkout', { state: { paymentData } })
+          }}
+        />
       case 'delivery':
-        return <BuyerDeliveryTab user={user} />
+        return <DeliveryTab user={user} orders={orders} />
       case 'feedback':
         return <BuyerFeedbackTab 
           onOpenFeedbackForm={handleOpenFeedbackForm}
@@ -416,9 +420,25 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
           onWriteReview={handleWriteReview}
         />
       case 'profile':
-        return <BuyerProfileTab user={user} />
+        return <ProfileTab 
+          user={user}
+          orders={orders}
+          favorites={favorites}
+          onUpdateProfile={async (profileData) => {
+            console.log('Update profile:', profileData)
+            // TODO: Implement profile update API call
+          }}
+          onLogout={onLogout}
+        />
       case 'settings':
-        return <BuyerSettingsTab user={user} />
+        return <BuyerSettingsTab 
+          user={user}
+          onUpdateProfile={async (profileData) => {
+            console.log('Update profile:', profileData)
+            // TODO: Implement profile update API call
+          }}
+          onLogout={onLogout}
+        />
       default:
         return <BuyerOverviewTab user={user} data={dashboardData} products={products} />
     }
@@ -1678,28 +1698,7 @@ const BuyerProfileTab = ({ user }) => {
   )
 }
 
-const BuyerSettingsTab = ({ user }) => (
-  <div className="settings-tab">
-    <h3>Account Settings</h3>
-    <div className="settings-options">
-      <div className="setting-option">
-        <h4>Personal Information</h4>
-        <p>Update your name, email, and phone number</p>
-        <button className="btn btn-outline">Edit</button>
-      </div>
-      <div className="setting-option">
-        <h4>Delivery Preferences</h4>
-        <p>Manage your delivery addresses and preferences</p>
-        <button className="btn btn-outline">Configure</button>
-      </div>
-      <div className="setting-option">
-        <h4>Notifications</h4>
-        <p>Manage your notification preferences</p>
-        <button className="btn btn-outline">Configure</button>
-      </div>
-    </div>
-  </div>
-)
+// BuyerSettingsTab is now imported from '../components/dashboard/BuyerSettingsTab'
 
 const BuyerFeedbackTab = ({ onOpenFeedbackForm, reviewableProducts, myReviews, onWriteReview }) => {
   const [myFeedbacks, setMyFeedbacks] = useState([])

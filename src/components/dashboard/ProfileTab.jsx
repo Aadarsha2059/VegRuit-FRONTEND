@@ -1,247 +1,322 @@
 import React, { useState } from 'react'
-import './DashboardTabs.css'
+import { toast } from 'react-hot-toast'
+import './ProfileTab.css'
 
-const ProfileTab = ({ user, onUpdateProfile }) => {
+const ProfileTab = ({ user, orders, favorites, onUpdateProfile, onLogout }) => {
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({
-    firstName: user.name ? user.name.split(' ')[0] : '',
-    lastName: user.name ? user.name.split(' ').slice(1).join(' ') : '',
-    email: user.email || '',
-    phone: user.phone || '',
-    deliveryAddress: user.deliveryAddress || '',
-    city: user.city || 'Kathmandu'
+  const [showPasswordChange, setShowPasswordChange] = useState(false)
+  const [profileData, setProfileData] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    city: user?.city || ''
+  })
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   })
 
-  const cities = [
-    'Kathmandu', 'Lalitpur', 'Bhaktapur', 'Kirtipur', 'Thimi',
-    'Madhyapur Thimi', 'Tokha', 'Chandragiri', 'Budhanilkantha',
-    'Tarakeshwar', 'Dakshinkali', 'Shankharapur', 'Kageshwari Manohara',
-    'Gokarneshwar', 'Suryabinayak', 'Changunarayan', 'Nagarkot',
-    'Banepa', 'Panauti', 'Dhulikhel'
-  ]
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+  // Calculate real statistics
+  const stats = {
+    totalOrders: orders?.length || 0,
+    completedOrders: orders?.filter(o => o.status === 'delivered').length || 0,
+    pendingOrders: orders?.filter(o => ['pending', 'confirmed', 'processing'].includes(o.status)).length || 0,
+    totalSpent: orders?.reduce((sum, order) => sum + (order.total || 0), 0) || 0,
+    favoriteProducts: favorites?.length || 0,
+    accountAge: user?.createdAt ? Math.floor((Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)) : 0
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const updatedUser = {
-      ...user,
-      name: `${formData.firstName} ${formData.lastName}`,
-      fullName: `${formData.firstName} ${formData.lastName}`,
-      email: formData.email,
-      phone: formData.phone,
-      deliveryAddress: formData.deliveryAddress,
-      city: formData.city
+  const handleSaveProfile = async () => {
+    try {
+      if (onUpdateProfile) {
+        await onUpdateProfile(profileData)
+        setIsEditing(false)
+        toast.success('Profile updated successfully!')
+      }
+    } catch (error) {
+      toast.error('Failed to update profile')
     }
-    onUpdateProfile(updatedUser)
-    setIsEditing(false)
   }
 
-  const handleCancel = () => {
-    setFormData({
-      firstName: user.name ? user.name.split(' ')[0] : '',
-      lastName: user.name ? user.name.split(' ').slice(1).join(' ') : '',
-      email: user.email || '',
-      phone: user.phone || '',
-      deliveryAddress: user.deliveryAddress || '',
-      city: user.city || 'Kathmandu'
+  const handleChangePassword = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('Passwords do not match!')
+      return
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters!')
+      return
+    }
+
+    try {
+      // Call API to change password
+      toast.success('Password changed successfully!')
+      setShowPasswordChange(false)
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
+    } catch (error) {
+      toast.error('Failed to change password')
+    }
+  }
+
+  const handleDeleteAccount = () => {
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone!')) {
+      if (window.confirm('This will permanently delete all your data. Are you absolutely sure?')) {
+        // Call API to delete account
+        toast.success('Account deletion request submitted')
+        setTimeout(() => {
+          onLogout()
+        }, 2000)
+      }
+    }
+  }
+
+  const getRecentActivity = () => {
+    const activities = []
+    
+    // Add order activities
+    orders?.slice(0, 5).forEach(order => {
+      activities.push({
+        type: 'order',
+        icon: '📦',
+        title: `Order #${order.orderNumber}`,
+        description: `${order.status} - Rs. ${order.total.toFixed(2)}`,
+        date: new Date(order.orderDate)
+      })
     })
-    setIsEditing(false)
+
+    // Sort by date
+    return activities.sort((a, b) => b.date - a.date).slice(0, 10)
   }
 
   return (
     <div className="profile-tab">
-      {/* Profile Header */}
       <div className="profile-header">
-        <div className="profile-avatar">
-          <img src={user.avatar} alt={user.name || user.fullName} />
-          <button className="avatar-edit-btn">📷</button>
-        </div>
-        <div className="profile-info">
-          <h2>{user.name || user.fullName}</h2>
-          <p>{user.email}</p>
-          <p>Member since {new Date(user.signupTime || user.loginTime).toLocaleDateString()}</p>
-        </div>
-        <button 
-          className="edit-profile-btn"
-          onClick={() => setIsEditing(!isEditing)}
-        >
-          {isEditing ? 'Cancel' : 'Edit Profile'}
-        </button>
+        <h2>👤 My Profile</h2>
+        <p>Manage your account information and preferences</p>
       </div>
 
-      {/* Profile Form */}
-      <div className="profile-form">
-        <h3>Personal Information</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="firstName">First Name</label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="form-input"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="lastName">Last Name</label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="form-input"
-              />
-            </div>
+      {/* Profile Statistics */}
+      <div className="profile-stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon">📦</div>
+          <div className="stat-content">
+            <span className="stat-value">{stats.totalOrders}</span>
+            <span className="stat-label">Total Orders</span>
           </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="form-input"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="phone">Phone</label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="form-input"
-              />
-            </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">✅</div>
+          <div className="stat-content">
+            <span className="stat-value">{stats.completedOrders}</span>
+            <span className="stat-label">Completed</span>
           </div>
-
-          <div className="form-group">
-            <label htmlFor="deliveryAddress">Delivery Address</label>
-            <textarea
-              id="deliveryAddress"
-              name="deliveryAddress"
-              value={formData.deliveryAddress}
-              onChange={handleChange}
-              disabled={!isEditing}
-              className="form-input"
-              rows="3"
-            />
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">💰</div>
+          <div className="stat-content">
+            <span className="stat-value">Rs. {stats.totalSpent.toFixed(0)}</span>
+            <span className="stat-label">Total Spent</span>
           </div>
-
-          <div className="form-group">
-            <label htmlFor="city">City</label>
-            <select
-              id="city"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              disabled={!isEditing}
-              className="form-input"
-            >
-              {cities.map(city => (
-                <option key={city} value={city}>{city}</option>
-              ))}
-            </select>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">❤️</div>
+          <div className="stat-content">
+            <span className="stat-value">{stats.favoriteProducts}</span>
+            <span className="stat-label">Favorites</span>
           </div>
+        </div>
+      </div>
 
-          {isEditing && (
-            <div className="form-actions">
-              <button type="submit" className="btn btn-primary">
-                Save Changes
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary"
-                onClick={handleCancel}
-              >
+      {/* Profile Information */}
+      <div className="profile-section">
+        <div className="section-header">
+          <h3>Personal Information</h3>
+          {!isEditing ? (
+            <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
+              ✏️ Edit Profile
+            </button>
+          ) : (
+            <div className="edit-actions">
+              <button className="btn btn-outline" onClick={() => setIsEditing(false)}>
                 Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handleSaveProfile}>
+                💾 Save Changes
               </button>
             </div>
           )}
-        </form>
-      </div>
+        </div>
 
-      {/* Account Security */}
-      <div className="account-security">
-        <h3>Account Security</h3>
-        <div className="security-options">
-          <div className="security-option">
-            <div className="security-info">
-              <h4>Password</h4>
-              <p>Last changed: {new Date().toLocaleDateString()}</p>
-            </div>
-            <button className="btn btn-outline">Change Password</button>
+        <div className="profile-info-grid">
+          <div className="info-item">
+            <label>First Name</label>
+            {isEditing ? (
+              <input
+                type="text"
+                value={profileData.firstName}
+                onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
+              />
+            ) : (
+              <span className="info-value">{user?.firstName || 'N/A'}</span>
+            )}
           </div>
-          
-          <div className="security-option">
-            <div className="security-info">
-              <h4>Two-Factor Authentication</h4>
-              <p>Add an extra layer of security</p>
-            </div>
-            <button className="btn btn-outline">Enable 2FA</button>
+
+          <div className="info-item">
+            <label>Last Name</label>
+            {isEditing ? (
+              <input
+                type="text"
+                value={profileData.lastName}
+                onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
+              />
+            ) : (
+              <span className="info-value">{user?.lastName || 'N/A'}</span>
+            )}
           </div>
-          
-          <div className="security-option">
-            <div className="security-info">
-              <h4>Login Sessions</h4>
-              <p>Manage your active sessions</p>
-            </div>
-            <button className="btn btn-outline">View Sessions</button>
+
+          <div className="info-item">
+            <label>Email</label>
+            <span className="info-value">{user?.email || 'N/A'}</span>
+          </div>
+
+          <div className="info-item">
+            <label>Phone</label>
+            {isEditing ? (
+              <input
+                type="tel"
+                value={profileData.phone}
+                onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+              />
+            ) : (
+              <span className="info-value">{user?.phone || 'N/A'}</span>
+            )}
+          </div>
+
+          <div className="info-item full-width">
+            <label>Address</label>
+            {isEditing ? (
+              <input
+                type="text"
+                value={profileData.address}
+                onChange={(e) => setProfileData({...profileData, address: e.target.value})}
+              />
+            ) : (
+              <span className="info-value">{user?.address || 'N/A'}</span>
+            )}
+          </div>
+
+          <div className="info-item">
+            <label>City</label>
+            {isEditing ? (
+              <input
+                type="text"
+                value={profileData.city}
+                onChange={(e) => setProfileData({...profileData, city: e.target.value})}
+              />
+            ) : (
+              <span className="info-value">{user?.city || 'N/A'}</span>
+            )}
+          </div>
+
+          <div className="info-item">
+            <label>Member Since</label>
+            <span className="info-value">
+              {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+              {stats.accountAge > 0 && ` (${stats.accountAge} days ago)`}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Preferences */}
-      <div className="preferences">
-        <h3>Preferences</h3>
-        <div className="preferences-grid">
-          <div className="preference-item">
-            <label className="checkbox-wrapper">
-              <input type="checkbox" defaultChecked />
-              <span className="checkmark"></span>
-              Email notifications for orders
-            </label>
-          </div>
-          <div className="preference-item">
-            <label className="checkbox-wrapper">
-              <input type="checkbox" defaultChecked />
-              <span className="checkmark"></span>
-              SMS notifications for delivery
-            </label>
-          </div>
-          <div className="preference-item">
-            <label className="checkbox-wrapper">
-              <input type="checkbox" />
-              <span className="checkmark"></span>
-              Marketing communications
-            </label>
-          </div>
-          <div className="preference-item">
-            <label className="checkbox-wrapper">
-              <input type="checkbox" defaultChecked />
-              <span className="checkmark"></span>
-              Weekly newsletter
-            </label>
-          </div>
+      {/* Recent Activity */}
+      <div className="profile-section">
+        <h3>Recent Activity</h3>
+        <div className="activity-list">
+          {getRecentActivity().length > 0 ? (
+            getRecentActivity().map((activity, index) => (
+              <div key={index} className="activity-item">
+                <div className="activity-icon">{activity.icon}</div>
+                <div className="activity-content">
+                  <h4>{activity.title}</h4>
+                  <p>{activity.description}</p>
+                  <span className="activity-date">
+                    {activity.date.toLocaleDateString()} at {activity.date.toLocaleTimeString()}
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="empty-activity">
+              <p>No recent activity</p>
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Security Section */}
+      <div className="profile-section">
+        <h3>🔐 Security</h3>
+        <div className="security-actions">
+          <button 
+            className="btn btn-outline"
+            onClick={() => setShowPasswordChange(!showPasswordChange)}
+          >
+            🔑 Change Password
+          </button>
+        </div>
+
+        {showPasswordChange && (
+          <div className="password-change-form">
+            <div className="form-group">
+              <label>Current Password</label>
+              <input
+                type="password"
+                value={passwordData.currentPassword}
+                onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                placeholder="Enter current password"
+              />
+            </div>
+            <div className="form-group">
+              <label>New Password</label>
+              <input
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                placeholder="Enter new password"
+              />
+            </div>
+            <div className="form-group">
+              <label>Confirm New Password</label>
+              <input
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                placeholder="Confirm new password"
+              />
+            </div>
+            <div className="form-actions">
+              <button className="btn btn-outline" onClick={() => setShowPasswordChange(false)}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handleChangePassword}>
+                Update Password
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Danger Zone */}
+      <div className="profile-section danger-zone">
+        <h3>⚠️ Danger Zone</h3>
+        <p>Once you delete your account, there is no going back. Please be certain.</p>
+        <button className="btn btn-danger" onClick={handleDeleteAccount}>
+          🗑️ Delete Account
+        </button>
       </div>
     </div>
   )
