@@ -83,10 +83,10 @@ export const authAPI = {
       }
 
       // Check if user type matches expected type (if provided)
-      if (expectedUserType) {
-        const userTypes = Array.isArray(data.user.userType) ? data.user.userType : [data.user.userType];
-        const isBuyer = data.user.isBuyer || userTypes.includes('buyer');
-        const isSeller = data.user.isSeller || userTypes.includes('seller');
+      if (expectedUserType && data.data && data.data.user) {
+        const userTypes = Array.isArray(data.data.userType) ? data.data.userType : [data.data.userType];
+        const isBuyer = data.data.user.isBuyer || userTypes.includes('buyer');
+        const isSeller = data.data.user.isSeller || userTypes.includes('seller');
         
         if (expectedUserType === 'buyer' && !isBuyer) {
           return {
@@ -106,13 +106,13 @@ export const authAPI = {
       }
 
       // Save auth data to local storage
-      const userType = data.userType || (Array.isArray(data.user.userType) ? data.user.userType : [data.user.userType]);
-      this.setAuthData(data.token, data.user, JSON.stringify(userType));
+      const userType = data.data.userType || (Array.isArray(data.data.user.userType) ? data.data.user.userType : [data.data.user.userType]);
+      this.setAuthData(data.data.token, data.data.user, JSON.stringify(userType));
 
       return {
         success: true,
-        user: data.user,
-        token: data.token,
+        user: data.data.user,
+        token: data.data.token,
         userType: userType,
         message: 'Login successful'
       };
@@ -163,16 +163,16 @@ export const authAPI = {
       }
 
       // Auto-login after registration
-      if (data.token) {
-        const userType = data.userType || (Array.isArray(data.user.userType) ? data.user.userType : [data.user.userType]);
-        this.setAuthData(data.token, data.user, JSON.stringify(userType));
+      if (data.data && data.data.token) {
+        const userType = data.data.userType || (Array.isArray(data.data.user.userType) ? data.data.user.userType : [data.data.user.userType]);
+        this.setAuthData(data.data.token, data.data.user, JSON.stringify(userType));
       }
 
       return {
         success: true,
-        user: data.user,
-        token: data.token,
-        userType: data.userType,
+        user: data.data.user,
+        token: data.data.token,
+        userType: data.data.userType,
         message: 'Registration successful!',
         requiresVerification: data.requiresVerification
       };

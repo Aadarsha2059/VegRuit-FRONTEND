@@ -1,6 +1,12 @@
 .products {
   padding: 80px 0;
-  background: linear-gradient(135deg, #FFFBF0 0%, #FFF8E1 50%, #FFECB3 100%);
+  background: linear-gradient(135deg, 
+    #F1F8E9 0%,      /* Very Light Green */
+    #FFF9C4 25%,     /* Light Yellow */
+    #FFE0B2 50%,     /* Light Orange */
+    #DCEDC8 75%,     /* Pale Green */
+    #FFFDE7 100%     /* Cream */
+  ) !important;
   position: relative;
   overflow: hidden;
 }
@@ -25,13 +31,16 @@
 }
 
 .section-header h2 {
-  font-size: 2.8rem;
-  font-weight: 900;
-  color: #1B5E20;
+  font-size: 3.8rem !important;
+  font-weight: 900 !important;
+  color: #1565C0 !important;
   margin-bottom: 1rem;
   position: relative;
   display: inline-block;
-  text-shadow: 0 2px 4px rgba(27, 94, 32, 0.15);
+  text-shadow: 3px 3px 6px rgba(21, 101, 192, 0.4),
+               0 0 30px rgba(33, 150, 243, 0.3),
+               -2px -2px 4px rgba(255, 255, 255, 0.9) !important;
+  letter-spacing: -0.5px;
 }
 
 .section-header h2::after {
@@ -47,12 +56,13 @@
 }
 
 .section-header p {
-  font-size: 1.2rem;
-  color: #1B5E20;
-  max-width: 700px;
+  font-size: 1.5rem !important;
+  color: #D84315 !important;
+  max-width: 750px;
   margin: 2rem auto 0;
-  line-height: 1.7;
-  font-weight: 700;
+  line-height: 1.8;
+  font-weight: 800 !important;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9) !important;
 }
 
 .products-filters {

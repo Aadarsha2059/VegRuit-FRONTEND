@@ -9,7 +9,8 @@
   background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
               url('https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&h=600&fit=crop') center/cover;
   color: white;
-  padding: 120px 0 80px;
+  padding: 160px 0 80px !important;
+  margin-top: 0 !important;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -184,7 +185,13 @@
 /* Story Section */
 .story-section {
   padding: 100px 0;
-  background: white;
+  background: linear-gradient(135deg, 
+    #E8F5E9 0%,      /* Light Green */
+    #C8E6C9 25%,     /* Pale Green */
+    #A5D6A7 50%,     /* Light Medium Green */
+    #C8E6C9 75%,     /* Pale Green */
+    #E8F5E9 100%     /* Light Green */
+  ) !important;
   position: relative;
   overflow: hidden;
 }
@@ -326,7 +333,13 @@
 /* Values Section */
 .values-section {
   padding: 100px 0;
-  background: linear-gradient(135deg, #f8f9fa, #e8f5e9);
+  background: linear-gradient(135deg, 
+    #FFF9C4 0%,      /* Light Yellow */
+    #FFE0B2 25%,     /* Light Orange */
+    #FFECB3 50%,     /* Pale Amber */
+    #FFF8E1 75%,     /* Cream */
+    #FFFDE7 100%     /* Very Light Yellow */
+  ) !important;
   position: relative;
   overflow: hidden;
 }

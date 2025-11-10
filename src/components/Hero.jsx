@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiShoppingBag, FiInfo, FiChevronRight, FiStar, FiUsers, FiTruck, FiChevronLeft } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import basketImage from '../assets/basket.png';
 import '../styles/Hero.css';
 
-// Use a beautiful online image of fresh vegetables and fruits
-const heroVegetablesImage = 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=800&h=800&fit=crop&q=80';
+// Use the local basket.png image
+const heroVegetablesImage = basketImage;
 
 const Hero = () => {
   // Image slider state

@@ -1,6 +1,14 @@
 .testimonials {
   padding: 80px 0;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, 
+    #E8F5E9 0%,      /* Light Green */
+    #C8E6C9 25%,     /* Pale Green */
+    #A5D6A7 50%,     /* Light Medium Green */
+    #C8E6C9 75%,     /* Pale Green */
+    #E8F5E9 100%     /* Light Green */
+  ) !important;
+  position: relative;
+  overflow: hidden;
 }
 
 .testimonial-card {
@@ -15,17 +23,19 @@
 }
 
 .comment {
-  font-size: 1rem;
-  color: #555;
-  line-height: 1.6;
+  font-size: 1.2rem !important;
+  color: #1B5E20 !important;
+  line-height: 1.7;
   font-style: italic;
+  font-weight: 700 !important;
 }
 
 .name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #212529;
+  font-size: 1.4rem !important;
+  font-weight: 900 !important;
+  color: #0D47A1 !important;
   margin: 0;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9) !important;
 }
 
 .location {
