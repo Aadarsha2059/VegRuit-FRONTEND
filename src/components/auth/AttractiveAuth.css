@@ -1,70 +1,401 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* ========================================
+   MODERN AUTH CONTAINER
+   ======================================== */
 
 .attractive-auth-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   min-height: 100vh;
-  background-color: #f0f2f5;
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+  overflow: hidden;
 }
+
+/* ========================================
+   AUTH FORM SECTION (NOW ON RIGHT)
+   ======================================== */
 
 .attractive-auth-form {
-  background-color: #ffffff;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 3rem 2rem;
+  background: #ffffff;
+  position: relative;
+  z-index: 10;
+  overflow-y: auto;
+  max-height: 100vh;
+  order: 2; /* Move form to right side */
 }
 
-.attractive-auth-form h2 {
-  margin-bottom: 1.5rem;
+.attractive-auth-form > form {
+  width: 100%;
+  max-width: 500px;
+  padding-bottom: 2rem;
+}
+
+/* ========================================
+   AUTH HEADER
+   ======================================== */
+
+.auth-header {
   text-align: center;
-  color: #333;
-}
-
-.attractive-auth-form .form-group {
-  margin-bottom: 1rem;
-}
-
-.attractive-auth-form .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #555;
-}
-
-.attractive-auth-form .form-group input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.attractive-auth-form .submit-btn {
-  width: 100%;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 4px;
-  background-color: #4CAF50;
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.attractive-auth-form .submit-btn:hover {
-  background-color: #45a049;
-}
-
-.attractive-auth-form .auth-footer {
+  margin-bottom: 2rem;
   margin-top: 1rem;
-  text-align: center;
+  animation: fadeInDown 0.6s ease;
+  width: 100%;
 }
 
-.attractive-auth-form .auth-footer a {
-  color: #4CAF50;
-  text-decoration: none;
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.attractive-auth-form .auth-footer a:hover {
-  text-decoration: underline;
+.auth-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 18px;
+  margin-bottom: 1.25rem;
+  font-size: 2.25rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  animation: bounceIn 0.8s ease;
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.buyer-theme .auth-icon {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #ffffff;
+}
+
+.seller-theme .auth-icon {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+}
+
+.auth-header h2 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  margin: 0 0 0.65rem 0;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.buyer-theme .auth-header h2 {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.seller-theme .auth-header h2 {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.auth-subtitle {
+  font-size: 0.95rem;
+  color: #64748b;
+  font-weight: 500;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.5;
+}
+
+/* ========================================
+   ILLUSTRATION SECTION (NOW ON LEFT)
+   ======================================== */
+
+.auth-illustration {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  overflow: hidden;
+  order: 1; /* Move illustration to left side */
+}
+
+.buyer-theme .auth-illustration {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+}
+
+.seller-theme .auth-illustration {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fde68a 100%);
+}
+
+.illustration-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========================================
+   FLOATING VEGETABLES ANIMATION
+   ======================================== */
+
+.floating-veggie {
+  position: absolute;
+  font-size: 4rem;
+  animation: float 6s ease-in-out infinite;
+  opacity: 0.8;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+}
+
+.veggie-1 {
+  top: 10%;
+  left: 15%;
+  animation-delay: 0s;
+  animation-duration: 7s;
+}
+
+.veggie-2 {
+  top: 25%;
+  right: 20%;
+  animation-delay: 1s;
+  animation-duration: 6s;
+}
+
+.veggie-3 {
+  bottom: 30%;
+  left: 25%;
+  animation-delay: 2s;
+  animation-duration: 8s;
+}
+
+.veggie-4 {
+  bottom: 15%;
+  right: 15%;
+  animation-delay: 1.5s;
+  animation-duration: 7.5s;
+}
+
+.veggie-5 {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: 0.5s;
+  animation-duration: 6.5s;
+  font-size: 6rem;
+  opacity: 0.6;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-5deg);
+  }
+  75% {
+    transform: translateY(-15px) rotate(3deg);
+  }
+}
+
+/* ========================================
+   DECORATIVE ELEMENTS
+   ======================================== */
+
+.auth-illustration::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  opacity: 0.1;
+}
+
+.buyer-theme .auth-illustration::before {
+  background: radial-gradient(circle, #22c55e 0%, transparent 70%);
+}
+
+.seller-theme .auth-illustration::before {
+  background: radial-gradient(circle, #f59e0b 0%, transparent 70%);
+}
+
+.auth-illustration::after {
+  content: '';
+  position: absolute;
+  bottom: -50%;
+  left: -50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  opacity: 0.1;
+}
+
+.buyer-theme .auth-illustration::after {
+  background: radial-gradient(circle, #16a34a 0%, transparent 70%);
+}
+
+.seller-theme .auth-illustration::after {
+  background: radial-gradient(circle, #d97706 0%, transparent 70%);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 1024px) {
+  .attractive-auth-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .auth-illustration {
+    display: none;
+  }
+  
+  .attractive-auth-form {
+    padding: 2rem 1.5rem;
+    order: 1; /* Reset order on mobile */
+  }
+  
+  .auth-header h2 {
+    font-size: 1.75rem;
+  }
+  
+  .auth-icon {
+    width: 65px;
+    height: 65px;
+    font-size: 1.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .attractive-auth-form {
+    padding: 2rem 1.25rem 3rem 1.25rem;
+  }
+  
+  .auth-header {
+    margin-bottom: 1.75rem;
+    margin-top: 0.5rem;
+  }
+  
+  .auth-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .auth-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .auth-icon {
+    width: 58px;
+    height: 58px;
+    font-size: 1.7rem;
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .attractive-auth-form {
+    padding: 1.5rem 1rem 2.5rem 1rem;
+  }
+  
+  .auth-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .auth-header h2 {
+    font-size: 1.35rem;
+  }
+  
+  .auth-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .auth-icon {
+    width: 55px;
+    height: 55px;
+    font-size: 1.6rem;
+  }
+}
+
+/* ========================================
+   SCROLLBAR STYLING
+   ======================================== */
+
+.attractive-auth-form {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.attractive-auth-form::-webkit-scrollbar {
+  width: 10px;
+}
+
+.attractive-auth-form::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.attractive-auth-form::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+  border: 2px solid #f1f5f9;
+}
+
+.buyer-theme .attractive-auth-form::-webkit-scrollbar-thumb:hover {
+  background: #22c55e;
+}
+
+.seller-theme .attractive-auth-form::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
+
+/* Ensure smooth scrolling */
+.attractive-auth-form {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+  .auth-illustration {
+    display: none;
+  }
+  
+  .attractive-auth-container {
+    grid-template-columns: 1fr;
+  }
 }

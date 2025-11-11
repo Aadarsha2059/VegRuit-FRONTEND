@@ -1,160 +1,105 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import './NepaliWelcomeDialog.css';
 
-const NepaliWelcomeDialog = ({ isOpen, onClose, onSkipForSession, user, animationClass }) => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isVisible, setIsVisible] = useState(false);
+const NepaliWelcomeDialog = () => {
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-    }
-  }, [isOpen]);
+    // Show dialog after 2-3 seconds (using 2.5 seconds as middle ground)
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 2500);
 
-  const steps = [
-    {
-      title: "स्वागत छ VegRuit मा! ",
-      content: `नमस्कार ${user?.name || 'किसान साथी'}! तपाईंलाई VegRuit प्लेटफर्ममा स्वागत छ। यो तपाईंको फार्मबाट सिधै ग्राहकहरूसम्म पुग्ने सबैभन्दा राम्रो तरिका हो।`,
-      icon: ""
-    },
-    {
-      title: "VegRuit के हो? ",
-      content: "VegRuit एक डिजिटल बजार हो जहाँ तपाईं आफ्ना ताजा फलफूल र तरकारीहरू सिधै बेच्न सक्नुहुन्छ। यहाँ कुनै बिचौलिया छैन, सबै नाफा तपाईंको!",
-      icon: ""
-    },
-    {
-      title: "उत्पादन कसरी थप्ने? ",
-      content: "१. 'Categories' मा जानुहोस्\n२. नयाँ category बनाउनुहोस्\n३. 'Products' मा आफ्ना सामानहरू थप्नुहोस्\n४. फोटो र मूल्य राख्नुहोस्",
-      icon: ""
-    },
-    {
-      title: "गुणस्तर राख्नुहोस् ",
-      content: "• सधैं ताजा र स्वच्छ सामान बेच्नुहोस्\n• सही तौल र मापदण्ड राख्नुहोस्\n• ग्राहकसँग इमानदारीपूर्वक व्यवहार गर्नुहोस्\n• समयमै डेलिभरी गर्नुहोस्",
-      icon: ""
-    },
-    {
-      title: "नाफा र वफादारी ",
-      content: "राम्रो सेवाले तपाईंलाई:\n• नियमित ग्राहकहरू दिन्छ\n• बढी मूल्यमा बेच्न मद्दत गर्छ\n• समुदायमा राम्रो नाम कमाउँछ\n• आम्दानी बढाउँछ",
-      icon: ""
-    },
-    {
-      title: "सफलताका सुझावहरू ",
-      content: "• नियमित रूपमा नयाँ उत्पादनहरू थप्नुहोस्\n• मौसमी फलफूलको फाइदा उठाउनुहोस्\n• ग्राहकको प्रतिक्रिया सुन्नुहोस्\n• सामाजिक सञ्जालमा साझा गर्नुहोस्",
-      icon: ""
-    }
-  ];
-
-  const nextStep = () => {
-    if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(() => {
-      onClose();
-      setCurrentStep(1);
-    }, 300);
+    setIsOpen(false);
   };
-
-  const handleSkipSession = () => {
-    setIsVisible(false);
-    setTimeout(() => {
-      onSkipForSession();
-      setCurrentStep(1);
-    }, 300);
-  };
-
-  if (!isOpen) return null;
 
   return (
-    <div className={`nepali-dialog-overlay ${animationClass || ''} ${isVisible ? 'visible' : ''}`}>
-      <div className="nepali-dialog-container">
-        <div className="nepali-dialog-header">
-          <div className="dialog-progress">
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${(currentStep / steps.length) * 100}%` }}
-              ></div>
-            </div>
-            <span className="step-indicator">{currentStep} / {steps.length}</span>
-          </div>
-          <div className="dialog-controls">
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="nepali-welcome-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleClose}
+        >
+          <motion.div
+            className="nepali-welcome-dialog"
+            initial={{ scale: 0.8, opacity: 0, y: 50 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.8, opacity: 0, y: 50 }}
+            transition={{ type: "spring", duration: 0.5 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
             <button 
-              className="skip-session-btn" 
-              onClick={handleSkipSession}
-              title="यस सत्रको लागि लुकाउनुहोस्"
-            >
-              ⏭️
-            </button>
-            <button 
-              className="close-btn" 
+              className="nepali-close-btn" 
               onClick={handleClose}
-              title="बन्द गर्नुहोस्"
+              aria-label="Close"
             >
               ✕
             </button>
-          </div>
-        </div>
 
-        <div className="nepali-dialog-content">
-          <div className="step-icon">
-            {steps[currentStep - 1].icon}
-          </div>
-          <h2 className="step-title">
-            {steps[currentStep - 1].title}
-          </h2>
-          <div className="step-content">
-            {steps[currentStep - 1].content.split('\n').map((line, index) => (
-              <p key={index}>{line}</p>
-            ))}
-          </div>
-        </div>
+            {/* Welcome Icon */}
+            <div className="nepali-welcome-icon">
+              🙏
+            </div>
 
-        <div className="nepali-dialog-footer">
-          <div className="step-dots">
-            {steps.map((_, index) => (
-              <div 
-                key={index}
-                className={`step-dot ${index + 1 === currentStep ? 'active' : ''} ${index + 1 < currentStep ? 'completed' : ''}`}
-                onClick={() => setCurrentStep(index + 1)}
-              />
-            ))}
-          </div>
-          
-          <div className="dialog-actions">
-            {currentStep > 1 && (
-              <button className="btn-secondary" onClick={prevStep}>
-                ← अघिल्लो
-              </button>
-            )}
-            
-            {currentStep < steps.length ? (
-              <button className="btn-primary" onClick={nextStep}>
-                अर्को →
-              </button>
-            ) : (
-              <div className="final-actions">
-                <button className="btn-secondary" onClick={handleSkipSession}>
-                  यस सत्रको लागि नदेखाउनुहोस्
-                </button>
-                <button className="btn-primary" onClick={handleClose}>
-                  सुरु गरौं! 🚀
-                </button>
+            {/* Welcome Message */}
+            <h2 className="nepali-welcome-title">
+              नमस्ते! VegRuit मा स्वागत छ
+            </h2>
+            <p className="nepali-welcome-subtitle">
+              Welcome to VegRuit
+            </p>
+
+            {/* Description */}
+            <div className="nepali-welcome-content">
+              <p className="nepali-text">
+                ताजा तरकारी र फलफूलको लागि नेपालको अग्रणी अनलाइन बजार
+              </p>
+              <p className="english-text">
+                Nepal's leading online marketplace for fresh vegetables and fruits
+              </p>
+            </div>
+
+            {/* Features */}
+            <div className="nepali-features">
+              <div className="feature-item">
+                <span className="feature-icon">🌱</span>
+                <span className="feature-text">ताजा उत्पादन</span>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+              <div className="feature-item">
+                <span className="feature-icon">🚚</span>
+                <span className="feature-text">छिटो डेलिभरी</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">💚</span>
+                <span className="feature-text">गुणस्तरीय सेवा</span>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <button 
+              className="nepali-explore-btn"
+              onClick={handleClose}
+            >
+              अन्वेषण गर्नुहोस् • Explore Now
+            </button>
+
+            {/* Footer Note */}
+            <p className="nepali-footer-note">
+              Built with ❤️ in Nepal • 2025
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

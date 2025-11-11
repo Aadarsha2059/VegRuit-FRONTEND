@@ -87,42 +87,42 @@ const ContactPage = () => {
   const contactInfo = [
     {
       icon: '📍',
-      title: 'Address',
-      details: ['Thamel, Kathmandu', 'Nepal - 44600']
+      title: 'Location',
+      details: ['Kathmandu, Nepal', 'Serving nationwide']
     },
     {
-      icon: '📞',
-      title: 'Phone',
-      details: ['+977-1-4441234', '+977-9841234567']
+      icon: '👨‍💻',
+      title: 'Developer',
+      details: ['Aadarsha Babu Dhakal', 'Individual Full-Stack Developer']
     },
     {
       icon: '✉️',
       title: 'Email',
-      details: ['info@vegruit.com', 'support@vegruit.com']
+      details: ['contact@vegruit.com', 'Built in 2025']
     },
     {
-      icon: '🕒',
-      title: 'Business Hours',
-      details: ['Mon - Fri: 6:00 AM - 8:00 PM', 'Sat - Sun: 7:00 AM - 6:00 PM']
+      icon: '💻',
+      title: 'Tech Stack',
+      details: ['React • Node.js • MongoDB', 'Express • Full MERN Stack']
     }
   ];
 
   const faqs = [
     {
-      question: 'What are your delivery areas?',
-      answer: 'We currently deliver to Kathmandu, Lalitpur, Bhaktapur, Pokhara, and Chitwan. We\'re expanding to more cities soon!'
+      question: 'Who developed VegRuit?',
+      answer: 'VegRuit was developed by Aadarsha Babu Dhakal, an individual full-stack developer, in 2025. The entire platform was built from scratch using modern web technologies.'
     },
     {
-      question: 'How fresh are your products?',
-      answer: 'All our products are harvested within 24-48 hours before delivery. We work directly with local farmers to ensure maximum freshness.'
+      question: 'What technologies power this platform?',
+      answer: 'VegRuit is built using the MERN stack (MongoDB, Express.js, React, Node.js) with additional features like secure authentication, payment integration, and responsive design.'
     },
     {
-      question: 'Do you offer organic products?',
-      answer: 'Yes! We have a wide selection of certified organic fruits and vegetables. Look for the organic badge on product listings.'
+      question: 'Is this a real marketplace?',
+      answer: 'VegRuit is a fully functional marketplace platform designed to connect farmers with consumers. It features complete buyer and seller dashboards, product management, cart functionality, and order processing.'
     },
     {
-      question: 'What payment methods do you accept?',
-      answer: 'We accept cash on delivery, eSewa, Khalti, and bank transfers. Online payment options are available during checkout.'
+      question: 'Can I contribute or provide feedback?',
+      answer: 'Absolutely! Feedback and suggestions are always welcome. Feel free to reach out through the contact form above or via email.'
     }
   ];
 

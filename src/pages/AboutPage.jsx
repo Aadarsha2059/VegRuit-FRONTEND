@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import BackButton from '../components/BackButton';
+import aadarshaImage from '../assets/aadarsha.png';
 import '../styles/AboutPage.css';
 
 const AboutPage = () => {
@@ -23,38 +24,16 @@ const AboutPage = () => {
       }
     }
   };
-  const teamMembers = [
-    {
-      name: "Ram Sharma",
-      role: "Founder & CEO",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face",
-      description: "Passionate about connecting farmers with consumers"
-    },
-    {
-      name: "Sita Poudel",
-      role: "Head of Operations",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face",
-      description: "Ensuring quality and timely delivery"
-    },
-    {
-      name: "Krishna Thapa",
-      role: "Technology Lead",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face",
-      description: "Building the future of online farming"
-    },
-    {
-      name: "Aadarsha Babu Dhakal",
-      role: "Lead Developer",
-      image: "/images/aadarsha.png",
-      description: "Full-stack developer who built this marketplace platform"
-    },
-    {
-      name: "Maya Gurung",
-      role: "Customer Relations",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face",
-      description: "Dedicated to customer satisfaction"
-    }
-  ];
+  const developer = {
+    name: "Aadarsha Babu Dhakal",
+    role: "Founder & Full-Stack Developer",
+    image: aadarshaImage,
+    description: "Individual developer passionate about connecting farmers with consumers through technology. Built this entire marketplace platform from scratch in 2025.",
+    skills: ["React", "Node.js", "MongoDB", "Express", "Full-Stack Development"],
+    email: "contact@vegruit.com",
+    linkedin: "#",
+    github: "#"
+  };
 
   const values = [
     {
@@ -80,11 +59,10 @@ const AboutPage = () => {
   ];
 
   const milestones = [
-    { year: "2020", event: "VegRuit founded in Kathmandu" },
-    { year: "2021", event: "Partnered with 50+ local farmers" },
-    { year: "2022", event: "Expanded to 5 major cities" },
-    { year: "2023", event: "Served 10,000+ happy customers" },
-    { year: "2024", event: "Launched mobile app and AI recommendations" }
+    { year: "2025", event: "VegRuit platform developed and launched" },
+    { year: "2025", event: "Built complete marketplace with React & Node.js" },
+    { year: "2025", event: "Integrated secure authentication and payment systems" },
+    { year: "2025", event: "Launched with modern UI/UX and responsive design" }
   ];
 
   return (
@@ -127,25 +105,27 @@ const AboutPage = () => {
           <motion.div className="story-content" variants={staggerContainer}>
             <motion.div className="story-text" variants={fadeInUp}>
               <p>
-                TarkariShop was born from a simple idea: to bridge the gap between Nepal's hardworking farmers 
-                and urban consumers who value fresh, quality produce. Founded in 2020 in the heart of Kathmandu, 
-                we started as a small initiative to help local farmers reach more customers while providing 
-                city dwellers with access to the freshest vegetables and fruits.
+                VegRuit was developed in 2025 as a modern solution to bridge the gap between Nepal's hardworking farmers 
+                and urban consumers who value fresh, quality produce. Built from the ground up by an individual developer 
+                passionate about technology and sustainable agriculture, this platform aims to help local farmers reach 
+                more customers while providing city dwellers with access to the freshest vegetables and fruits.
               </p>
               <p>
-                What began as a weekend farmers' market has grown into Nepal's leading online marketplace 
-                for fresh produce. We're proud to support over 500 local farmers across the country while 
-                serving thousands of families with farm-fresh goodness delivered right to their doorstep.
+                This full-stack marketplace platform leverages modern web technologies including React, Node.js, 
+                MongoDB, and Express to create a seamless experience for both buyers and sellers. The platform 
+                features secure authentication, real-time inventory management, integrated payment systems, 
+                and a responsive design that works beautifully on all devices.
               </p>
               <p>
-                Our mission goes beyond just selling vegetables and fruits. We're building a sustainable 
-                ecosystem that empowers farmers, delights customers, and contributes to a healthier Nepal.
+                The mission goes beyond just creating a marketplace. This project represents a commitment to 
+                building sustainable technology solutions that can empower farmers, delight customers, and 
+                contribute to a healthier, more connected Nepal.
               </p>
               <motion.div className="story-highlight" variants={fadeInUp}>
                 <blockquote>
-                  "Our goal is to make fresh, healthy food accessible to everyone while supporting our local farming communities."
+                  "Building technology that connects people, supports local communities, and makes fresh, healthy food accessible to everyone."
                 </blockquote>
-                <cite>- AADARSHA BABU DHAKAL, Founder & CEO</cite>
+                <cite>- Aadarsha Babu Dhakal, Developer & Founder</cite>
               </motion.div>
             </motion.div>
             <motion.div className="story-image" variants={fadeInUp}>
@@ -177,26 +157,37 @@ const AboutPage = () => {
         </div>
       </motion.section>
 
-      {/* Team Section */}
-      <motion.section className="team-section" variants={fadeInUp}>
+      {/* Developer Section */}
+      <motion.section className="team-section developer-section" variants={fadeInUp}>
         <div className="container">
           <motion.div className="section-header" variants={fadeInUp}>
-            <h2 className="section-title">Meet Our Team</h2>
-            <p className="section-subtitle">The passionate people behind TarkariShop</p>
+            <h2 className="section-title">Meet the Developer</h2>
+            <p className="section-subtitle">The individual behind VegRuit</p>
           </motion.div>
-          <motion.div className="team-grid" variants={staggerContainer}>
-            {teamMembers.map((member, index) => (
-              <motion.div key={index} className="team-card" variants={fadeInUp}>
-                <div className="member-image">
-                  <img src={member.image} alt={member.name} />
+          <motion.div className="developer-card-wrapper" variants={fadeInUp}>
+            <div className="developer-card">
+              <div className="developer-image">
+                <img src={developer.image} alt={developer.name} />
+              </div>
+              <div className="developer-info">
+                <h3>{developer.name}</h3>
+                <p className="developer-role">{developer.role}</p>
+                <p className="developer-description">{developer.description}</p>
+                <div className="developer-skills">
+                  <h4>Tech Stack:</h4>
+                  <div className="skills-tags">
+                    {developer.skills.map((skill, index) => (
+                      <span key={index} className="skill-tag">{skill}</span>
+                    ))}
+                  </div>
                 </div>
-                <div className="member-info">
-                  <h3>{member.name}</h3>
-                  <p className="member-role">{member.role}</p>
-                  <p className="member-description">{member.description}</p>
+                <div className="developer-contact">
+                  <a href={`mailto:${developer.email}`} className="contact-link">
+                    📧 {developer.email}
+                  </a>
                 </div>
-              </motion.div>
-            ))}
+              </div>
+            </div>
           </motion.div>
         </div>
       </motion.section>
@@ -230,20 +221,20 @@ const AboutPage = () => {
           </div>
           <div className="stats-grid">
             <div className="stat-item">
-              <span className="stat-number">500+</span>
-              <span className="stat-label">Partner Farmers</span>
+              <span className="stat-number">2025</span>
+              <span className="stat-label">Year Developed</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">10,000+</span>
-              <span className="stat-label">Happy Customers</span>
+              <span className="stat-number">100%</span>
+              <span className="stat-label">Custom Built</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">50+</span>
-              <span className="stat-label">Product Varieties</span>
+              <span className="stat-number">Full-Stack</span>
+              <span className="stat-label">MERN Platform</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">5</span>
-              <span className="stat-label">Cities Served</span>
+              <span className="stat-number">1</span>
+              <span className="stat-label">Dedicated Developer</span>
             </div>
           </div>
         </div>

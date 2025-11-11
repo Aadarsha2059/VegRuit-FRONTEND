@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { Toaster } from 'react-hot-toast'
 import Header from './components/Header'
 import Hero from './components/Hero'
+import EnhancedHero from './components/EnhancedHero'
 import Products from './components/Products'
 import Farmers from './components/Farmers'
 import Testimonials from './components/Testimonials'
@@ -27,7 +28,9 @@ import BuyerLogin from './pages/BuyerLogin'
 import SellerLogin from './pages/SellerLogin'
 import BuyerSignup from './pages/BuyerSignup'
 import SellerSignup from './pages/SellerSignup'
+import ResetPassword from './pages/ResetPassword'
 import BackgroundAnimation from './components/BackgroundAnimation'
+import NepaliWelcomeDialog from './components/NepaliWelcomeDialog'
 import { STORAGE_KEYS, USER_TYPES } from './services/authAPI'
 import './App.css'
 
@@ -147,12 +150,12 @@ function App() {
             <Route path="/" element={
               <>
                 <BackgroundAnimation />
+                <NepaliWelcomeDialog />
                 <main>
-                  <Hero />
+                  <EnhancedHero />
                   <Products />
                   <Farmers />
                   <Testimonials />
-                  <Explore />
                   <About />
                 </main>
               </>
@@ -167,6 +170,7 @@ function App() {
             <Route path="/seller-login" element={<SellerLogin onAuthSuccess={handleAuthSuccess} />} />
             <Route path="/buyer-signup" element={<BuyerSignup onAuthSuccess={handleAuthSuccess} />} />
             <Route path="/seller-signup" element={<SellerSignup onAuthSuccess={handleAuthSuccess} />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             
             {/* Checkout and Order routes */}
             <Route path="/checkout" element={

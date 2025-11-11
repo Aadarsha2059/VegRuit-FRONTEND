@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI } from '../services/authAPI';
 import AttractiveAuth from '../components/auth/AttractiveAuth';
-import { FaUser, FaLock } from 'react-icons/fa';
+import ForgotPasswordDialog from '../components/auth/ForgotPasswordDialog';
+import { FaUser, FaLock, FaStore } from 'react-icons/fa';
 import BackgroundAnimation from '../components/BackgroundAnimation';
-import '../styles/SellerSignup.css';
+import '../styles/AuthPages.css';
 
 const SellerLogin = ({ onAuthSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -15,6 +16,7 @@ const SellerLogin = ({ onAuthSuccess }) => {
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -96,8 +98,8 @@ const SellerLogin = ({ onAuthSuccess }) => {
   return (
     <>
       <BackgroundAnimation />
-      <AttractiveAuth title="Seller Login">
-      <form onSubmit={handleLogin} className="seller-signup-form">
+      <AttractiveAuth title="Welcome Back, Seller!" subtitle="Login to manage your farm and sell produce" icon={<FaStore />} role="seller">
+      <form onSubmit={handleLogin} className="auth-form">
         <div className="form-group">
           <label htmlFor="username">Username or Email</label>
           <div className="input-with-icon">
@@ -137,18 +139,31 @@ const SellerLogin = ({ onAuthSuccess }) => {
           </div>
           {errors.password && <span className="error-text">{errors.password}</span>}
         </div>
-        <button type="submit" className="submit-btn" disabled={loading}>
+        <button type="submit" className="submit-btn seller-btn" disabled={loading}>
           {loading ? 'Logging in...' : 'Login'}
         </button>
         <div className="auth-footer">
           <p>
-            Don't have a seller account? <Link to="/seller-signup">Sign up</Link>
+            Don't have a seller account? <Link to="/seller-signup" className="seller-link">Sign up</Link>
           </p>
           <p>
-            <Link to="/forgot-password">Forgot password?</Link>
+            <button 
+              type="button"
+              onClick={() => setShowForgotPassword(true)} 
+              className="forgot-password-link seller-link"
+            >
+              Forgot password?
+            </button>
+          </p>
+          <p className="role-switch">
+            Are you a buyer? <Link to="/buyer-login" className="buyer-link">Login as Buyer</Link>
           </p>
         </div>
       </form>
+      <ForgotPasswordDialog 
+        isOpen={showForgotPassword} 
+        onClose={() => setShowForgotPassword(false)} 
+      />
     </AttractiveAuth>
     </>
   );

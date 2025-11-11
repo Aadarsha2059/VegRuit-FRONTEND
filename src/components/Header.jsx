@@ -82,15 +82,6 @@ const Header = ({ user, onLogout, onAuthClick }) => {
             </li>
             <li>
               <Link 
-                to="/explore" 
-                className={`nav-link ${isActive('/explore') ? 'active' : ''}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Explore
-              </Link>
-            </li>
-            <li>
-              <Link 
                 to="/about" 
                 className={`nav-link ${isActive('/about') ? 'active' : ''}`}
                 onClick={() => setIsMenuOpen(false)}

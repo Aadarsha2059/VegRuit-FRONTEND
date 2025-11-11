@@ -1,7 +1,10 @@
-/* Enhanced Nepali Welcome Dialog Styles */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
 
-.nepali-dialog-overlay {
+/* ========================================
+   NEPALI WELCOME DIALOG
+   ======================================== */
+
+.nepali-welcome-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -10,434 +13,414 @@
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
   display: flex;
+  align-items: center;
   justify-content: center;
-  align-items: center;
   z-index: 10000;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 1rem;
 }
 
-.nepali-dialog-overlay.visible {
-  opacity: 1;
-  visibility: visible;
-}
-
-.nepali-dialog-overlay.fade-in {
-  animation: fadeInOverlay 0.4s ease-out forwards;
-}
-
-.nepali-dialog-overlay.fade-out {
-  animation: fadeOutOverlay 0.3s ease-in forwards;
-}
-
-@keyframes fadeInOverlay {
-  from {
-    opacity: 0;
-    visibility: hidden;
-  }
-  to {
-    opacity: 1;
-    visibility: visible;
-  }
-}
-
-@keyframes fadeOutOverlay {
-  from {
-    opacity: 1;
-    visibility: visible;
-  }
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-
-.nepali-dialog-container {
+.nepali-welcome-dialog {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 24px;
-  box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(255, 255, 255, 0.8);
-  max-width: 600px;
-  width: 90%;
-  max-height: 85vh;
-  overflow: hidden;
-  transform: scale(0.8) translateY(40px);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 28px;
+  padding: 3rem 2.5rem;
+  max-width: 550px;
+  width: 100%;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
   position: relative;
+  text-align: center;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
-.nepali-dialog-overlay.visible .nepali-dialog-container {
-  transform: scale(1) translateY(0);
-}
-
-.nepali-dialog-overlay.fade-in.active .nepali-dialog-container {
-  animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes slideInUp {
-  from {
-    transform: scale(0.8) translateY(40px);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
-
-.nepali-dialog-header {
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-  color: white;
-  padding: 20px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.nepali-dialog-header::before {
+.nepali-welcome-dialog::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-  opacity: 0.3;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #f59e0b 100%);
+  border-radius: 28px;
+  z-index: -1;
 }
 
-.dialog-progress {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-  z-index: 1;
-}
+/* ========================================
+   CLOSE BUTTON
+   ======================================== */
 
-.progress-bar {
-  width: 120px;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #fbbf24, #f59e0b);
-  border-radius: 3px;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
-}
-
-.step-indicator {
-  font-weight: 600;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.dialog-controls {
-  display: flex;
-  gap: 8px;
-  position: relative;
-  z-index: 1;
-}
-
-.skip-session-btn,
-.close-btn {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  width: 36px;
-  height: 36px;
+.nepali-close-btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: #f1f5f9;
+  border: none;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  color: #64748b;
+  font-size: 1.5rem;
+  font-weight: 300;
+  z-index: 10;
 }
 
-.skip-session-btn:hover,
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.05);
+.nepali-close-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
 }
 
-.nepali-dialog-content {
-  padding: 32px 24px;
-  text-align: center;
-  font-family: 'Noto Sans Devanagari', sans-serif;
-  min-height: 280px;
+/* ========================================
+   WELCOME ICON
+   ======================================== */
+
+.nepali-welcome-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 4rem;
+  box-shadow: 0 15px 40px rgba(34, 197, 94, 0.3);
+  animation: welcomePulse 2s ease-in-out infinite;
 }
 
-.step-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes bounceIn {
-  0% {
-    transform: scale(0.3);
-    opacity: 0;
+@keyframes welcomePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 15px 40px rgba(34, 197, 94, 0.3);
   }
   50% {
     transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
+    box-shadow: 0 20px 50px rgba(34, 197, 94, 0.4);
   }
 }
 
-.step-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 20px;
+/* ========================================
+   WELCOME TEXT
+   ======================================== */
+
+.nepali-welcome-title {
+  font-family: 'Noto Sans Devanagari', 'Poppins', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
   line-height: 1.3;
-  animation: fadeInUp 0.5s ease-out 0.2s both;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
+.nepali-welcome-subtitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 2rem 0;
+}
+
+/* ========================================
+   CONTENT
+   ======================================== */
+
+.nepali-welcome-content {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-radius: 16px;
+  border-left: 4px solid #22c55e;
+}
+
+.nepali-text {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #166534;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.6;
+}
+
+.english-text {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #65a30d;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ========================================
+   FEATURES
+   ======================================== */
+
+.nepali-features {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+  margin: 2rem 0;
+  padding: 1.5rem 0;
+  border-top: 2px solid #e2e8f0;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  animation: featureBounce 2s ease-in-out infinite;
+}
+
+.feature-item:nth-child(1) .feature-icon {
+  animation-delay: 0s;
+}
+
+.feature-item:nth-child(2) .feature-icon {
+  animation-delay: 0.2s;
+}
+
+.feature-item:nth-child(3) .feature-icon {
+  animation-delay: 0.4s;
+}
+
+@keyframes featureBounce {
+  0%, 100% {
     transform: translateY(0);
   }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
-.step-content {
-  font-size: 18px;
-  line-height: 1.7;
-  color: #4b5563;
-  animation: fadeInUp 0.5s ease-out 0.4s both;
-}
-
-.step-content p {
-  margin-bottom: 12px;
-}
-
-.step-content p:last-child {
-  margin-bottom: 0;
-}
-
-.nepali-dialog-footer {
-  padding: 20px 24px 24px;
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
-}
-
-.step-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.step-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #d1d5db;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.step-dot:hover {
-  transform: scale(1.2);
-}
-
-.step-dot.active {
-  background: linear-gradient(135deg, #059669, #10b981);
-  transform: scale(1.3);
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
-}
-
-.step-dot.completed {
-  background: #10b981;
-}
-
-.step-dot.completed::after {
-  content: '✓';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 8px;
-  font-weight: bold;
-}
-
-.dialog-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.final-actions {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-}
-
-.btn-primary,
-.btn-secondary {
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 16px;
+.feature-text {
   font-family: 'Noto Sans Devanagari', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
+}
+
+/* ========================================
+   CTA BUTTON
+   ======================================== */
+
+.nepali-explore-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #ffffff;
   border: none;
+  border-radius: 14px;
+  font-family: 'Noto Sans Devanagari', 'Poppins', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+  margin-top: 1.5rem;
   position: relative;
   overflow: hidden;
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, #059669, #10b981);
-  color: white;
-  box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.3);
-  flex: 1;
+.nepali-explore-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px 0 rgba(16, 185, 129, 0.4);
+.nepali-explore-btn:hover::before {
+  left: 100%;
 }
 
-.btn-primary:active {
-  transform: translateY(0);
+.nepali-explore-btn:hover {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(34, 197, 94, 0.4);
 }
 
-.btn-secondary {
-  background: #f3f4f6;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
-  flex: 1;
-}
-
-.btn-secondary:hover {
-  background: #e5e7eb;
-  color: #4b5563;
+.nepali-explore-btn:active {
   transform: translateY(-1px);
 }
 
-/* Responsive Design */
+/* ========================================
+   FOOTER NOTE
+   ======================================== */
+
+.nepali-footer-note {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin: 1.5rem 0 0 0;
+  font-weight: 500;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
 @media (max-width: 768px) {
-  .nepali-dialog-container {
-    width: 95%;
-    max-height: 90vh;
-    border-radius: 16px;
+  .nepali-welcome-dialog {
+    padding: 2.5rem 2rem;
+    border-radius: 24px;
   }
 
-  .nepali-dialog-header {
-    padding: 16px 20px;
+  .nepali-welcome-icon {
+    width: 85px;
+    height: 85px;
+    font-size: 3.5rem;
   }
 
-  .nepali-dialog-content {
-    padding: 24px 20px;
-    min-height: 240px;
+  .nepali-welcome-title {
+    font-size: 1.75rem;
   }
 
-  .step-title {
-    font-size: 24px;
+  .nepali-welcome-subtitle {
+    font-size: 1.1rem;
   }
 
-  .step-content {
-    font-size: 16px;
+  .nepali-text {
+    font-size: 1.05rem;
   }
 
-  .nepali-dialog-footer {
-    padding: 16px 20px 20px;
+  .english-text {
+    font-size: 0.95rem;
   }
 
-  .dialog-actions {
-    flex-direction: column;
+  .feature-icon {
+    font-size: 2.25rem;
   }
 
-  .final-actions {
-    flex-direction: column;
+  .feature-text {
+    font-size: 0.9rem;
   }
 
-  .btn-primary,
-  .btn-secondary {
-    width: 100%;
+  .nepali-explore-btn {
+    font-size: 1.05rem;
     padding: 14px 20px;
   }
 }
 
 @media (max-width: 480px) {
-  .nepali-dialog-container {
-    width: 98%;
-    margin: 10px;
+  .nepali-welcome-overlay {
+    padding: 0.75rem;
   }
 
-  .step-icon {
-    font-size: 40px;
+  .nepali-welcome-dialog {
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
   }
 
-  .step-title {
-    font-size: 20px;
+  .nepali-close-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1.3rem;
+    top: 1rem;
+    right: 1rem;
   }
 
-  .step-content {
-    font-size: 15px;
+  .nepali-welcome-icon {
+    width: 75px;
+    height: 75px;
+    font-size: 3rem;
+    margin-bottom: 1.25rem;
   }
 
-  .progress-bar {
-    width: 80px;
+  .nepali-welcome-title {
+    font-size: 1.5rem;
+  }
+
+  .nepali-welcome-subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .nepali-welcome-content {
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+  }
+
+  .nepali-text {
+    font-size: 1rem;
+  }
+
+  .english-text {
+    font-size: 0.9rem;
+  }
+
+  .nepali-features {
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+    padding: 1.25rem 0;
+  }
+
+  .feature-icon {
+    font-size: 2rem;
+  }
+
+  .feature-text {
+    font-size: 0.85rem;
+  }
+
+  .nepali-explore-btn {
+    font-size: 1rem;
+    padding: 13px 18px;
+    margin-top: 1.25rem;
+  }
+
+  .nepali-footer-note {
+    font-size: 0.85rem;
+    margin-top: 1.25rem;
   }
 }
 
-/* Animation for content changes */
-.step-content {
-  animation: contentSlideIn 0.4s ease-out;
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+.nepali-close-btn:focus-visible,
+.nepali-explore-btn:focus-visible {
+  outline: 3px solid #22c55e;
+  outline-offset: 3px;
 }
 
-@keyframes contentSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .nepali-welcome-icon,
+  .feature-icon,
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .nepali-welcome-dialog {
+    border: 4px solid #22c55e;
   }
-}
-
-/* Accessibility improvements */
-.nepali-dialog-container:focus-within {
-  outline: 2px solid #10b981;
-  outline-offset: 2px;
-}
-
-.step-dot:focus {
-  outline: 2px solid #10b981;
-  outline-offset: 2px;
-}
-
-.btn-primary:focus,
-.btn-secondary:focus,
-.skip-session-btn:focus,
-.close-btn:focus {
-  outline: 2px solid #10b981;
-  outline-offset: 2px;
+  
+  .nepali-close-btn {
+    border: 2px solid #64748b;
+  }
 }

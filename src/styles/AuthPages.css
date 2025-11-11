@@ -1,0 +1,423 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* ========================================
+   MODERN AUTH PAGES STYLING
+   ======================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+.auth-form {
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+}
+
+/* Ensure no horizontal overflow */
+.attractive-auth-container,
+.attractive-auth-form,
+.auth-form {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ========================================
+   FORM LAYOUT
+   ======================================== */
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+/* ========================================
+   INPUT FIELDS WITH ICONS
+   ======================================== */
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  color: #a0aec0;
+  font-size: 1.1rem;
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+.input-with-icon input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  color: #2d3748;
+}
+
+.input-with-icon input::placeholder {
+  color: #a0aec0;
+  font-weight: 400;
+}
+
+.input-with-icon input:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+  background: #ffffff;
+}
+
+.input-with-icon input:focus + .input-icon,
+.input-with-icon:focus-within .input-icon {
+  color: #22c55e;
+}
+
+.input-with-icon input.error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.input-with-icon input.error:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+/* ========================================
+   PASSWORD INPUT WITH TOGGLE
+   ======================================== */
+
+.password-input {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  z-index: 2;
+  font-family: 'Poppins', sans-serif;
+}
+
+.password-toggle:hover {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.password-toggle:active {
+  transform: scale(0.95);
+}
+
+/* ========================================
+   ERROR MESSAGES
+   ======================================== */
+
+.error-text {
+  display: block;
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   SUBMIT BUTTONS
+   ======================================== */
+
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 1rem;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.submit-btn:hover::before {
+  left: 100%;
+}
+
+/* Buyer Button Theme */
+.buyer-btn {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #ffffff;
+}
+
+.buyer-btn:hover {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+}
+
+.buyer-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+}
+
+/* Seller Button Theme */
+.seller-btn {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+}
+
+.seller-btn:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+}
+
+.seller-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.submit-btn:disabled {
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+.submit-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* ========================================
+   AUTH FOOTER
+   ======================================== */
+
+.auth-footer {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.auth-footer p {
+  margin: 0.75rem 0;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.auth-footer a {
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.auth-footer a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  transition: width 0.3s ease;
+}
+
+.buyer-link {
+  color: #22c55e;
+}
+
+.buyer-link::after {
+  background: #22c55e;
+}
+
+.buyer-link:hover {
+  color: #16a34a;
+}
+
+.buyer-link:hover::after {
+  width: 100%;
+}
+
+.seller-link {
+  color: #f59e0b;
+}
+
+.seller-link::after {
+  background: #f59e0b;
+}
+
+.seller-link:hover {
+  color: #d97706;
+}
+
+.seller-link:hover::after {
+  width: 100%;
+}
+
+.role-switch {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.forgot-password-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .input-with-icon input {
+    padding: 12px 14px 12px 44px;
+    font-size: 0.95rem;
+  }
+  
+  .input-icon {
+    left: 14px;
+    font-size: 1rem;
+  }
+  
+  .submit-btn {
+    padding: 14px;
+    font-size: 1rem;
+  }
+  
+  .auth-footer {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-group label {
+    font-size: 0.9rem;
+  }
+  
+  .input-with-icon input {
+    padding: 11px 12px 11px 42px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+  
+  .input-icon {
+    left: 12px;
+    font-size: 0.95rem;
+  }
+  
+  .submit-btn {
+    padding: 13px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+  }
+  
+  .password-toggle {
+    font-size: 0.8rem;
+    right: 12px;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+.input-with-icon input:focus-visible,
+.submit-btn:focus-visible,
+.password-toggle:focus-visible {
+  outline: 3px solid #22c55e;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .input-with-icon input {
+    border-width: 3px;
+  }
+  
+  .submit-btn {
+    border: 3px solid transparent;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

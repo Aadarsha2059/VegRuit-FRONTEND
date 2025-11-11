@@ -28,7 +28,7 @@ body {
 .App main {
   position: relative;
   z-index: 1;
-  padding-top: 100px; /* Account for fixed header */
+  padding-top: 0; /* No padding - hero starts right after header */
 }
 
 /* Enhanced Typography */
@@ -502,7 +502,7 @@ img:hover {
 /* Responsive Adjustments */
 @media (max-width: 480px) {
   .App main {
-    padding-top: 80px;
+    padding-top: 0;
   }
   
   section {

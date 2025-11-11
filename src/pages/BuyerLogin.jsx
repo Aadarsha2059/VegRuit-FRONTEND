@@ -3,7 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI } from '../services/authAPI';
 import AttractiveAuth from '../components/auth/AttractiveAuth';
+import ForgotPasswordDialog from '../components/auth/ForgotPasswordDialog';
+import { FaUser, FaLock, FaShoppingCart } from 'react-icons/fa';
 import BackgroundAnimation from '../components/BackgroundAnimation';
+import '../styles/AuthPages.css';
 
 const BuyerLogin = ({ onAuthSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -12,6 +15,8 @@ const BuyerLogin = ({ onAuthSuccess }) => {
     password: ''
   });
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -65,47 +70,79 @@ const BuyerLogin = ({ onAuthSuccess }) => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <>
       <BackgroundAnimation />
-      <AttractiveAuth title="Buyer Login">
-      <form onSubmit={handleLogin}>
+      <AttractiveAuth title="Welcome Back, Buyer!" subtitle="Login to shop fresh produce from local farmers" icon={<FaShoppingCart />} role="buyer">
+      <form onSubmit={handleLogin} className="auth-form">
         <div className="form-group">
           <label htmlFor="username">Username or Email</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={formData.username}
-            onChange={handleInputChange}
-            className={errors.username ? 'error' : ''}
-          />
+          <div className="input-with-icon">
+            <FaUser className="input-icon" />
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleInputChange}
+              className={errors.username ? 'error' : ''}
+              placeholder="Enter your username or email"
+            />
+          </div>
           {errors.username && <span className="error-text">{errors.username}</span>}
         </div>
         <div className="form-group">
           <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            className={errors.password ? 'error' : ''}
-          />
+          <div className="input-with-icon password-input">
+            <FaLock className="input-icon" />
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className={errors.password ? 'error' : ''}
+              placeholder="Enter your password"
+            />
+            <button 
+              type="button" 
+              className="password-toggle" 
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
           {errors.password && <span className="error-text">{errors.password}</span>}
         </div>
-        <button type="submit" className="submit-btn" disabled={loading}>
+        <button type="submit" className="submit-btn buyer-btn" disabled={loading}>
           {loading ? 'Logging in...' : 'Login'}
         </button>
         <div className="auth-footer">
           <p>
-            Don't have an account? <Link to="/buyer-signup">Sign up</Link>
+            Don't have an account? <Link to="/buyer-signup" className="buyer-link">Sign up</Link>
           </p>
           <p>
-            <Link to="/forgot-password">Forgot password?</Link>
+            <button 
+              type="button"
+              onClick={() => setShowForgotPassword(true)} 
+              className="forgot-password-link buyer-link"
+            >
+              Forgot password?
+            </button>
+          </p>
+          <p className="role-switch">
+            Are you a seller? <Link to="/seller-login" className="seller-link">Login as Seller</Link>
           </p>
         </div>
       </form>
+      <ForgotPasswordDialog 
+        isOpen={showForgotPassword} 
+        onClose={() => setShowForgotPassword(false)} 
+      />
     </AttractiveAuth>
     </>
   );

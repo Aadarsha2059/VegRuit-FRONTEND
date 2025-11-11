@@ -5,7 +5,7 @@ import { authAPI } from '../services/authAPI';
 import AttractiveAuth from '../components/auth/AttractiveAuth';
 import { FaUser, FaEnvelope, FaLock, FaPhone, FaStore, FaMapMarkerAlt, FaCity } from 'react-icons/fa';
 import BackgroundAnimation from '../components/BackgroundAnimation';
-import '../styles/SellerSignup.css';
+import '../styles/AuthPages.css';
 
 const SellerSignup = () => {
   const navigate = useNavigate();
@@ -117,8 +117,8 @@ const SellerSignup = () => {
   return (
     <>
       <BackgroundAnimation />
-      <AttractiveAuth title="Create Seller Account">
-      <form onSubmit={handleSubmit} className="seller-signup-form">
+      <AttractiveAuth title="Create Your Account" subtitle="Start selling your fresh produce on Vegruit" icon={<FaStore />} role="seller">
+      <form onSubmit={handleSubmit} className="auth-form">
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="firstName">First Name</label>
@@ -304,12 +304,15 @@ const SellerSignup = () => {
           {errors.city && <span className="error-text">{errors.city}</span>}
         </div>
         
-        <button type="submit" className="submit-btn" disabled={loading}>
+        <button type="submit" className="submit-btn seller-btn" disabled={loading}>
           {loading ? 'Creating Account...' : 'Create Account'}
         </button>
         <div className="auth-footer">
           <p>
-            Already have an account? <Link to="/seller-login">Sign in</Link>
+            Already have an account? <Link to="/seller-login" className="seller-link">Sign in</Link>
+          </p>
+          <p className="role-switch">
+            Want to buy produce? <Link to="/buyer-signup" className="buyer-link">Create Buyer Account</Link>
           </p>
         </div>
       </form>
