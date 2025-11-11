@@ -18,6 +18,7 @@ import EnhancedSellerDashboard from './pages/EnhancedSellerDashboard'
 import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
 import ExplorePage from './pages/ExplorePage'
+import WebTourPage from './pages/WebTourPage'
 import AuthPage from './pages/Auth'
 import Checkout from './pages/Checkout'
 import OrderSuccess from './pages/OrderSuccess'
@@ -161,6 +162,7 @@ function App() {
               </>
             } />
             <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/web-tour" element={<WebTourPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/auth" element={<AuthPage />} />
