@@ -12,9 +12,10 @@ import About from './components/About'
 import Footer from './components/Footer'
 import MainAuth from './components/auth/MainAuth'
 import ProtectedRoute from './components/ProtectedRoute'
-import AuthTest from './components/AuthTest'
+
 import EnhancedBuyerDashboard from './pages/EnhancedBuyerDashboard'
 import EnhancedSellerDashboard from './pages/EnhancedSellerDashboard'
+import SuperAdminDashboard from './pages/SuperAdminDashboard'
 import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
 import ExplorePage from './pages/ExplorePage'
@@ -207,6 +208,10 @@ function App() {
                 <EnhancedSellerDashboard user={user} onLogout={handleLogout} />
               </ProtectedRoute>
             } />
+            
+            {/* SuperAdmin Dashboard */}
+            <Route path="/superadmin-dashboard" element={<SuperAdminDashboard />} />
+            
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ConditionalLayout>
@@ -218,9 +223,6 @@ function App() {
             onAuthSuccess={handleAuthSuccess}
           />
         )}
-
-        {/* Auth Test Panel - Remove in production */}
-        {process.env.NODE_ENV === 'development' && <AuthTest />}
       </div>
     </Router>
   )

@@ -1,0 +1,474 @@
+/* Bill Details Overlay */
+.bill-details-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.bill-details-container {
+  background: white;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.close-bill-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.close-bill-btn:hover {
+  background: #dc2626;
+  transform: rotate(90deg);
+}
+
+/* Bill Content */
+.bill-content {
+  padding: 40px;
+  background: white;
+}
+
+/* Header */
+.bill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+}
+
+.bill-logo-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.bill-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.bill-company-info h1 {
+  margin: 0 0 5px 0;
+  font-size: 28px;
+  color: #059669;
+  font-weight: 700;
+}
+
+.bill-company-info p {
+  margin: 3px 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.bill-invoice-info {
+  text-align: right;
+}
+
+.bill-invoice-info h2 {
+  margin: 0 0 10px 0;
+  font-size: 32px;
+  color: #111;
+  font-weight: 700;
+}
+
+.bill-invoice-info p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Divider */
+.bill-divider {
+  height: 2px;
+  background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+  margin: 25px 0;
+}
+
+.bill-divider-thin {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 10px 0;
+}
+
+/* Customer Section */
+.bill-customer-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+.bill-to h3,
+.bill-from h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #059669;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bill-to p,
+.bill-from p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Items Table */
+.bill-items-section h3 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  color: #111;
+  font-weight: 600;
+}
+
+.bill-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.bill-items-table thead {
+  background: #f3f4f6;
+}
+
+.bill-items-table th {
+  padding: 12px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.bill-items-table td {
+  padding: 12px;
+  font-size: 14px;
+  color: #111;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.bill-items-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.bill-items-table th:last-child,
+.bill-items-table td:last-child {
+  text-align: right;
+}
+
+/* Totals */
+.bill-totals-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 30px;
+}
+
+.bill-totals {
+  width: 350px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.total-row.grand-total {
+  font-size: 18px;
+  color: #059669;
+  padding: 15px 0 0 0;
+}
+
+/* Payment Section */
+.bill-payment-section {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.bill-payment-section h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #111;
+  font-weight: 600;
+}
+
+.bill-payment-section p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Footer */
+.bill-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.bill-notes h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #111;
+  font-weight: 600;
+}
+
+.bill-notes p {
+  margin: 5px 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.bill-signature {
+  text-align: center;
+}
+
+.signature-line {
+  width: 200px;
+  height: 1px;
+  background: #333;
+  margin-bottom: 10px;
+}
+
+.bill-signature p {
+  margin: 5px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.bill-signature .signature-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 400;
+  color: #666;
+}
+
+.bill-footer-text {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.bill-footer-text p {
+  margin: 5px 0;
+  font-size: 11px;
+  color: #999;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.delivered {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.processing {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.payment-status {
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.payment-status.paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.payment-status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Action Buttons */
+.bill-actions {
+  display: flex;
+  gap: 15px;
+  padding: 20px 40px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  border-radius: 0 0 12px 12px;
+}
+
+.bill-action-btn {
+  flex: 1;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.print-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.print-btn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.send-btn {
+  background: #059669;
+  color: white;
+}
+
+.send-btn:hover:not(:disabled) {
+  background: #047857;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: #6b7280;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #4b5563;
+}
+
+/* Print Styles */
+@media print {
+  .bill-details-overlay {
+    background: white;
+    position: static;
+    padding: 0;
+  }
+
+  .bill-details-container {
+    max-width: 100%;
+    max-height: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .close-bill-btn,
+  .bill-actions {
+    display: none !important;
+  }
+
+  .bill-content {
+    padding: 20px;
+  }
+
+  .bill-divider {
+    background: #059669;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bill-content {
+    padding: 20px;
+  }
+
+  .bill-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .bill-invoice-info {
+    text-align: left;
+  }
+
+  .bill-customer-section {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .bill-totals {
+    width: 100%;
+  }
+
+  .bill-footer {
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .bill-actions {
+    flex-direction: column;
+    padding: 15px 20px;
+  }
+
+  .bill-items-table {
+    font-size: 12px;
+  }
+
+  .bill-items-table th,
+  .bill-items-table td {
+    padding: 8px 4px;
+  }
+}

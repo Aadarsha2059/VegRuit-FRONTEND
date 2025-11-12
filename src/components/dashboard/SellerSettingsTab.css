@@ -148,7 +148,7 @@
 .form-group label {
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: #000;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -184,7 +184,7 @@
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 16px;
-  color: #1f2937;
+  color: #000;
   position: relative;
 }
 
@@ -293,13 +293,13 @@
 .business-info h4 {
   font-size: 18px;
   font-weight: 700;
-  color: #1f2937;
+  color: #000;
   margin: 0 0 4px 0;
 }
 
 .business-info p {
   font-size: 14px;
-  color: #6b7280;
+  color: #333;
   margin: 0;
 }
 
@@ -385,13 +385,13 @@
 .security-info h4 {
   font-size: 18px;
   font-weight: 700;
-  color: #1f2937;
+  color: #000;
   margin: 0 0 4px 0;
 }
 
 .security-info p {
   font-size: 14px;
-  color: #6b7280;
+  color: #333;
   margin: 0;
 }
 
@@ -436,13 +436,13 @@
 .notification-info h4 {
   font-size: 16px;
   font-weight: 700;
-  color: #1f2937;
+  color: #000;
   margin: 0 0 4px 0;
 }
 
 .notification-info p {
   font-size: 14px;
-  color: #6b7280;
+  color: #333;
   margin: 0;
 }
 
@@ -512,7 +512,7 @@ input:checked + .toggle-slider:before {
 .preference-item label {
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: #000;
   margin: 0;
 }
 
@@ -557,13 +557,13 @@ input:checked + .toggle-slider:before {
 .account-info h4 {
   font-size: 18px;
   font-weight: 700;
-  color: #1f2937;
+  color: #000;
   margin: 0 0 4px 0;
 }
 
 .account-info p {
   font-size: 14px;
-  color: #6b7280;
+  color: #333;
   margin: 0;
 }
 

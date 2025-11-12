@@ -86,21 +86,6 @@ const DashboardLayout = ({
             </button>
           ))}
         </nav>
-
-        <div className="sidebar-footer">
-          <button className="help-btn" onClick={onHelpClick} title="Help">
-            <span className="nav-icon">❓</span>
-            {!sidebarCollapsed && <span className="nav-label">Help</span>}
-          </button>
-          <button className="calendar-btn" onClick={onCalendarClick} title="Calendar">
-            <span className="nav-icon">📅</span>
-            {!sidebarCollapsed && <span className="nav-label">Calendar</span>}
-          </button>
-          <button className="logout-btn" onClick={handleLogout} title="Logout">
-            <span className="nav-icon">🚪</span>
-            {!sidebarCollapsed && <span className="nav-label">Logout</span>}
-          </button>
-        </div>
       </aside>
 
       {/* Main Content */}

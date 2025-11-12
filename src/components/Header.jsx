@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import logoFinal from '../assets/logofinal.png'
 import '../styles/Header.css'
 
 const Header = ({ user, onLogout, onAuthClick }) => {
@@ -64,8 +65,11 @@ const Header = ({ user, onLogout, onAuthClick }) => {
       <div className="header-container">
         <div className="logo">
           <Link to="/" className="logo-link">
-            <h1>VegRuit</h1>
-            <span className="tagline">Fresh from Kathmandu</span>
+            <img src={logoFinal} alt="TarkariShop Logo" className="logo-image" />
+            <div className="logo-text">
+              <h1>VegRuit</h1>
+              <span className="tagline">Fresh from Kathmandu</span>
+            </div>
           </Link>
         </div>
         

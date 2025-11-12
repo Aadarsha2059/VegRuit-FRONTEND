@@ -5,6 +5,7 @@ import DashboardLayout from '../components/dashboard/DashboardLayout'
 import StatCard from '../components/dashboard/StatCard'
 import LoadingSpinner from '../components/dashboard/LoadingSpinner'
 import SellerSettingsTab from '../components/dashboard/SellerSettingsTab'
+import BillDetails from '../components/dashboard/BillDetails'
 import { categoryAPI } from '../services/categoryAPI'
 import { productAPI } from '../services/productAPI'
 import { orderAPI } from '../services/orderAPI'
@@ -1421,6 +1422,9 @@ const AnalyticsTab = ({ orders, products }) => {
 }
 
 const CustomersTab = ({ orders }) => {
+  const [selectedBill, setSelectedBill] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+
   // Extract unique customers from orders
   const customers = React.useMemo(() => {
     const customerMap = new Map();
@@ -1436,7 +1440,8 @@ const CustomersTab = ({ orders }) => {
           city: order.buyerCity || 'N/A',
           totalOrders: 0,
           totalSpent: 0,
-          lastOrderDate: order.orderDate
+          lastOrderDate: order.orderDate,
+          receivedOrders: []
         });
       }
       
@@ -1445,6 +1450,11 @@ const CustomersTab = ({ orders }) => {
         const customer = customerMap.get(customerId);
         customer.totalOrders += 1;
         customer.totalSpent += order.total || 0;
+        
+        // Track all completed orders for billing (not just pending)
+        if (order.status !== 'pending' && order.status !== 'cancelled') {
+          customer.receivedOrders.push(order);
+        }
         
         // Update last order date if this order is more recent
         if (new Date(order.orderDate) > new Date(customer.lastOrderDate)) {
@@ -1455,6 +1465,28 @@ const CustomersTab = ({ orders }) => {
     
     return Array.from(customerMap.values()).sort((a, b) => b.totalSpent - a.totalSpent);
   }, [orders]);
+
+  const handleCheckBills = (customer) => {
+    if (customer.receivedOrders.length > 0) {
+      // Show the most recent received order bill
+      setSelectedCustomer(customer);
+      setSelectedBill(customer.receivedOrders[customer.receivedOrders.length - 1]);
+    } else {
+      toast.info('No received orders for this customer yet');
+    }
+  };
+
+  const handleSendBill = async (order, customer) => {
+    // In a real application, this would call an API to send email
+    // For now, we'll simulate it
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log('Sending bill to:', customer.email);
+        console.log('Order:', order);
+        resolve();
+      }, 1000);
+    });
+  };
 
   return (
     <div className="customers-tab">
@@ -1506,6 +1538,15 @@ const CustomersTab = ({ orders }) => {
                     </span>
                   </div>
                 </div>
+                <div className="customer-actions">
+                  <button 
+                    className="check-bills-btn"
+                    onClick={() => handleCheckBills(customer)}
+                    disabled={customer.receivedOrders.length === 0}
+                  >
+                    📄 Check Bills ({customer.receivedOrders.length})
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -1516,6 +1557,19 @@ const CustomersTab = ({ orders }) => {
           <h4>No Customers Yet</h4>
           <p>Customers will appear here once you receive orders</p>
         </div>
+      )}
+
+      {/* Bill Details Modal */}
+      {selectedBill && selectedCustomer && (
+        <BillDetails
+          order={selectedBill}
+          customer={selectedCustomer}
+          onClose={() => {
+            setSelectedBill(null);
+            setSelectedCustomer(null);
+          }}
+          onSendBill={handleSendBill}
+        />
       )}
     </div>
   );

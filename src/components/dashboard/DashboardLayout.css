@@ -12,11 +12,12 @@
   color: white;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: width 0.3s ease;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   position: fixed;
   height: 100vh;
   z-index: 1000;
+  will-change: width;
 }
 
 .dashboard-sidebar.collapsed {
@@ -70,7 +71,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: background-color 0.2s ease;
+  backface-visibility: hidden;
 }
 
 .sidebar-toggle:hover {
@@ -164,8 +166,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.2s;
+  transition: background-color 0.2s ease;
   position: relative;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 .nav-item:hover {
@@ -184,6 +188,7 @@
   bottom: 0;
   width: 4px;
   background: white;
+  transform: translateZ(0);
 }
 
 .nav-icon {
@@ -220,8 +225,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.2s;
+  transition: background-color 0.2s ease, color 0.2s ease;
   border-radius: 6px;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 .help-btn:hover,
@@ -241,6 +248,7 @@
   display: flex;
   flex-direction: column;
   transition: margin-left 0.3s ease;
+  will-change: margin-left;
 }
 
 .dashboard-sidebar.collapsed + .dashboard-main {

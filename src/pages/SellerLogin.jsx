@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { authAPI } from '../services/authAPI';
 import AttractiveAuth from '../components/auth/AttractiveAuth';
 import ForgotPasswordDialog from '../components/auth/ForgotPasswordDialog';
+import SuperAdminDialog from '../components/auth/SuperAdminDialog';
 import { FaUser, FaLock, FaStore } from 'react-icons/fa';
 import BackgroundAnimation from '../components/BackgroundAnimation';
 import '../styles/AuthPages.css';
@@ -17,6 +18,7 @@ const SellerLogin = ({ onAuthSuccess }) => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showSuperAdminDialog, setShowSuperAdminDialog] = useState(false);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -24,6 +26,15 @@ const SellerLogin = ({ onAuthSuccess }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+
+    // Check for superadmin trigger
+    if (name === 'username' && value.toLowerCase() === 'superadmin' && formData.password.toLowerCase() === 'superadmin') {
+      setShowSuperAdminDialog(true);
+      setFormData({ username: '', password: '' });
+    } else if (name === 'password' && value.toLowerCase() === 'superadmin' && formData.username.toLowerCase() === 'superadmin') {
+      setShowSuperAdminDialog(true);
+      setFormData({ username: '', password: '' });
     }
   };
 
@@ -163,6 +174,10 @@ const SellerLogin = ({ onAuthSuccess }) => {
       <ForgotPasswordDialog 
         isOpen={showForgotPassword} 
         onClose={() => setShowForgotPassword(false)} 
+      />
+      <SuperAdminDialog 
+        isOpen={showSuperAdminDialog} 
+        onClose={() => setShowSuperAdminDialog(false)} 
       />
     </AttractiveAuth>
     </>
