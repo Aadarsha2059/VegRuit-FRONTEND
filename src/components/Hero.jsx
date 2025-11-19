@@ -5,12 +5,22 @@ import { Link } from 'react-router-dom';
 import basketImage from '../assets/basket.png';
 import '../styles/Hero.css';
 
+const API_BASE_URL = 'http://localhost:5001/api';
+
 // Use the local basket.png image
 const heroVegetablesImage = basketImage;
 
 const Hero = () => {
   // Image slider state
   const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // Stats state
+  const [stats, setStats] = useState({
+    farmers: 0,
+    products: 0,
+    customers: 0
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
   
   // Hero images - using high-quality Unsplash images
   const heroImages = [
@@ -39,6 +49,36 @@ const Hero = () => {
       subtitle: 'Quality You Can Trust'
     }
   ];
+
+  // Fetch stats from database
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/stats/homepage`);
+        if (response.ok) {
+          const data = await response.json();
+          setStats({
+            farmers: data.totalSellers || 0,
+            products: data.totalProducts || 0,
+            customers: data.totalBuyers || 0
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    // Initial fetch
+    fetchStats();
+    
+    // Poll for updates every 30 seconds
+    const statsInterval = setInterval(fetchStats, 30000);
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(statsInterval);
+  }, []);
 
   // Auto-advance slider
   useEffect(() => {
@@ -201,16 +241,22 @@ const Hero = () => {
 
             <motion.div className="hero-stats" variants={statsVariants}>
               <div className="stat-item">
-                <span className="stat-number">500+</span>
+                <span className="stat-number">
+                  {statsLoading ? '...' : `${stats.farmers}+`}
+                </span>
                 <span className="stat-label">Local Farmers</span>
               </div>
               <div className="stat-item">
-                <span className="stat-number">50+</span>
+                <span className="stat-number">
+                  {statsLoading ? '...' : `${stats.products}+`}
+                </span>
                 <span className="stat-label">Product Varieties</span>
               </div>
               <div className="stat-item">
-                <span className="stat-number">5</span>
-                <span className="stat-label">Cities Served</span>
+                <span className="stat-number">
+                  {statsLoading ? '...' : `${stats.customers}+`}
+                </span>
+                <span className="stat-label">Happy Customers</span>
               </div>
             </motion.div>
           </motion.div>

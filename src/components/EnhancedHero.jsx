@@ -4,9 +4,19 @@ import { FiShoppingBag, FiInfo, FiChevronRight, FiStar, FiUsers, FiTruck, FiChev
 import { Link } from 'react-router-dom';
 import '../styles/EnhancedHero.css';
 
+const API_BASE_URL = 'http://localhost:5001/api';
+
 const EnhancedHero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  
+  // Stats state
+  const [stats, setStats] = useState({
+    farmers: 0,
+    products: 0,
+    customers: 0
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
 
   // Professional high-quality images of fresh produce
   const heroSlides = [
@@ -39,6 +49,36 @@ const EnhancedHero = () => {
       cta: 'Start Shopping'
     }
   ];
+
+  // Fetch stats from database
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/stats/homepage`);
+        if (response.ok) {
+          const data = await response.json();
+          setStats({
+            farmers: data.totalSellers || 0,
+            products: data.totalProducts || 0,
+            customers: data.totalBuyers || 0
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    // Initial fetch
+    fetchStats();
+    
+    // Poll for updates every 30 seconds
+    const statsInterval = setInterval(fetchStats, 30000);
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(statsInterval);
+  }, []);
 
   // Auto-advance slider
   useEffect(() => {
@@ -166,7 +206,9 @@ const EnhancedHero = () => {
           <div className="trust-item">
             <FiUsers className="trust-icon" />
             <div className="trust-text">
-              <span className="trust-value">10,000+</span>
+              <span className="trust-value">
+                {statsLoading ? '...' : `${stats.customers}+`}
+              </span>
               <span className="trust-label">Happy Customers</span>
             </div>
           </div>
@@ -261,7 +303,9 @@ const EnhancedHero = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.2, type: 'spring' }}
           >
-            <span className="stat-number">500+</span>
+            <span className="stat-number">
+              {statsLoading ? '...' : `${stats.farmers}+`}
+            </span>
             <span className="stat-label">Local Farmers</span>
           </motion.div>
           <motion.div 
@@ -271,7 +315,9 @@ const EnhancedHero = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.3, type: 'spring' }}
           >
-            <span className="stat-number">50+</span>
+            <span className="stat-number">
+              {statsLoading ? '...' : `${stats.products}+`}
+            </span>
             <span className="stat-label">Product Varieties</span>
           </motion.div>
           <motion.div 
@@ -281,8 +327,10 @@ const EnhancedHero = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.4, type: 'spring' }}
           >
-            <span className="stat-number">5</span>
-            <span className="stat-label">Cities Served</span>
+            <span className="stat-number">
+              {statsLoading ? '...' : `${stats.customers}+`}
+            </span>
+            <span className="stat-label">Happy Customers</span>
           </motion.div>
           <motion.div 
             className="stat-item"

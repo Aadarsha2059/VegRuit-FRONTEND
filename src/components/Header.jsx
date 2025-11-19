@@ -76,40 +76,36 @@ const Header = ({ user, onLogout, onAuthClick }) => {
         <nav className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
           <ul className="nav-list">
             <li>
-              <Link 
-                to="/" 
+              <span 
                 className={`nav-link ${isActive('/') ? 'active' : ''}`}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => { navigate('/'); setIsMenuOpen(false); }}
               >
                 Home
-              </Link>
+              </span>
             </li>
             <li>
-              <Link 
-                to="/web-tour" 
+              <span 
                 className={`nav-link ${isActive('/web-tour') ? 'active' : ''}`}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => { navigate('/web-tour'); setIsMenuOpen(false); }}
               >
                 Web Tour
-              </Link>
+              </span>
             </li>
             <li>
-              <Link 
-                to="/about" 
-                className={`nav-link ${isActive('/about') ? 'active' : ''}`}
-                onClick={() => setIsMenuOpen(false)}
+              <span 
+                className={`nav-link ${isActive('/farm-regions') ? 'active' : ''}`}
+                onClick={() => { navigate('/farm-regions'); setIsMenuOpen(false); }}
               >
-                About
-              </Link>
+                Farm Regions
+              </span>
             </li>
             <li>
-              <Link 
-                to="/contact" 
+              <span 
                 className={`nav-link ${isActive('/contact') ? 'active' : ''}`}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => { navigate('/contact'); setIsMenuOpen(false); }}
               >
                 Contact
-              </Link>
+              </span>
             </li>
           </ul>
         </nav>

@@ -9,6 +9,9 @@
   ) !important;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .farmers .section-header {

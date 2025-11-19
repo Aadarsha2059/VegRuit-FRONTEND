@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import Header from './components/Header'
 import Hero from './components/Hero'
@@ -17,6 +17,7 @@ import EnhancedBuyerDashboard from './pages/EnhancedBuyerDashboard'
 import EnhancedSellerDashboard from './pages/EnhancedSellerDashboard'
 import SuperAdminDashboard from './pages/SuperAdminDashboard'
 import AboutPage from './pages/AboutPage'
+import FarmRegionsPage from './pages/FarmRegionsPage'
 import ContactPage from './pages/ContactPage'
 import ExplorePage from './pages/ExplorePage'
 import WebTourPage from './pages/WebTourPage'
@@ -164,6 +165,7 @@ function App() {
             } />
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/web-tour" element={<WebTourPage />} />
+            <Route path="/farm-regions" element={<FarmRegionsPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/auth" element={<AuthPage />} />

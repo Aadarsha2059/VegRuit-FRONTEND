@@ -42,7 +42,14 @@ const Testimonials = () => {
   ];
 
   useEffect(() => {
+    // Initial load
     loadReviews();
+    
+    // Poll for updates every 60 seconds
+    const reviewsInterval = setInterval(loadReviews, 60000);
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(reviewsInterval);
   }, []);
 
   const loadReviews = async () => {

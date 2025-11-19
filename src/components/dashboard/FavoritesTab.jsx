@@ -50,7 +50,14 @@ const FavoritesTab = ({ favorites, onToggleFavorite, onAddToCart }) => {
 
               <div className="favorite-image" onClick={() => handleViewProduct(product._id)}>
                 {product.images && product.images.length > 0 ? (
-                  <img src={product.images[0]} alt={product.name} />
+                  <img 
+                    src={`http://localhost:5001${product.images[0]}`} 
+                    alt={product.name}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop';
+                    }}
+                  />
                 ) : (
                   <div className="placeholder-image">🥬</div>
                 )}

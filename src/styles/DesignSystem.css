@@ -1,0 +1,359 @@
+/* 
+ * VegRuit Design System
+ * 2 Colors + 2 Fonts + Black Text
+ */
+
+/* ========================================
+   CSS VARIABLES - DESIGN SYSTEM
+   ======================================== */
+
+:root {
+  /* COLORS (2 Main Colors) */
+  --color-primary: #059669;        /* Fresh Green */
+  --color-secondary: #047857;      /* Deep Forest Green */
+  
+  /* TEXT COLORS (Black for major text) */
+  --color-text-primary: #000000;   /* Black - Major text & numbers */
+  --color-text-secondary: #333333; /* Dark Gray - Secondary text */
+  --color-text-tertiary: #666666;  /* Medium Gray - Tertiary text */
+  
+  /* BACKGROUND COLORS */
+  --color-bg-white: #FFFFFF;       /* White */
+  --color-bg-light: #F9FAFB;       /* Light Gray */
+  --color-border: #E5E7EB;         /* Border Gray */
+  
+  /* FONTS (2 Fonts) */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
+                  'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 
+                  'Helvetica Neue', sans-serif;
+  --font-numbers: 'Courier New', Courier, monospace;
+  
+  /* FONT WEIGHTS */
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* SPACING */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  
+  /* BORDER RADIUS */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-round: 50%;
+  
+  /* SHADOWS */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* ========================================
+   GLOBAL STYLES
+   ======================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-primary);
+  color: var(--color-text-primary);
+  background: var(--color-bg-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-primary);
+  color: var(--color-text-primary);
+  font-weight: var(--font-bold);
+  line-height: 1.2;
+}
+
+h1 { font-size: 36px; }
+h2 { font-size: 28px; }
+h3 { font-size: 24px; font-weight: var(--font-semibold); }
+h4 { font-size: 20px; font-weight: var(--font-semibold); }
+h5 { font-size: 18px; font-weight: var(--font-medium); }
+h6 { font-size: 16px; font-weight: var(--font-medium); }
+
+p {
+  font-family: var(--font-primary);
+  color: var(--color-text-primary);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Numbers and Data */
+.number,
+.price,
+.quantity,
+.code {
+  font-family: var(--font-numbers);
+  color: var(--color-text-primary);
+  font-weight: var(--font-regular);
+}
+
+.number-large {
+  font-size: 32px;
+  font-weight: var(--font-bold);
+}
+
+.number-regular {
+  font-size: 16px;
+}
+
+.number-small {
+  font-size: 14px;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.btn {
+  font-family: var(--font-primary);
+  font-size: 16px;
+  font-weight: var(--font-semibold);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-bg-white);
+}
+
+.btn-primary:hover {
+  background: var(--color-secondary);
+}
+
+.btn-secondary {
+  background: var(--color-bg-white);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--color-bg-light);
+}
+
+/* ========================================
+   FORMS
+   ======================================== */
+
+label {
+  font-family: var(--font-primary);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: var(--font-semibold);
+  display: block;
+  margin-bottom: var(--space-sm);
+}
+
+input,
+textarea,
+select {
+  font-family: var(--font-primary);
+  color: var(--color-text-primary);
+  font-size: 16px;
+  padding: 12px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-white);
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+/* Number inputs */
+input[type="number"],
+.input-number {
+  font-family: var(--font-numbers);
+}
+
+/* ========================================
+   CARDS
+   ======================================== */
+
+.card {
+  background: var(--color-bg-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  color: var(--color-text-primary);
+  font-size: 20px;
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-md);
+}
+
+/* ========================================
+   TABLES
+   ======================================== */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-primary);
+}
+
+thead {
+  background: var(--color-bg-light);
+}
+
+th {
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: var(--font-semibold);
+  text-align: left;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+}
+
+td {
+  color: var(--color-text-primary);
+  font-size: 14px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+}
+
+/* Numbers in tables */
+td.number,
+td.price,
+td.quantity {
+  font-family: var(--font-numbers);
+}
+
+/* ========================================
+   NAVIGATION
+   ======================================== */
+
+.nav {
+  font-family: var(--font-primary);
+  font-size: 16px;
+  font-weight: var(--font-medium);
+}
+
+.nav-link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--color-primary);
+}
+
+.nav-link.active {
+  color: var(--color-primary);
+  font-weight: var(--font-semibold);
+}
+
+/* ========================================
+   STATUS BADGES
+   ======================================== */
+
+.badge {
+  font-family: var(--font-primary);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+.badge-success {
+  background: rgba(5, 150, 105, 0.1);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-primary);
+}
+
+/* ========================================
+   UTILITIES
+   ======================================== */
+
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-tertiary { color: var(--color-text-tertiary); }
+
+.bg-primary { background: var(--color-primary); }
+.bg-secondary { background: var(--color-secondary); }
+.bg-white { background: var(--color-bg-white); }
+.bg-light { background: var(--color-bg-light); }
+
+.font-primary { font-family: var(--font-primary); }
+.font-numbers { font-family: var(--font-numbers); }
+
+.font-regular { font-weight: var(--font-regular); }
+.font-medium { font-weight: var(--font-medium); }
+.font-semibold { font-weight: var(--font-semibold); }
+.font-bold { font-weight: var(--font-bold); }
+
+/* Spacing utilities */
+.p-xs { padding: var(--space-xs); }
+.p-sm { padding: var(--space-sm); }
+.p-md { padding: var(--space-md); }
+.p-lg { padding: var(--space-lg); }
+.p-xl { padding: var(--space-xl); }
+
+.m-xs { margin: var(--space-xs); }
+.m-sm { margin: var(--space-sm); }
+.m-md { margin: var(--space-md); }
+.m-lg { margin: var(--space-lg); }
+.m-xl { margin: var(--space-xl); }
+
+/* ========================================
+   GRADIENTS (Using 2 Colors)
+   ======================================== */
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+}
+
+.gradient-light {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(4, 120, 87, 0.1) 100%);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  h1 { font-size: 28px; }
+  h2 { font-size: 24px; }
+  h3 { font-size: 20px; }
+  
+  .number-large { font-size: 24px; }
+}

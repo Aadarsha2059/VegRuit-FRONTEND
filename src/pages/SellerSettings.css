@@ -125,14 +125,14 @@
 
 .section-header h2 {
   margin: 0 0 0.5rem 0;
-  color: #2d3748;
+  color: #000000;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
 .section-header p {
   margin: 0;
-  color: #718096;
+  color: #000000;
   font-size: 1rem;
 }
 
@@ -163,7 +163,7 @@
 
 .form-group label {
   font-weight: 600;
-  color: #2d3748;
+  color: #000000;
   font-size: 0.9rem;
 }
 
@@ -175,6 +175,7 @@
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
+  color: #000000;
 }
 
 .form-group input:focus,
@@ -221,7 +222,7 @@
 
 .payment-section h3 {
   margin: 0 0 1.5rem 0;
-  color: #2d3748;
+  color: #000000;
   font-size: 1.2rem;
   font-weight: 600;
 }
@@ -233,7 +234,7 @@
 
 .store-info h3 {
   margin: 0 0 1.5rem 0;
-  color: #2d3748;
+  color: #000000;
   font-size: 1.2rem;
   font-weight: 600;
 }
@@ -246,7 +247,7 @@
 
 .operating-hours h3 {
   margin: 0 0 1.5rem 0;
-  color: #2d3748;
+  color: #000000;
   font-size: 1.2rem;
   font-weight: 600;
 }
@@ -273,7 +274,7 @@
   gap: 0.5rem;
   cursor: pointer;
   font-weight: 500;
-  color: #2d3748;
+  color: #000000;
 }
 
 .time-inputs {
@@ -315,7 +316,7 @@
 
 .notification-group h3 {
   margin: 0 0 1rem 0;
-  color: #2d3748;
+  color: #000000;
   font-size: 1.2rem;
   font-weight: 600;
 }
@@ -334,14 +335,14 @@
 
 .notification-info h4 {
   margin: 0 0 0.25rem 0;
-  color: #2d3748;
+  color: #000000;
   font-size: 1rem;
   font-weight: 600;
 }
 
 .notification-info p {
   margin: 0;
-  color: #718096;
+  color: #000000;
   font-size: 0.9rem;
 }
 
@@ -409,14 +410,14 @@ input:checked + .slider:before {
 
 .security-info h4 {
   margin: 0 0 0.25rem 0;
-  color: #2d3748;
+  color: #000000;
   font-size: 1rem;
   font-weight: 600;
 }
 
 .security-info p {
   margin: 0;
-  color: #718096;
+  color: #000000;
   font-size: 0.9rem;
 }
 
@@ -445,7 +446,7 @@ input:checked + .slider:before {
 
 .data-management h3 {
   margin: 0 0 1rem 0;
-  color: #2d3748;
+  color: #000000;
   font-size: 1.2rem;
   font-weight: 600;
 }

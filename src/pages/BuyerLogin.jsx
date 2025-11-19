@@ -19,7 +19,50 @@ const BuyerLogin = ({ onAuthSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showSuperAdminDialog, setShowSuperAdminDialog] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [lockoutTime, setLockoutTime] = useState(null);
+  const [remainingTime, setRemainingTime] = useState(0);
   const navigate = useNavigate();
+
+  // Check for existing lockout on component mount
+  React.useEffect(() => {
+    const storedLockout = localStorage.getItem('buyerLoginLockout');
+    if (storedLockout) {
+      const lockoutData = JSON.parse(storedLockout);
+      const now = Date.now();
+      if (now < lockoutData.until) {
+        setLockoutTime(lockoutData.until);
+        setLoginAttempts(lockoutData.attempts);
+      } else {
+        localStorage.removeItem('buyerLoginLockout');
+      }
+    }
+    
+    const storedAttempts = localStorage.getItem('buyerLoginAttempts');
+    if (storedAttempts) {
+      setLoginAttempts(parseInt(storedAttempts));
+    }
+  }, []);
+
+  // Update remaining time countdown
+  React.useEffect(() => {
+    if (lockoutTime) {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = Math.max(0, Math.ceil((lockoutTime - now) / 1000));
+        setRemainingTime(remaining);
+        
+        if (remaining === 0) {
+          setLockoutTime(null);
+          setLoginAttempts(0);
+          localStorage.removeItem('buyerLoginLockout');
+          localStorage.removeItem('buyerLoginAttempts');
+        }
+      }, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [lockoutTime]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -48,6 +91,15 @@ const BuyerLogin = ({ onAuthSuccess }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    // Check if account is locked
+    if (lockoutTime && Date.now() < lockoutTime) {
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = remainingTime % 60;
+      toast.error(`Account locked. Please try again in ${minutes}:${seconds.toString().padStart(2, '0')}`);
+      return;
+    }
+    
     if (!validateForm()) {
       toast.error('Please fill in all required fields');
       return;
@@ -64,11 +116,34 @@ const BuyerLogin = ({ onAuthSuccess }) => {
           setLoading(false);
           return;
         }
+        // Reset login attempts on successful login
+        setLoginAttempts(0);
+        localStorage.removeItem('buyerLoginAttempts');
+        localStorage.removeItem('buyerLoginLockout');
+        
         onAuthSuccess(response.user);
         toast.success(`Welcome back, ${response.user.firstName}! 🛒`);
         navigate('/buyer-dashboard');
       } else {
-        toast.error(response.message || 'Login failed');
+        // Increment failed login attempts
+        const newAttempts = loginAttempts + 1;
+        setLoginAttempts(newAttempts);
+        localStorage.setItem('buyerLoginAttempts', newAttempts.toString());
+        
+        // Lock account after 15 failed attempts
+        if (newAttempts >= 15) {
+          const lockUntil = Date.now() + (10 * 60 * 1000); // 10 minutes
+          setLockoutTime(lockUntil);
+          localStorage.setItem('buyerLoginLockout', JSON.stringify({
+            until: lockUntil,
+            attempts: newAttempts
+          }));
+          toast.error('Too many failed attempts. Account locked for 10 minutes.');
+        } else {
+          const attemptsLeft = 15 - newAttempts;
+          toast.error(`${response.message || 'Login failed'}. ${attemptsLeft} attempts remaining.`);
+        }
+        
         if (response.field) {
           setErrors({ [response.field]: response.message });
         }
@@ -129,8 +204,38 @@ const BuyerLogin = ({ onAuthSuccess }) => {
           </div>
           {errors.password && <span className="error-text">{errors.password}</span>}
         </div>
-        <button type="submit" className="submit-btn buyer-btn" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
+        {lockoutTime && remainingTime > 0 && (
+          <div className="login-lockout-alert">
+            <div className="lockout-icon">🔒</div>
+            <div className="lockout-content">
+              <h4>Account Temporarily Locked</h4>
+              <p>Too many failed attempts. Please try again in:</p>
+              <div className="lockout-timer">
+                {Math.floor(remainingTime / 60)}:{(remainingTime % 60).toString().padStart(2, '0')}
+              </div>
+            </div>
+          </div>
+        )}
+        {loginAttempts > 0 && loginAttempts < 15 && !lockoutTime && (
+          <div className={`login-attempts-alert ${loginAttempts >= 10 ? 'critical' : loginAttempts >= 5 ? 'warning' : 'info'}`}>
+            <div className="attempts-icon">
+              {loginAttempts >= 10 ? '⚠️' : loginAttempts >= 5 ? '⚡' : 'ℹ️'}
+            </div>
+            <div className="attempts-content">
+              <div className="attempts-text">
+                <strong>{15 - loginAttempts}</strong> login attempts remaining
+              </div>
+              <div className="attempts-progress-bar">
+                <div 
+                  className="attempts-progress-fill" 
+                  style={{ width: `${((15 - loginAttempts) / 15) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        )}
+        <button type="submit" className="submit-btn buyer-btn" disabled={loading || (lockoutTime && remainingTime > 0)}>
+          {loading ? 'Logging in...' : lockoutTime && remainingTime > 0 ? 'Account Locked' : 'Login'}
         </button>
         <div className="auth-footer">
           <p>

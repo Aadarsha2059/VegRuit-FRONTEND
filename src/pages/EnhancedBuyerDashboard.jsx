@@ -40,6 +40,7 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
   const [confirmReceiptDialog, setConfirmReceiptDialog] = useState({ isOpen: false, order: null })
   const [favorites, setFavorites] = useState([])
   const [favoriteIds, setFavoriteIds] = useState(new Set())
+  const [cartPulse, setCartPulse] = useState(false)
 
   const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
 
@@ -199,6 +200,9 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
       if (response.success) {
         toast.success('Product added to cart!')
         setCart(response.data.cart)
+        // Trigger cart icon pulse animation
+        setCartPulse(true)
+        setTimeout(() => setCartPulse(false), 600)
       } else {
         toast.error(response.message)
       }
@@ -457,6 +461,20 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
       >
         {renderTabContent()}
       </DashboardLayout>
+
+      {/* Floating Cart Icon */}
+      {activeTab !== 'cart' && cart && cart.totalItems > 0 && (
+        <div 
+          className={`floating-cart-icon ${cartPulse ? 'pulse-animation' : ''}`}
+          onClick={() => setActiveTab('cart')}
+          title="View Shopping Cart"
+        >
+          <div className="cart-icon-wrapper">
+            <span className="cart-icon">🛒</span>
+            <span className="cart-badge">{cart.totalItems}</span>
+          </div>
+        </div>
+      )}
 
       {/* Review Form Modal */}
       {showReviewForm && selectedProduct && (

@@ -23,8 +23,19 @@ const Products = () => {
       await fetchProducts();
       setLoading(false);
     };
+    
+    // Initial fetch
     fetchData();
     loadCartFromStorage();
+    
+    // Poll for updates every 45 seconds
+    const productsInterval = setInterval(async () => {
+      await fetchProducts();
+      await fetchCategories();
+    }, 45000);
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(productsInterval);
   }, []);
 
   const fetchProducts = async () => {

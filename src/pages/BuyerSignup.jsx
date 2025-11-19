@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI } from '../services/authAPI';
 import AttractiveAuth from '../components/auth/AttractiveAuth';
+import PasswordStrengthIndicator from '../components/PasswordStrengthIndicator';
 import { FaUser, FaEnvelope, FaLock, FaPhone, FaMapMarkerAlt, FaCity, FaShoppingCart } from 'react-icons/fa';
 import BackgroundAnimation from '../components/BackgroundAnimation';
 import '../styles/AuthPages.css';
@@ -252,6 +253,7 @@ const BuyerSignup = () => {
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
+          <PasswordStrengthIndicator password={formData.password} />
           {errors.password && <span className="error-text">{errors.password}</span>}
         </div>
         
