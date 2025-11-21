@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './NepaliWelcomeDialog.css';
+import homepageSound from '../assets/sound/homepage_sound.mp3';
 
 const NepaliWelcomeDialog = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     // Show dialog after 2-3 seconds (using 2.5 seconds as middle ground)
@@ -11,11 +13,27 @@ const NepaliWelcomeDialog = () => {
       setIsOpen(true);
     }, 2500);
 
-    return () => clearTimeout(timer);
+    // Initialize audio
+    audioRef.current = new Audio(homepageSound);
+    audioRef.current.volume = 1.0; // Full volume
+
+    return () => {
+      clearTimeout(timer);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, []);
 
   const handleClose = () => {
     setIsOpen(false);
+    // Play sound when dialog closes
+    if (audioRef.current) {
+      audioRef.current.play().catch(error => {
+        console.log('Audio playback failed:', error);
+      });
+    }
   };
 
   return (

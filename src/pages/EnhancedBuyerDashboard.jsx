@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
@@ -20,6 +20,7 @@ import { favoritesAPI } from '../services/favoritesAPI'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import ReviewForm from '../components/ReviewForm'
 import FeedbackForm from '../components/FeedbackForm'
+import buyerDashboardSound from '../assets/sound/buyersdashboard sound.mp3'
 import './EnhancedBuyerDashboard.css'
 
 const EnhancedBuyerDashboard = ({ user, onLogout }) => {
@@ -41,11 +42,28 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
   const [favorites, setFavorites] = useState([])
   const [favoriteIds, setFavoriteIds] = useState(new Set())
   const [cartPulse, setCartPulse] = useState(false)
+  const audioRef = useRef(null)
 
   const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
 
   useEffect(() => {
+    // Initialize audio
+    audioRef.current = new Audio(buyerDashboardSound)
+    audioRef.current.volume = 1.0 // Full volume
+    
+    // Play sound on successful login (dashboard load)
+    audioRef.current.play().catch(error => {
+      console.log('Audio playback failed:', error)
+    })
+    
     loadDashboardData()
+    
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -93,6 +111,17 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleHelpClick = () => {
+    // Play sound when help button is clicked
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0 // Reset to start
+      audioRef.current.play().catch(error => {
+        console.log('Audio playback failed:', error)
+      })
+    }
+    toast.info('Need help? Contact our support team!')
   }
 
   const loadProducts = async () => {
@@ -335,6 +364,24 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
     }
   }
 
+  const handleCancelOrder = async (orderId, reason = null) => {
+    try {
+      const response = await orderAPI.cancelOrder(token, orderId, reason)
+      if (response.success) {
+        setOrders(prev => prev.map(order => 
+          order._id === orderId ? { ...order, status: 'cancelled', cancelledAt: new Date() } : order
+        ))
+        toast.success('Order cancelled successfully!')
+        loadOrders() // Reload orders to get updated data
+      } else {
+        toast.error(response.message || 'Failed to cancel order')
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error)
+      toast.error('Failed to cancel order')
+    }
+  }
+
   const handleOpenFeedbackForm = (type = 'general_feedback') => {
     setFeedbackType(type)
     setShowFeedbackForm(true)
@@ -399,6 +446,8 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
           orders={orders} 
           onConfirmReceipt={handleConfirmReceipt}
           onOpenConfirmDialog={(order) => setConfirmReceiptDialog({ isOpen: true, order })}
+          onCancelOrder={handleCancelOrder}
+          token={token}
         />
       case 'favorites':
         return <FavoritesTab 
@@ -458,6 +507,7 @@ const EnhancedBuyerDashboard = ({ user, onLogout }) => {
         onLogout={onLogout}
         sidebarItems={sidebarItems}
         headerTitle={getTabTitle(activeTab)}
+        onHelpClick={handleHelpClick}
       >
         {renderTabContent()}
       </DashboardLayout>
@@ -632,10 +682,12 @@ const BuyerOverviewTab = ({ user, data, products, favoriteIds, onToggleFavorite,
                       {new Date(order.orderDate).toLocaleDateString()}
                     </span>
                     <button 
-                      className="view-details-btn"
+                      className="view-details-btn-enhanced"
                       onClick={() => navigate(`/order-details/${order._id}`)}
                     >
-                      View Details
+                      <span className="btn-icon">📋</span>
+                      <span className="btn-text">View Details</span>
+                      <span className="btn-arrow">→</span>
                     </button>
                   </div>
                 </div>
@@ -1066,10 +1118,12 @@ const BuyerCartTab = ({ cart, onUpdateItem, onRemoveItem, onClearCart, onCreateO
 }
 
 // Orders Tab Component
-const BuyerOrdersTab = ({ orders, onConfirmReceipt, onOpenConfirmDialog }) => {
+const BuyerOrdersTab = ({ orders, onConfirmReceipt, onOpenConfirmDialog, onCancelOrder, token }) => {
   const navigate = useNavigate()
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [cancelDialog, setCancelDialog] = useState({ isOpen: false, order: null })
+  const [cancelReason, setCancelReason] = useState('')
 
   const getStatusInfo = (status) => {
     const statusMap = {
@@ -1093,6 +1147,19 @@ const BuyerOrdersTab = ({ orders, onConfirmReceipt, onOpenConfirmDialog }) => {
   const filteredOrders = statusFilter === 'all' 
     ? orders 
     : orders.filter(order => order.status === statusFilter)
+
+  const handleCancelClick = (order) => {
+    setCancelDialog({ isOpen: true, order })
+    setCancelReason('')
+  }
+
+  const handleConfirmCancel = () => {
+    if (cancelDialog.order) {
+      onCancelOrder(cancelDialog.order._id, cancelReason)
+      setCancelDialog({ isOpen: false, order: null })
+      setCancelReason('')
+    }
+  }
 
   return (
     <div className="orders-tab-container">
@@ -1220,16 +1287,13 @@ const BuyerOrdersTab = ({ orders, onConfirmReceipt, onOpenConfirmDialog }) => {
                         </button>
                       )}
                       {['pending', 'confirmed'].includes(order.status) && (
-                        <button className="btn btn-danger">
+                        <button 
+                          className="btn btn-danger"
+                          onClick={() => handleCancelClick(order)}
+                        >
                           ❌ Cancel Order
                         </button>
                       )}
-                      <button 
-                        className="btn btn-secondary"
-                        onClick={() => setSelectedOrder(order)}
-                      >
-                        📞 Contact Seller
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -1257,39 +1321,64 @@ const BuyerOrdersTab = ({ orders, onConfirmReceipt, onOpenConfirmDialog }) => {
         )}
       </div>
 
-      {/* Order Detail Modal */}
-      {selectedOrder && (
-        <div className="order-modal-overlay" onClick={() => setSelectedOrder(null)}>
-          <div className="order-modal-content" onClick={(e) => e.stopPropagation()}>
+      {/* Cancel Order Dialog */}
+      {cancelDialog.isOpen && cancelDialog.order && (
+        <div className="order-modal-overlay" onClick={() => setCancelDialog({ isOpen: false, order: null })}>
+          <div className="order-modal-content cancel-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Contact Seller - Order #{selectedOrder.orderNumber}</h3>
+              <h3>❌ Cancel Order</h3>
               <button 
                 className="modal-close-btn"
-                onClick={() => setSelectedOrder(null)}
+                onClick={() => setCancelDialog({ isOpen: false, order: null })}
               >
                 ×
               </button>
             </div>
             <div className="modal-body">
-              <div className="seller-contact-info">
-                <h4>Seller Information</h4>
-                <p>For any questions about this order, you can contact the seller directly:</p>
-                <div className="contact-options">
-                  <button className="contact-btn email-btn">
-                    📧 Send Email
-                  </button>
-                  <button className="contact-btn phone-btn">
-                    📞 Call Seller
-                  </button>
-                  <button className="contact-btn message-btn">
-                    💬 Send Message
-                  </button>
+              <div className="cancel-order-info">
+                <p className="cancel-question">
+                  Are you sure you want to cancel order <strong>#{cancelDialog.order.orderNumber}</strong>?
+                </p>
+                <div className="order-summary-mini">
+                  <p><strong>Items:</strong> {cancelDialog.order.items?.length || 0} items</p>
+                  <p><strong>Total:</strong> Rs. {cancelDialog.order.total}</p>
+                  <p><strong>Status:</strong> {cancelDialog.order.status}</p>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="cancelReason">Reason for cancellation (optional):</label>
+                  <textarea
+                    id="cancelReason"
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    placeholder="Please let us know why you're cancelling this order..."
+                    rows="4"
+                    className="cancel-reason-input"
+                  />
+                </div>
+                <div className="cancel-warning">
+                  <span className="warning-icon">⚠️</span>
+                  <p>This action cannot be undone. The order will be cancelled and you'll receive a confirmation.</p>
                 </div>
               </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setCancelDialog({ isOpen: false, order: null })}
+              >
+                Keep Order
+              </button>
+              <button 
+                className="btn btn-danger"
+                onClick={handleConfirmCancel}
+              >
+                Yes, Cancel Order
+              </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   )
 }

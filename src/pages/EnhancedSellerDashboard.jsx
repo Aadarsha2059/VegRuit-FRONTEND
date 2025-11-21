@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
@@ -15,6 +15,7 @@ import { favoritesAPI } from '../services/favoritesAPI'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import { ConfirmDialog, FormDialog } from '../components/Dialog'
 import FeedbackForm from '../components/FeedbackForm'
+import sellerDashboardSound from '../assets/sound/sellers dashboard.mp3'
 import './EnhancedSellerDashboard.css'
 
 const EnhancedSellerDashboard = ({ user, onLogout }) => {
@@ -25,6 +26,7 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
   const [categories, setCategories] = useState([])
   const [products, setProducts] = useState([])
   const [orders, setOrders] = useState([])
+  const audioRef = useRef(null)
   
   // Dialog states
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, type: '', item: null })
@@ -58,7 +60,24 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
       navigate('/seller-login')
       return
     }
+    
+    // Initialize audio
+    audioRef.current = new Audio(sellerDashboardSound)
+    audioRef.current.volume = 1.0 // Full volume
+    
+    // Play sound on successful login (dashboard load)
+    audioRef.current.play().catch(error => {
+      console.log('Audio playback failed:', error)
+    })
+    
     loadDashboardData()
+    
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -74,6 +93,17 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
       loadOrders() // Load orders for customer data
     }
   }, [activeTab])
+
+  const handleHelpClick = () => {
+    // Play sound when help button is clicked
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0 // Reset to start
+      audioRef.current.play().catch(error => {
+        console.log('Audio playback failed:', error)
+      })
+    }
+    toast.info('Need help? Contact our support team!')
+  }
 
   const loadDashboardData = async () => {
     setLoading(true)
@@ -508,6 +538,7 @@ const EnhancedSellerDashboard = ({ user, onLogout }) => {
         onLogout={onLogout}
         sidebarItems={sidebarItems}
         headerTitle={getTabTitle(activeTab)}
+        onHelpClick={handleHelpClick}
       >
         {renderTabContent()}
       </DashboardLayout>

@@ -39,6 +39,9 @@ const PaymentsTab = ({ cart, onCheckout }) => {
 
   const handlePaymentMethodSelect = (methodId) => {
     setSelectedPaymentMethod(methodId)
+    // Save selected payment method to localStorage for auto-fill during checkout
+    localStorage.setItem('preferredPaymentMethod', methodId)
+    toast.success(`${methodId === 'cod' ? 'Cash on Delivery' : methodId === 'khalti' ? 'Khalti' : 'eSewa'} selected as your payment method`)
   }
 
   const handleProceedToPayment = async () => {
@@ -178,6 +181,14 @@ const PaymentsTab = ({ cart, onCheckout }) => {
     }
   }
 
+  // Load preferred payment method on component mount
+  React.useEffect(() => {
+    const savedMethod = localStorage.getItem('preferredPaymentMethod')
+    if (savedMethod) {
+      setSelectedPaymentMethod(savedMethod)
+    }
+  }, [])
+
   return (
     <div className="payments-tab">
       <div className="payments-header">
@@ -188,6 +199,7 @@ const PaymentsTab = ({ cart, onCheckout }) => {
       {/* Always show payment methods */}
       <div className="payment-methods">
         <h3>Available Payment Options</h3>
+        <p className="payment-subtitle">Select your preferred payment method. It will be auto-filled during checkout.</p>
         <div className="payment-methods-grid">
           {paymentMethods.map((method) => (
             <div
@@ -223,43 +235,6 @@ const PaymentsTab = ({ cart, onCheckout }) => {
               )}
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Payment Method Details */}
-      <div className="payment-info-section">
-        <h3>💡 Payment Information</h3>
-        <div className="payment-info-grid">
-          <div className="info-card">
-            <div className="info-icon">💵</div>
-            <h4>Cash on Delivery</h4>
-            <p>Pay with cash when your order arrives. No online payment required.</p>
-            <ul className="features-list">
-              <li>✓ No advance payment</li>
-              <li>✓ Inspect before paying</li>
-              <li>✓ Most convenient</li>
-            </ul>
-          </div>
-          <div className="info-card">
-            <div className="info-icon">💜</div>
-            <h4>Khalti</h4>
-            <p>Nepal's most popular digital wallet. Pay instantly using your Khalti balance, bank account, or cards.</p>
-            <ul className="features-list">
-              <li>✓ Instant payment confirmation</li>
-              <li>✓ Multiple payment options</li>
-              <li>✓ Secure transactions</li>
-            </ul>
-          </div>
-          <div className="info-card">
-            <div className="info-icon">💚</div>
-            <h4>eSewa</h4>
-            <p>Trusted digital payment solution in Nepal. Quick and secure payments from your eSewa wallet.</p>
-            <ul className="features-list">
-              <li>✓ Fast & reliable</li>
-              <li>✓ Wide acceptance</li>
-              <li>✓ Easy refunds</li>
-            </ul>
-          </div>
         </div>
       </div>
 

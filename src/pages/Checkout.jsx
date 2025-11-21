@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast'
 import { cartAPI } from '../services/cartAPI'
 import { orderAPI } from '../services/orderAPI'
 import { STORAGE_KEYS } from '../services/authAPI'
+import khaltiLogo from '../assets/khalti.png'
 import './Checkout.css'
 
 const Checkout = () => {
@@ -38,6 +39,15 @@ const Checkout = () => {
       return
     }
     loadCart()
+    
+    // Load preferred payment method from localStorage
+    const preferredPaymentMethod = localStorage.getItem('preferredPaymentMethod')
+    if (preferredPaymentMethod) {
+      setOrderData(prev => ({
+        ...prev,
+        paymentMethod: preferredPaymentMethod
+      }))
+    }
   }, [token, navigate])
 
   const loadCart = async () => {
@@ -398,7 +408,7 @@ const Checkout = () => {
                 >
                   <div className="step-header">
                     <h2>💳 Payment Method</h2>
-                    <p>Choose how you'd like to pay</p>
+                    <p>Choose how you'd like to pay (you can change your preferred method)</p>
                   </div>
 
                   <div className="payment-methods">
@@ -430,7 +440,7 @@ const Checkout = () => {
                       />
                       <div className="payment-content">
                         <div className="payment-logo">
-                          <img src="https://web.khalti.com/static/img/logo1.png" alt="Khalti" style={{maxWidth: '80px', height: 'auto'}} />
+                          <img src={khaltiLogo} alt="Khalti" style={{maxWidth: '80px', height: 'auto'}} />
                         </div>
                         <div className="payment-details">
                           <h4>Khalti Digital Wallet</h4>
