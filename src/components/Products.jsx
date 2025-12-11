@@ -17,6 +17,12 @@ const Products = () => {
   const [cart, setCart] = useState([]);
   const BACKEND_BASE = 'http://localhost:5001';
 
+  // Define extra categories that will always show "coming soon"
+  const extraCategories = [
+    { _id: 'extra-1', name: 'Exotic Fruits' },
+    { _id: 'extra-2', name: 'Rare Vegetables' }
+  ];
+
   useEffect(() => {
     const fetchData = async () => {
       await fetchCategories();
@@ -70,7 +76,17 @@ const Products = () => {
     if (category === 'all') {
       setFilteredProducts(products);
     } else {
-      setFilteredProducts(products.filter(p => p.category.name === category));
+      // Check if it's one of our extra categories
+      const isExtraCategory = extraCategories.some(cat => cat.name === category);
+      
+      if (isExtraCategory) {
+        // For extra categories, show no products to trigger the coming soon message
+        setFilteredProducts([]);
+      } else {
+        // For regular categories, filter normally
+        const filtered = products.filter(p => p.category.name === category);
+        setFilteredProducts(filtered);
+      }
     }
   };
 
@@ -197,14 +213,34 @@ const Products = () => {
               {cat.name}
             </button>
           ))}
+          {/* Add the extra categories */}
+          {extraCategories.map(cat => (
+            <button
+              key={cat._id}
+              className={`filter-btn ${activeCategory === cat.name ? 'active' : ''}`}
+              onClick={() => handleFilter(cat.name)}
+            >
+              {cat.name}
+            </button>
+          ))}
         </div>
 
         <motion.div className="products-grid" layout>
           {loading
             ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
-            : filteredProducts.map(product => (
-                <ProductCard key={product._id} product={product} />
-              ))}
+            : filteredProducts.length > 0
+              ? filteredProducts.map(product => (
+                  <ProductCard key={product._id} product={product} />
+                ))
+              : activeCategory !== 'all'
+                ? (
+                  <div className="no-products-message">
+                    <h3>Products Coming Soon!</h3>
+                    <p>We're working hard to bring you amazing {activeCategory.toLowerCase()} products. Stay tuned!</p>
+                  </div>
+                )
+                : Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
+          }
         </motion.div>
 
         <div className="products-cta">

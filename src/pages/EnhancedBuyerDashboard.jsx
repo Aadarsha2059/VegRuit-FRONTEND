@@ -1026,32 +1026,37 @@ const BuyerCartTab = ({ cart, onUpdateItem, onRemoveItem, onClearCart, onCreateO
 
       <div className="cart-items">
         {cart.items.map((item) => (
-          <div key={item.productId} className="cart-item">
-            <div className="item-image">
+          <div key={item.productId} className="cart-item-centered">
+            <div className="item-image-centered">
               <img 
-                src={item.productImage ? `http://localhost:5001${item.productImage}` : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop'} 
+                src={item.productImage ? `http://localhost:5001${item.productImage}` : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop'} 
                 alt={item.productName}
                 onError={(e) => {
-                  e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop';
+                  e.target.src = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop';
                 }}
               />
             </div>
-            <div className="item-details">
+            <div className="item-details-centered">
               <h4>{item.productName}</h4>
-              <p>Rs. {item.price}/{item.unit}</p>
-              <p>Seller: {item.sellerName}</p>
+              <p className="item-price">Rs. {item.price}/{item.unit}</p>
+              <p className="item-seller">Seller: {item.sellerName || 'Unknown Seller'}</p>
+              {item.farmName && item.farmLocation && (
+                <p className="item-farm">Farm: {item.farmName} - {item.farmLocation}</p>
+              )}
             </div>
-            <div className="item-quantity">
-              <button onClick={() => onUpdateItem(item.productId, item.quantity - 1)}>-</button>
-              <span>{item.quantity}</span>
-              <button onClick={() => onUpdateItem(item.productId, item.quantity + 1)}>+</button>
+            <div className="item-controls-centered">
+              <div className="item-quantity">
+                <button onClick={() => onUpdateItem(item.productId, item.quantity - 1)}>-</button>
+                <span>{item.quantity}</span>
+                <button onClick={() => onUpdateItem(item.productId, item.quantity + 1)}>+</button>
+              </div>
+              <div className="item-total">
+                Rs. {item.total}
+              </div>
+              <button className="remove-btn" onClick={() => onRemoveItem(item.productId)}>
+                🗑️
+              </button>
             </div>
-            <div className="item-total">
-              Rs. {item.total}
-            </div>
-            <button className="remove-btn" onClick={() => onRemoveItem(item.productId)}>
-              🗑️
-            </button>
           </div>
         ))}
       </div>

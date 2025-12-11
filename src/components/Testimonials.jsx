@@ -120,7 +120,7 @@ const Testimonials = () => {
       <div className="container">
         <div className="section-header">
           <h2>What Our Customers Say</h2>
-          <p>Real feedback from our valued customers about their experience with TarkariShop.</p>
+          <p>Real feedback from our valued customers about their experience with VegRuit & our Products.</p>
         </div>
 
         {loading ? (

@@ -10,8 +10,6 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import '../styles/Farmers.css';
 
-const API_BASE_URL = 'http://localhost:5001/api';
-
 const Farmers = () => {
   const [farmers, setFarmers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,44 +34,12 @@ const Farmers = () => {
   ];
 
   useEffect(() => {
-    // Initial fetch
-    fetchFarmers();
+    // Set farmers to fallback data and remove loading state
+    setFarmers(fallbackFarmers);
+    setLoading(false);
     
-    // Poll for updates every 60 seconds
-    const farmersInterval = setInterval(fetchFarmers, 60000);
-    
-    // Cleanup interval on unmount
-    return () => clearInterval(farmersInterval);
+    // Removed API fetching to prevent loading other farmer names
   }, []);
-
-  const fetchFarmers = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/sellers`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data.sellers.length > 0) {
-          const formattedFarmers = data.data.sellers.slice(0, 10).map((seller, index) => ({
-            id: seller._id,
-            name: `${seller.firstName} ${seller.lastName}`,
-            image: index % 2 === 0 ? farmerOneImage : farmerTwoImage,
-            location: `${seller.farmLocation || seller.city}, Kathmandu Valley`,
-            specialty: seller.farmName || 'Fresh Produce',
-            quote: `Proudly serving fresh produce from ${seller.farmName || 'our farm'}.`,
-          }));
-          setFarmers(formattedFarmers);
-        } else {
-          setFarmers(fallbackFarmers);
-        }
-      } else {
-        setFarmers(fallbackFarmers);
-      }
-    } catch (error) {
-      console.error('Error fetching farmers:', error);
-      setFarmers(fallbackFarmers);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <section className="farmers" id="farmers">

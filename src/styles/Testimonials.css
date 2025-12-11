@@ -35,6 +35,7 @@
   min-height: 120px;
   display: flex;
   align-items: center;
+  margin-top: 25px; /* Add margin to avoid overlap with verified badge */
 }
 
 .name {
@@ -54,6 +55,7 @@
 .testimonials-swiper .swiper-pagination-bullet-active {
   background: #28a745;
 }
+
 /* Avatar Icon Styles */
 .avatar-icon {
   width: 60px;
@@ -99,10 +101,12 @@
   border-radius: 12px;
   font-size: 0.7rem;
   font-weight: 600;
+  z-index: 2; /* Ensure it's above other content */
 }
 
 .testimonial-content {
   position: relative;
+  padding-top: 25px; /* Add padding to accommodate the verified badge */
 }
 
 /* Responsive adjustments */
@@ -120,5 +124,13 @@
   
   .avatar-icon {
     margin: 0 auto 1rem auto;
+  }
+  
+  .testimonial-content {
+    padding-top: 35px; /* More padding on mobile */
+  }
+  
+  .comment {
+    margin-top: 35px; /* More margin on mobile */
   }
 }

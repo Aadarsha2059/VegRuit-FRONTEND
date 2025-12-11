@@ -957,7 +957,7 @@
     width: 100%;
     justify-content: center;
   }
-}/
+}
 * Enhanced Seller Orders Styles */
 .orders-tab {
   padding: 20px 0;
@@ -1452,7 +1452,7 @@
     width: 95%;
     margin: 20px;
   }
-}/
+}
 * Accept/Reject Order Buttons */
 .pending-actions {
   display: flex;
