@@ -212,7 +212,7 @@ const WebTourPage = () => {
   const currentSteps = activeTab === 'buyer' ? buyerSteps[language] : sellerSteps[language];
 
   return (
-    <motion.div 
+    <motion.div
       className="web-tour-page"
       initial="hidden"
       animate="visible"
@@ -227,7 +227,7 @@ const WebTourPage = () => {
               {language === 'english' ? 'Web Tour' : 'वेब टुर'}
             </motion.h1>
             <motion.p className="hero-subtitle" variants={fadeInUp}>
-              {language === 'english' 
+              {language === 'english'
                 ? 'Learn how to use VegRuit platform step by step'
                 : 'VegRuit प्लेटफर्म कसरी प्रयोग गर्ने चरण-दर-चरण सिक्नुहोस्'}
             </motion.p>
@@ -239,13 +239,13 @@ const WebTourPage = () => {
       <section className="language-toggle-section">
         <div className="container">
           <div className="language-toggle">
-            <button 
+            <button
               className={`lang-btn ${language === 'english' ? 'active' : ''}`}
               onClick={() => setLanguage('english')}
             >
               🇬🇧 English
             </button>
-            <button 
+            <button
               className={`lang-btn ${language === 'nepali' ? 'active' : ''}`}
               onClick={() => setLanguage('nepali')}
             >
@@ -259,7 +259,7 @@ const WebTourPage = () => {
       <section className="tab-selection-section">
         <div className="container">
           <div className="tab-buttons">
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'buyer' ? 'active' : ''}`}
               onClick={() => setActiveTab('buyer')}
             >
@@ -268,7 +268,7 @@ const WebTourPage = () => {
                 {language === 'english' ? 'For Buyers' : 'खरिददारहरूको लागि'}
               </span>
             </button>
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'seller' ? 'active' : ''}`}
               onClick={() => setActiveTab('seller')}
             >
@@ -286,12 +286,12 @@ const WebTourPage = () => {
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">
-              {activeTab === 'buyer' 
+              {activeTab === 'buyer'
                 ? (language === 'english' ? 'How to Buy' : 'कसरी किन्ने')
                 : (language === 'english' ? 'How to Sell' : 'कसरी बेच्ने')}
             </h2>
             <p className="section-subtitle">
-              {language === 'english' 
+              {language === 'english'
                 ? 'Follow these simple steps to get started'
                 : 'सुरु गर्न यी सरल चरणहरू पालना गर्नुहोस्'}
             </p>
@@ -299,7 +299,7 @@ const WebTourPage = () => {
 
           <div className="steps-grid">
             {currentSteps.map((step, index) => (
-              <motion.div 
+              <motion.div
                 key={index}
                 className="step-card"
                 initial={{ opacity: 0, y: 30 }}
@@ -335,8 +335,8 @@ const WebTourPage = () => {
         <div className="container">
           <div className="cta-content">
             <h2>
-              {language === 'english' 
-                ? 'Ready to Get Started?' 
+              {language === 'english'
+                ? 'Ready to Get Started?'
                 : 'सुरु गर्न तयार हुनुहुन्छ?'}
             </h2>
             <p>

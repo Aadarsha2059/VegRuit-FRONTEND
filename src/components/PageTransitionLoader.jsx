@@ -10,7 +10,7 @@ const PageTransitionLoader = ({ isLoading }) => {
       const duration = 1500; // 1.5 seconds
       const interval = 20; // Update every 20ms
       const increment = 100 / (duration / interval);
-      
+
       const timer = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 100) {

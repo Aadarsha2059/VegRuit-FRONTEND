@@ -109,6 +109,48 @@
   padding-top: 25px; /* Add padding to accommodate the verified badge */
 }
 
+/* Animated highlight text styles */
+.animated-highlight-container {
+  margin-top: 15px;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  border-top: 1px dashed #4caf50;
+}
+
+.static-text {
+  color: #555;
+}
+
+.animated-word {
+  display: inline-block;
+  color: #3AAB5D;
+  font-weight: 700;
+  margin-left: 5px;
+  animation: pulseAndGlow 2.5s infinite;
+  position: relative;
+}
+
+@keyframes pulseAndGlow {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 0 rgba(58, 171, 93, 0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.08);
+    text-shadow: 0 0 8px rgba(58, 171, 93, 0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 0 rgba(58, 171, 93, 0);
+    opacity: 0.7;
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .avatar-icon {
@@ -132,5 +174,10 @@
   
   .comment {
     margin-top: 35px; /* More margin on mobile */
+  }
+  
+  .animated-highlight-container {
+    font-size: 1rem;
+    padding: 8px 0;
   }
 }

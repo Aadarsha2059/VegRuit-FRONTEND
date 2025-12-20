@@ -150,7 +150,7 @@ const FarmRegionsPage = () => {
   return (
     <div className="farm-regions-page">
       {/* Hero Section */}
-      <motion.section 
+      <motion.section
         className="regions-hero"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -178,7 +178,7 @@ const FarmRegionsPage = () => {
       {/* Farm Regions Section */}
       <section className="regions-showcase">
         <div className="container">
-          <motion.div 
+          <motion.div
             className="section-header"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -204,12 +204,12 @@ const FarmRegionsPage = () => {
                   <img src={region.image} alt={region.name} />
                   <div className="region-icon">{region.icon}</div>
                 </div>
-                
+
                 <div className="region-info">
                   <h3>{region.name}</h3>
                   <p className="specialty">{region.specialty}</p>
                   <p className="description">{region.description}</p>
-                  
+
                   <div className="region-meta">
                     <div className="meta-item">
                       <FiMapPin /> {region.altitude}
@@ -220,7 +220,7 @@ const FarmRegionsPage = () => {
                   </div>
 
                   {activeRegion === region.id && (
-                    <motion.div 
+                    <motion.div
                       className="region-details"
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
@@ -234,7 +234,7 @@ const FarmRegionsPage = () => {
                           ))}
                         </div>
                       </div>
-                      
+
                       <div className="best-season">
                         <FiDroplet />
                         <span>Best Season: {region.bestSeason}</span>
@@ -250,7 +250,7 @@ const FarmRegionsPage = () => {
                       </div>
                     </motion.div>
                   )}
-                  
+
                   <button className="learn-more-btn">
                     {activeRegion === region.id ? 'Show Less' : 'Learn More'}
                   </button>
@@ -264,7 +264,7 @@ const FarmRegionsPage = () => {
       {/* Farming Technologies Section */}
       <section className="farming-tech-section">
         <div className="container">
-          <motion.div 
+          <motion.div
             className="section-header"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -304,7 +304,7 @@ const FarmRegionsPage = () => {
       {/* Farming Rules Section */}
       <section className="farming-rules-section">
         <div className="container">
-          <motion.div 
+          <motion.div
             className="section-header"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -345,7 +345,7 @@ const FarmRegionsPage = () => {
       {/* Call to Action */}
       <section className="cta-section">
         <div className="container">
-          <motion.div 
+          <motion.div
             className="cta-content"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}

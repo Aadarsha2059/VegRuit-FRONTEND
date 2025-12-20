@@ -13,7 +13,7 @@ const Testimonials = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fallback testimonials in case no real reviews are available
+  // Fallback testimonial in case no real reviews are available
   const fallbackTestimonials = [
     {
       id: 'fallback-1',
@@ -167,6 +167,7 @@ const Testimonials = () => {
                     <div className="rating">{renderStars(testimonial.rating)}</div>
                   </div>
                 </div>
+                <AnimatedHighlightText />
               </div>
             </SwiperSlide>
           ))}
@@ -174,6 +175,31 @@ const Testimonials = () => {
         )}
       </div>
     </section>
+  );
+};
+
+// Animated highlight text component
+const AnimatedHighlightText = () => {
+  const words = [
+    'Delicious', 'Nutritious', 'Refreshing', 'Organic', 
+    'Energizing', 'Fresh', 'Healthy', 'Natural', 'Tasty', 'Satisfying'
+  ];
+  
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentWordIndex((prevIndex) => (prevIndex + 1) % words.length);
+    }, 2500); // Change word every 2.5 seconds
+
+    return () => clearInterval(interval);
+  }, [words.length]);
+
+  return (
+    <div className="animated-highlight-container">
+      <span className="static-text">Amazing = wonderfully </span>
+      <span className="animated-word">{words[currentWordIndex]}</span>
+    </div>
   );
 };
 

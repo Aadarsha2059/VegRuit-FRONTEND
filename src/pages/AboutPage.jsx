@@ -66,7 +66,7 @@ const AboutPage = () => {
   ];
 
   return (
-    <motion.div 
+    <motion.div
       className="about-page"
       initial="hidden"
       animate="visible"
@@ -105,20 +105,20 @@ const AboutPage = () => {
           <motion.div className="story-content" variants={staggerContainer}>
             <motion.div className="story-text" variants={fadeInUp}>
               <p>
-                VegRuit was developed in 2025 as a modern solution to bridge the gap between Nepal's hardworking farmers 
-                and urban consumers who value fresh, quality produce. Built from the ground up by an individual developer 
-                passionate about technology and sustainable agriculture, this platform aims to help local farmers reach 
+                VegRuit was developed in 2025 as a modern solution to bridge the gap between Nepal's hardworking farmers
+                and urban consumers who value fresh, quality produce. Built from the ground up by an individual developer
+                passionate about technology and sustainable agriculture, this platform aims to help local farmers reach
                 more customers while providing city dwellers with access to the freshest vegetables and fruits.
               </p>
               <p>
-                This full-stack marketplace platform leverages modern web technologies including React, Node.js, 
-                MongoDB, and Express to create a seamless experience for both buyers and sellers. The platform 
-                features secure authentication, real-time inventory management, integrated payment systems, 
+                This full-stack marketplace platform leverages modern web technologies including React, Node.js,
+                MongoDB, and Express to create a seamless experience for both buyers and sellers. The platform
+                features secure authentication, real-time inventory management, integrated payment systems,
                 and a responsive design that works beautifully on all devices.
               </p>
               <p>
-                The mission goes beyond just creating a marketplace. This project represents a commitment to 
-                building sustainable technology solutions that can empower farmers, delight customers, and 
+                The mission goes beyond just creating a marketplace. This project represents a commitment to
+                building sustainable technology solutions that can empower farmers, delight customers, and
                 contribute to a healthier, more connected Nepal.
               </p>
               <motion.div className="story-highlight" variants={fadeInUp}>
@@ -129,8 +129,8 @@ const AboutPage = () => {
               </motion.div>
             </motion.div>
             <motion.div className="story-image" variants={fadeInUp}>
-              <img 
-                src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&h=400&fit=crop" 
+              <img
+                src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&h=400&fit=crop"
                 alt="Farmers in Nepal"
               />
             </motion.div>
@@ -246,7 +246,7 @@ const AboutPage = () => {
           <div className="cta-content">
             <h2>Join Our Mission</h2>
             <p>
-              Be part of Nepal's fresh food revolution. Whether you're a farmer looking to reach more customers 
+              Be part of Nepal's fresh food revolution. Whether you're a farmer looking to reach more customers
               or a consumer seeking the freshest produce, VegRuit is here for you.
             </p>
             <div className="cta-buttons">

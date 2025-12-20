@@ -142,6 +142,9 @@ const Products = () => {
       ? `${BACKEND_BASE}${product.images[0]}`
       : 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop';
 
+    // Calculate original price (actual price + 20)
+    const originalPrice = product.price + 20;
+
     return (
       <motion.div
         className="product-card"
@@ -161,7 +164,8 @@ const Products = () => {
         <div className="product-info">
           <span className="product-category">{product.category.name}</span>
           <h3 className="product-name">{product.name}</h3>
-          <div className="product-price">
+          <div className="product-price-container">
+            <span className="original-price">₹{originalPrice}</span>
             <span className="current-price">₹{product.price}</span>
             <span className="unit">/ {product.unit}</span>
           </div>
