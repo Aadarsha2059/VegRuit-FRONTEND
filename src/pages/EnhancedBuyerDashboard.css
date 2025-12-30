@@ -1,4 +1,56 @@
-/* Enhanced Buyer Dashboard Styles */
+/* Ensure proper text color visibility in search/filter section */
+.products-filters-section {
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+  color: #374151; /* Ensure text color is visible */
+}
+
+.search-filter .search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  color: #374151; /* Ensure text is visible */
+  background: white; /* Ensure background is white */
+}
+
+.search-input::placeholder {
+  color: #9ca3af; /* Light gray placeholder text */
+}
+
+.filter-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white; /* Ensure background is white */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  color: #374151; /* Ensure text is visible */
+}
+
+.view-btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  background: white; /* Ensure background is white */
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  color: #374151; /* Ensure text is visible */
+}
+
+.results-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #374151; /* Ensure text is visible */
+  font-size: 0.9rem;
+}
 
 /* 4 Products per Row Grid */
 .products-grid.grid-view {
@@ -1315,7 +1367,8 @@ eviews Tab Styles */
   .section-header {
     padding: 1rem;
   }
-}/* Enha
+}
+/* Enha
 nced Profile Tab Styles */
 .profile-tab {
   padding: 0;
@@ -1457,12 +1510,6 @@ nced Profile Tab Styles */
 }
 
 /* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-}
-
 .stat-card {
   background: linear-gradient(135deg, #f8fafc, #e2e8f0);
   border: 1px solid #e0e6ed;
@@ -2768,6 +2815,7 @@ m Receipt Dialog */
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
 .item-image-centered {
   width: 250px;
   height: 250px;
@@ -2796,4 +2844,4 @@ m Receipt Dialog */
   object-fit: cover;  /* gives more aesthetic image fill */
   border-radius: 12px; /* soft curve for image itself */
 }
-
+/* End of file - properly closed comment */

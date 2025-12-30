@@ -5,6 +5,8 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 16px; /* Base font size for better readability and professionalism */
+  line-height: 1.5;
 }
 
 /* Sidebar Styles */
@@ -63,11 +65,10 @@
 
 .sidebar-header h2 {
   color: #fff;
-  font-size: 24px;
+  font-size: 22px; /* Reduced for cleaner look */
   margin-bottom: 5px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.5px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
 }
 
 .sidebar-header p {
@@ -84,11 +85,11 @@
 
 .nav-item {
   width: 100%;
-  padding: 16px 25px;
+  padding: 14px 25px; /* Slightly reduced padding */
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 16px;
+  font-size: 15px; /* Professional size */
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -96,7 +97,6 @@
   cursor: pointer;
   transition: all 0.3s ease;
   border-left: 3px solid transparent;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
   letter-spacing: 0.2px;
 }
 
@@ -121,12 +121,12 @@
 
 .logout-btn {
   margin: 20px;
-  padding: 15px;
+  padding: 14px;
   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
   border: none;
   border-radius: 12px;
   color: #fff;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -135,7 +135,6 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
   letter-spacing: 0.3px;
 }
 
@@ -184,8 +183,8 @@
 
 .header-brand h2 {
   color: #fff;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 600;
   margin: 0;
   line-height: 1;
   letter-spacing: 0.5px;
@@ -230,14 +229,13 @@
 
 .dashboard-title {
   color: #fff;
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 32px; /* Reduced for balanced hierarchy */
+  font-weight: 600;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   margin: 0;
   padding: 0;
   line-height: 1.2;
-  letter-spacing: -0.5px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  letter-spacing: -0.3px;
 }
 
 .dashboard-subtitle {
@@ -287,54 +285,31 @@
 .stat-icon {
   width: 70px;
   height: 70px;
-  border-radius: 16px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 30px;
   color: #fff;
   flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
-.stat-card.users .stat-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.stat-card.buyers .stat-icon {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.stat-card.sellers .stat-icon {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.stat-card.products .stat-icon {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-}
-
-.stat-card.categories .stat-icon {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-}
-
-.stat-card.orders .stat-icon {
-  background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-}
-
-.stat-card.revenue .stat-icon {
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-}
-
-.stat-card.growth .stat-icon {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-}
+.stat-card.users .stat-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.stat-card.buyers .stat-icon { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.stat-card.sellers .stat-icon { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.stat-card.products .stat-icon { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.stat-card.categories .stat-icon { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+.stat-card.orders .stat-icon { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+.stat-card.revenue .stat-icon { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+.stat-card.growth .stat-icon { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
 
 .stat-content h3 {
   color: #fff;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 28px; /* Slightly reduced for professionalism */
+  font-weight: 600;
   margin-bottom: 5px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 .stat-content p {
@@ -356,16 +331,15 @@
 
 .section-header h2 {
   color: #fff;
-  font-size: 24px;
+  font-size: 22px; /* Consistent heading size */
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
   letter-spacing: -0.3px;
 }
 
 .search-input {
   padding: 12px 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(102, 126, 234, 0.2);
   border-radius: 10px;
   color: #fff;
   font-size: 14px;
@@ -380,15 +354,16 @@
 .search-input:focus {
   outline: none;
   border-color: #667eea;
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
 }
 
 /* Table Styles */
 .table-container {
   overflow-x: auto;
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(102, 126, 234, 0.1);
 }
 
 .data-table {
@@ -410,14 +385,13 @@
   letter-spacing: 0.8px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   white-space: nowrap;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
 }
 
 .data-table td {
   padding: 15px 10px;
   color: rgba(255, 255, 255, 0.9);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 14px;
+  font-size: 15px; /* Improved readability for table body */
   vertical-align: middle;
 }
 
@@ -442,37 +416,18 @@
 .status-badge {
   padding: 6px 12px;
   border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px; /* Slightly larger for clarity */
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   border: 2px solid transparent;
 }
 
-.role-badge.buyer {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: #fff;
-}
-
-.role-badge.seller {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: #fff;
-}
-
-.role-badge.both {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-}
-
-.status-badge.active {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: #fff;
-}
-
-.status-badge.inactive {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: #fff;
-}
+.role-badge.buyer { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #fff; }
+.role-badge.seller { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: #fff; }
+.role-badge.both { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+.status-badge.active { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: #fff; }
+.status-badge.inactive { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: #fff; }
 
 /* Action Buttons */
 .action-buttons {
@@ -482,7 +437,7 @@
 
 .action-btn {
   padding: 8px 12px;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
@@ -492,20 +447,9 @@
   justify-content: center;
 }
 
-.action-btn.activate {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: #fff;
-}
-
-.action-btn.deactivate {
-  background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%);
-  color: #fff;
-}
-
-.action-btn.delete {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: #fff;
-}
+.action-btn.activate { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: #fff; border-color: rgba(67, 233, 123, 0.3); }
+.action-btn.deactivate { background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%); color: #fff; border-color: rgba(255, 167, 38, 0.3); }
+.action-btn.delete { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: #fff; border-color: rgba(255, 107, 107, 0.3); }
 
 .action-btn:hover {
   transform: translateY(-2px);
@@ -534,9 +478,7 @@
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 /* No Data State */
@@ -597,8 +539,8 @@
     padding: 20px;
   }
 
-  .content-header h1 {
-    font-size: 24px;
+  .dashboard-title {
+    font-size: 28px;
   }
 
   .stats-grid {
@@ -651,7 +593,6 @@
     font-size: 24px;
   }
 }
-
 
 /* Settings Section */
 .settings-section {
@@ -725,8 +666,8 @@
 
 .info-value {
   color: #000;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15px; /* Slightly larger */
+  font-weight: 600;
 }
 
 .status-online {
@@ -763,18 +704,6 @@
   color: #667eea;
 }
 
-.refresh-btn:hover {
-  border-color: rgba(67, 233, 123, 0.5);
-}
-
-.notification-btn:hover {
-  border-color: rgba(255, 193, 7, 0.5);
-}
-
-.security-btn:hover {
-  border-color: rgba(255, 107, 107, 0.5);
-}
-
 .logout-card {
   grid-column: 1 / -1;
   border-color: rgba(255, 107, 107, 0.2);
@@ -800,7 +729,7 @@
   border-radius: 10px;
   color: #fff;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -815,10 +744,6 @@
 .settings-logout-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(255, 107, 107, 0.5);
-}
-
-.settings-logout-btn:active {
-  transform: translateY(0);
 }
 
 /* Sidebar Footer */
@@ -847,76 +772,7 @@
   margin: 0;
 }
 
-/* Sharp Professional Enhancements */
-.table-container {
-  overflow-x: auto;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px solid rgba(102, 126, 234, 0.1);
-}
-
-.action-btn {
-  padding: 8px 12px;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-btn.activate {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: #fff;
-  border-color: rgba(67, 233, 123, 0.3);
-}
-
-.action-btn.deactivate {
-  background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%);
-  color: #fff;
-  border-color: rgba(255, 167, 38, 0.3);
-}
-
-.action-btn.delete {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: #fff;
-  border-color: rgba(255, 107, 107, 0.3);
-}
-
-.search-input {
-  padding: 12px 20px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 2px solid rgba(102, 126, 234, 0.2);
-  border-radius: 10px;
-  color: #fff;
-  font-size: 14px;
-  min-width: 300px;
-  transition: all 0.3s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #667eea;
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
-}
-
-.stat-icon {
-  width: 70px;
-  height: 70px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30px;
-  color: #fff;
-  flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-/* Responsive adjustments for Settings */
+/* Additional Professional Tweaks */
 @media (max-width: 768px) {
   .settings-grid {
     grid-template-columns: 1fr;
@@ -938,10 +794,6 @@
 
   .header-admin-info {
     align-items: center;
-  }
-
-  .dashboard-title {
-    font-size: 28px;
   }
 
   .dashboard-subtitle {

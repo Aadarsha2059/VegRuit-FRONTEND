@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { cartAPI } from '../services/cartAPI';
@@ -6,6 +6,7 @@ import { orderAPI } from '../services/orderAPI';
 import { authAPI } from '../services/authAPI';
 import { productAPI } from '../services/productAPI';
 import Calendar from '../components/Calendar';
+import OrderProgressMessage from '../components/OrderProgressMessage';
 
 const BuyerDashboard = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -20,6 +21,147 @@ const BuyerDashboard = ({ user, onLogout }) => {
     orders: false,
     favorites: false
   });
+  const [showProgressMessage, setShowProgressMessage] = useState(false);
+  const [progressStep, setProgressStep] = useState('');
+  const lastProductIdsRef = useRef(new Set());
+  const isInitializedRef = useRef(false);
+
+  // Helper function to show product toast
+  const showProductToast = (product, isNewProduct = false) => {
+    const productName = product.name || 'New Product';
+    const productPrice = product.price || 0;
+    const productUnit = product.unit || 'kg';
+    
+    toast(
+      (t) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '2rem' }}>😊</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '4px', color: '#2d3748' }}>
+              {isNewProduct ? 'Fresh Product Added! 🎉' : 'Latest Product Available! 🎉'}
+            </div>
+            <div style={{ fontSize: '0.9rem', color: '#4caf50', fontWeight: '600', marginBottom: '4px' }}>
+              {productName}
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#667eea', fontWeight: '700', marginBottom: '6px' }}>
+              ₹{productPrice.toFixed(2)} / {productUnit}
+            </div>
+            <div style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '8px' }}>
+              Don't miss out! Browse fresh products and place your order now! 🛒
+            </div>
+            <button
+              onClick={() => {
+                setActiveTab('products');
+                toast.dismiss(t.id);
+              }}
+              style={{
+                background: 'linear-gradient(135deg, #4caf50, #2e7d32)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                width: '100%',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
+              }}
+            >
+              Browse & Order Now! 🛍️
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 8000,
+        position: 'top-right',
+        style: {
+          background: 'white',
+          border: '2px solid #4caf50',
+          borderRadius: '12px',
+          padding: '16px',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+          minWidth: '320px',
+          maxWidth: '400px'
+        },
+        icon: '😊'
+      }
+    );
+  };
+
+  // Check for new products and show toast notifications
+  useEffect(() => {
+    const checkNewProducts = async () => {
+      try {
+        const response = await productAPI.getPublicProducts();
+        if (response && response.success && response.data && response.data.products) {
+          const currentProducts = response.data.products || [];
+          const currentProductIds = new Set(currentProducts.map(p => p._id || p.id).filter(Boolean));
+          
+          // On first load, show the last added product and store the product IDs
+          if (!isInitializedRef.current) {
+            lastProductIdsRef.current = new Set(currentProductIds);
+            isInitializedRef.current = true;
+            
+            // Find the most recently added product (sorted by createdAt)
+            if (currentProducts.length > 0) {
+              const sortedProducts = [...currentProducts].sort((a, b) => {
+                const dateA = new Date(a.createdAt || a.created_at || a.updatedAt || a.updated_at || 0);
+                const dateB = new Date(b.createdAt || b.created_at || b.updatedAt || b.updated_at || 0);
+                return dateB - dateA; // Most recent first
+              });
+              
+              const lastAddedProduct = sortedProducts[0];
+              if (lastAddedProduct) {
+                // Show toast with the last added product after a short delay
+                setTimeout(() => {
+                  showProductToast(lastAddedProduct, false);
+                }, 1000);
+              }
+            }
+            return;
+          }
+          
+          // Find new products (products that weren't in the last check)
+          const newProducts = [];
+          currentProducts.forEach(product => {
+            const productId = product._id || product.id;
+            if (productId && !lastProductIdsRef.current.has(productId)) {
+              newProducts.push(product);
+            }
+          });
+          
+          // Show toast notifications for new products
+          if (newProducts.length > 0) {
+            newProducts.forEach(product => {
+              showProductToast(product, true);
+            });
+          }
+          
+          // Update the last known product IDs
+          lastProductIdsRef.current = new Set(currentProductIds);
+        }
+      } catch (error) {
+        console.error('Error checking new products:', error);
+      }
+    };
+
+    // Initial check immediately
+    checkNewProducts();
+    
+    // Check every 20 seconds for new products
+    const interval = setInterval(checkNewProducts, 20000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch products
   useEffect(() => {
@@ -52,7 +194,13 @@ const BuyerDashboard = ({ user, onLogout }) => {
           const token = authAPI.getAuthToken();
           const response = await cartAPI.getCart(token);
           if (response.success) {
-            setCartItems(response.data.items || []);
+            const items = response.data.items || [];
+            setCartItems(items);
+            // Show progress message when viewing cart with items
+            if (items.length > 0) {
+              setProgressStep('cart');
+              setShowProgressMessage(true);
+            }
           }
         } catch (error) {
           console.error('Error fetching cart:', error);
@@ -133,6 +281,9 @@ const BuyerDashboard = ({ user, onLogout }) => {
       const response = await cartAPI.addToCart(token, productId, quantity);
       if (response.success) {
         toast.success('Item added to cart!');
+        // Show progress message
+        setProgressStep('added');
+        setShowProgressMessage(true);
         // Update cart count in header
         const cartResponse = await cartAPI.getCart(token);
         if (cartResponse.success) {
@@ -223,6 +374,10 @@ const BuyerDashboard = ({ user, onLogout }) => {
 
   return (
     <div className="buyer-dashboard">
+      <OrderProgressMessage 
+        step={progressStep} 
+        show={showProgressMessage}
+      />
       <div className="dashboard-layout">
         {/* Sidebar */}
         <div className="dashboard-sidebar">
@@ -255,6 +410,15 @@ const BuyerDashboard = ({ user, onLogout }) => {
           <div className="dashboard-header">
             <h1>{getTabTitle(activeTab)}</h1>
             <div className="header-actions">
+              <button 
+                className="help-btn"
+                onClick={() => {
+                  toast.info('Help & Support: Contact us for any assistance!');
+                }}
+                title="Help & Support"
+              >
+                ❓
+              </button>
               <Calendar compact={true} />
               <button 
                 className="btn btn-secondary" 

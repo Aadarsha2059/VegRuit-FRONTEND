@@ -6,6 +6,7 @@ import { cartAPI } from '../services/cartAPI'
 import { orderAPI } from '../services/orderAPI'
 import { STORAGE_KEYS } from '../services/authAPI'
 import khaltiLogo from '../assets/khalti.png'
+import OrderProgressMessage from '../components/OrderProgressMessage'
 import './Checkout.css'
 
 const Checkout = () => {
@@ -30,6 +31,7 @@ const Checkout = () => {
     notes: ''
   })
   const [processing, setProcessing] = useState(false)
+  const [showProgressMessage, setShowProgressMessage] = useState(false)
 
   const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
 
@@ -48,7 +50,17 @@ const Checkout = () => {
         paymentMethod: preferredPaymentMethod
       }))
     }
+    
+    // Show progress message when checkout page loads
+    setShowProgressMessage(true)
   }, [token, navigate])
+  
+  // Update progress message when step changes
+  useEffect(() => {
+    if (currentStep > 0) {
+      setShowProgressMessage(true)
+    }
+  }, [currentStep])
 
   const loadCart = async () => {
     try {
@@ -114,7 +126,10 @@ const Checkout = () => {
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 3))
+      const newStep = Math.min(currentStep + 1, 3)
+      setCurrentStep(newStep)
+      // Show progress message when moving to next step
+      setShowProgressMessage(true)
     }
   }
 
@@ -208,6 +223,10 @@ const Checkout = () => {
 
   return (
     <div className="checkout-page">
+      <OrderProgressMessage 
+        step={`checkout-${currentStep}`} 
+        show={showProgressMessage}
+      />
       <div className="checkout-container">
         {/* Header */}
         <motion.div 

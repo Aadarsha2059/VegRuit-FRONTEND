@@ -124,7 +124,7 @@ const BuyerSignup = () => {
                 value={formData.firstName}
                 onChange={handleChange}
                 className={errors.firstName ? 'error' : ''}
-                placeholder="John"
+                placeholder="Ram"
               />
             </div>
             {errors.firstName && <span className="error-text">{errors.firstName}</span>}
@@ -140,7 +140,7 @@ const BuyerSignup = () => {
                 value={formData.lastName}
                 onChange={handleChange}
                 className={errors.lastName ? 'error' : ''}
-                placeholder="Doe"
+                placeholder="Dhakal"
               />
             </div>
             {errors.lastName && <span className="error-text">{errors.lastName}</span>}
@@ -158,7 +158,7 @@ const BuyerSignup = () => {
               value={formData.username}
               onChange={handleChange}
               className={errors.username ? 'error' : ''}
-              placeholder="johndoe123"
+              placeholder="rambahadur123"
             />
           </div>
           {errors.username && <span className="error-text">{errors.username}</span>}
@@ -175,7 +175,7 @@ const BuyerSignup = () => {
               value={formData.email}
               onChange={handleChange}
               className={errors.email ? 'error' : ''}
-              placeholder="john.doe@example.com"
+              placeholder="rambahadur222@example.com"
             />
           </div>
           {errors.email && <span className="error-text">{errors.email}</span>}
@@ -209,7 +209,7 @@ const BuyerSignup = () => {
               value={formData.address}
               onChange={handleChange}
               className={errors.address ? 'error' : ''}
-              placeholder="e.g., Thamel, Kathmandu"
+              placeholder="e.g., Koteswor-5, Kathmandu"
             />
           </div>
           {errors.address && <span className="error-text">{errors.address}</span>}

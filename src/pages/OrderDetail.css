@@ -29,6 +29,8 @@
 /* Header Section */
 .order-header {
   margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
 }
 
 .back-button {
@@ -74,6 +76,9 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.5px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.2;
 }
 
 .order-meta {
@@ -81,6 +86,19 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.order-number {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.order-date {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .order-number {
@@ -106,9 +124,12 @@
   border: 2px solid;
   margin-bottom: 32px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10px);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  z-index: 1;
 }
 
 .status-content {
@@ -116,6 +137,9 @@
   align-items: center;
   gap: 16px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .status-icon {
@@ -135,6 +159,9 @@
   font-weight: 800;
   margin: 0 0 6px 0;
   letter-spacing: -0.3px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.3;
 }
 
 .status-text p {
@@ -142,6 +169,9 @@
   opacity: 0.85;
   font-size: 1.05rem;
   font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .progress-bar {
@@ -165,6 +195,8 @@
   display: grid;
   grid-template-columns: 1fr 400px;
   gap: 30px;
+  position: relative;
+  z-index: 1;
 }
 
 .order-main {
@@ -177,6 +209,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
 }
 
 /* Section Styles */
@@ -188,7 +221,9 @@
   border: 1px solid rgba(5, 150, 105, 0.08);
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .order-section::before {
@@ -221,6 +256,10 @@
   padding-bottom: 16px;
   border-bottom: 2px solid #f0fdf4;
   position: relative;
+  flex-wrap: wrap;
+  gap: 12px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .section-header::after {
@@ -242,6 +281,9 @@
   color: #111827;
   margin: 0;
   letter-spacing: -0.3px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  flex-wrap: wrap;
 }
 
 .section-icon {
@@ -276,7 +318,9 @@
   border: 2px solid #e5e7eb;
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .order-item::before {
@@ -325,6 +369,9 @@
 
 .item-details {
   flex: 1;
+  min-width: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .item-name {
@@ -333,12 +380,18 @@
   color: #111827;
   margin: 0 0 6px 0;
   letter-spacing: -0.2px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .item-seller {
   color: #6b7280;
   font-size: 0.875rem;
   margin: 0 0 8px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .item-specs {
@@ -362,6 +415,10 @@
 
 .item-pricing {
   text-align: right;
+  flex-shrink: 0;
+  min-width: 120px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .item-total {
@@ -438,17 +495,29 @@
   font-size: 1rem;
 }
 
+.timeline-content {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
 .timeline-content h4 {
   font-size: 1rem;
   font-weight: 600;
   color: #111827;
   margin: 0 0 4px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .timeline-content p {
   font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .timeline-item.active .timeline-content h4 {
@@ -468,6 +537,20 @@
   align-items: center;
   padding: 8px 0;
   font-size: 0.875rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  gap: 12px;
+}
+
+.summary-row span {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  flex-shrink: 1;
+}
+
+.summary-row span:last-child {
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .summary-row.discount {
@@ -483,8 +566,10 @@
   color: #111827;
   background: linear-gradient(135deg, #f0fdf4, #dcfce7);
   padding: 20px;
-  margin: 12px -12px -12px;
+  margin: 12px 0 0 0;
   border-radius: 12px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Payment Section */
@@ -503,6 +588,9 @@
   border-radius: 16px;
   border: 2px solid #e5e7eb;
   transition: all 0.3s ease;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  flex-wrap: wrap;
 }
 
 .payment-method:hover {
@@ -515,17 +603,30 @@
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
+.payment-details {
+  flex: 1;
+  min-width: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
 .payment-details h4 {
   font-size: 1rem;
   font-weight: 600;
   color: #111827;
   margin: 0 0 4px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .payment-details p {
   font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .payment-status {
@@ -560,6 +661,8 @@
   border-radius: 16px;
   border: 2px solid #e5e7eb;
   transition: all 0.3s ease;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .address-details:hover {
@@ -571,12 +674,18 @@
   font-weight: 600;
   color: #111827;
   margin: 0 0 8px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .address-line {
   color: #6b7280;
   margin: 0 0 4px 0;
   font-size: 0.875rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
 }
 
 .postal-code {
@@ -613,6 +722,9 @@
   font-weight: 600;
   color: #111827;
   margin: 0 0 4px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .seller-type {
@@ -741,6 +853,12 @@
   
   .order-sidebar {
     order: -1;
+    width: 100%;
+  }
+  
+  .order-section {
+    width: 100%;
+    box-sizing: border-box;
   }
 }
 
@@ -751,6 +869,7 @@
   
   .order-title {
     font-size: 2rem;
+    line-height: 1.2;
   }
   
   .order-meta {
@@ -761,6 +880,7 @@
   
   .status-banner {
     padding: 20px;
+    margin-bottom: 24px;
   }
   
   .status-content {
@@ -771,12 +891,15 @@
   
   .order-section {
     padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .order-item {
     flex-direction: column;
     text-align: center;
     gap: 12px;
+    align-items: center;
   }
   
   .item-image {
@@ -785,8 +908,14 @@
     align-self: center;
   }
   
+  .item-details {
+    text-align: center;
+    width: 100%;
+  }
+  
   .item-pricing {
     text-align: center;
+    width: 100%;
   }
   
   .timeline {
@@ -801,6 +930,15 @@
   
   .timeline-icon {
     font-size: 0.875rem;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .items-count {
+    align-self: flex-start;
   }
 }
 

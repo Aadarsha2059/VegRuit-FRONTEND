@@ -147,7 +147,9 @@
   border: 1px solid #e0e6ed;
   animation: fadeInUp 0.6s ease-out;
   animation-fill-mode: both;
-  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  min-height: 500px; /* Increased min-height to accommodate 50% image */
 }
 
 .product-card:hover {
@@ -157,9 +159,11 @@
 }
 
 .product-image {
-  height: 300px;
+  height: 50%;
+  min-height: 250px;
   overflow: hidden;
   position: relative;
+  flex-shrink: 0;
 }
 
 .product-image::before {
@@ -201,7 +205,13 @@
 }
 
 .product-info {
-  padding: 2rem;
+  padding: 1.8rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 50%;
+  min-height: 250px;
 }
 
 .product-category {
@@ -237,6 +247,7 @@
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  flex-grow: 1;
 }
 
 .product-price-container {
@@ -267,6 +278,19 @@
   text-decoration: line-through;
 }
 
+.product-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.rating-count {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
 .add-to-cart-btn {
   width: 100%;
   background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
@@ -286,6 +310,7 @@
   overflow: hidden;
   font-size: 1.1rem;
   letter-spacing: 0.5px;
+  margin-top: auto;
 }
 
 .add-to-cart-btn::before {
@@ -453,11 +478,14 @@
   }
   
   .product-image {
-    height: 200px;
+    height: 50%;
+    min-height: 180px;
   }
   
   .product-info {
     padding: 1.5rem;
+    height: 50%;
+    min-height: 180px;
   }
   
   .product-name {
@@ -503,11 +531,14 @@
   }
   
   .product-image {
-    height: 180px;
+    height: 50%;
+    min-height: 160px;
   }
   
   .product-info {
     padding: 1.2rem;
+    height: 50%;
+    min-height: 160px;
   }
   
   .product-name {
@@ -518,7 +549,7 @@
   .product-description {
     font-size: 0.95rem;
     margin-bottom: 1rem;
-    height: 60px;
+    height: 50px;
   }
   
   .product-price-container {
@@ -529,31 +560,9 @@
     font-size: 1.2rem;
   }
   
-  .original-price {
-    font-size: 1rem;
-  }
-  
   .add-to-cart-btn {
     padding: 0.8rem 1.2rem;
     font-size: 0.95rem;
-  }
-  
-  .products-cta {
-    padding: 3rem 2rem;
-    margin-top: 4rem;
-  }
-  
-  .products-cta h3 {
-    font-size: 2rem;
-  }
-  
-  .products-cta p {
-    font-size: 1.1rem;
-  }
-  
-  .cta-button {
-    padding: 1rem 2.5rem;
-    font-size: 1.1rem;
   }
 }
 
@@ -585,11 +594,14 @@
   }
   
   .product-image {
-    height: 250px;
+    height: 50%;
+    min-height: 200px;
   }
   
   .product-info {
     padding: 1.5rem;
+    height: 50%;
+    min-height: 200px;
   }
   
   .product-name {
@@ -598,7 +610,7 @@
   
   .product-description {
     font-size: 1rem;
-    height: 70px;
+    height: 60px;
   }
   
   .current-price {
@@ -609,37 +621,6 @@
     padding: 1rem 1.5rem;
     font-size: 1rem;
   }
-  
-  .products-cta {
-    padding: 2.5rem 1.5rem;
-  }
-  
-  .products-cta h3 {
-    font-size: 1.8rem;
-  }
-  
-  .products-cta p {
-    font-size: 1rem;
-  }
-  
-  .cta-button {
-    padding: 0.9rem 2rem;
-    font-size: 1rem;
-  }
-}
-/* Pro
-duct Rating Styles */
-.product-rating {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1.2rem;
-}
-
-.rating-count {
-  font-size: 0.9rem;
-  color: #666;
-  font-weight: 500;
 }
 
 /* Product Overlay Styles */
@@ -694,4 +675,34 @@ duct Rating Styles */
   font-size: 0.9rem;
   z-index: 2;
   box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+/* Favorite Button Styles */
+.favorite-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 3;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+  background: white;
+}
+
+.favorite-btn.active {
+  color: #e74c3c;
+  background: rgba(255, 255, 255, 0.9);
 }

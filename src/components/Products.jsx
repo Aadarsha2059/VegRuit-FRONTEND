@@ -4,17 +4,19 @@ import { FiShoppingCart, FiEye, FiFilter } from 'react-icons/fi';
 import { productAPI } from '../services/productAPI';
 import { categoryAPI } from '../services/categoryAPI';
 import { cartAPI } from '../services/cartAPI';
+import { favoritesAPI } from '../services/favoritesAPI'; // Fixed import name
 import { STORAGE_KEYS } from '../services/authAPI';
 import toast from 'react-hot-toast';
 import '../styles/Products.css';
 
-const Products = () => {
+const Products = ({ onAuthClick }) => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
+  const [favorites, setFavorites] = useState(new Set()); // Track favorites
   const BACKEND_BASE = 'http://localhost:5001';
 
   // Define extra categories that will always show "coming soon"
@@ -27,6 +29,7 @@ const Products = () => {
     const fetchData = async () => {
       await fetchCategories();
       await fetchProducts();
+      await fetchFavorites(); // Fetch user's favorites
       setLoading(false);
     };
     
@@ -46,17 +49,57 @@ const Products = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await productAPI.getPublicProducts({ limit: 12 });
-      if (response.success) {
-        setProducts(response.data.products || []);
-        setFilteredProducts(response.data.products || []);
+      // Fetch all products from sellers - get total count first, then fetch all
+      const initialResponse = await productAPI.getPublicProducts({ limit: 1, page: 1 });
+      let allProducts = [];
+      
+      if (initialResponse.success && initialResponse.data.pagination) {
+        const totalProducts = initialResponse.data.pagination.total;
+        console.log(`[Products] Total products available: ${totalProducts}`);
+        
+        if (totalProducts > 0) {
+          // Fetch all products in one request
+          const response = await productAPI.getPublicProducts({ limit: totalProducts, page: 1 });
+          if (response.success) {
+            allProducts = response.data.products || [];
+            console.log(`[Products] Loaded ${allProducts.length} products from sellers`);
+          }
+        }
       } else {
-        setProducts([]);
-        setFilteredProducts([]);
+        // Fallback: fetch with high limit
+        const response = await productAPI.getPublicProducts({ limit: 1000, page: 1 });
+        if (response.success) {
+          allProducts = response.data.products || [];
+          console.log(`[Products] Loaded ${allProducts.length} products (fallback method)`);
+        }
+      }
+      
+      setProducts(allProducts);
+      
+      // If active category is 'all', update filtered products as well
+      if (activeCategory === 'all') {
+        setFilteredProducts(allProducts);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
+      setProducts([]);
+      setFilteredProducts([]);
+    }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      if (!token) return;
+
+      const response = await favoritesAPI.getUserFavorites(token);
+      if (response.success) {
+        const favoriteIds = new Set(response.data.favorites.map(fav => fav.productId));
+        setFavorites(favoriteIds);
+      }
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
     }
   };
 
@@ -105,28 +148,67 @@ const Products = () => {
     try {
       const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
-      if (token) {
-        const res = await cartAPI.addToCart(token, product._id, 1);
-        if (res.success) {
-          toast.success('Added to cart');
+      if (!token) {
+        // No token means user is not logged in - show auth modal
+        if (onAuthClick) {
+          onAuthClick();
         } else {
-          toast.error(res.message || 'Failed to add to cart');
+          toast.error('Please login first to add items to cart');
         }
         return;
       }
 
-      const existing = [...cart];
-      const idx = existing.findIndex(i => i._id === product._id);
-      if (idx >= 0) {
-        existing[idx].quantity = (existing[idx].quantity || 1) + 1;
+      const res = await cartAPI.addToCart(token, product._id, 1);
+      if (res.success) {
+        toast.success('Added to cart');
       } else {
-        existing.push({ ...product, quantity: 1 });
+        toast.error(res.message || 'Failed to add to cart');
       }
-      setCart(existing);
-      saveCartToStorage(existing);
-      toast.success('Added to cart');
+      return;
     } catch (e) {
       toast.error('Failed to add to cart');
+    }
+  };
+
+  const toggleFavorite = async (product) => {
+    try {
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      if (!token) {
+        if (onAuthClick) {
+          onAuthClick();
+        } else {
+          toast.error('Please login first to add to favorites');
+        }
+        return;
+      }
+
+      let response;
+      if (favorites.has(product._id)) {
+        // Remove from favorites
+        response = await favoritesAPI.removeFromFavorites(token, product._id);
+        if (response.success) {
+          setFavorites(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(product._id);
+            return newSet;
+          });
+          toast.success('Removed from favorites');
+        }
+      } else {
+        // Add to favorites
+        response = await favoritesAPI.addToFavorites(token, product._id);
+        if (response.success) {
+          setFavorites(prev => new Set([...prev, product._id]));
+          toast.success('Added to favorites');
+        }
+      }
+
+      if (!response.success) {
+        toast.error(response.message || 'Failed to update favorites');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast.error('Failed to update favorites');
     }
   };
 
@@ -160,10 +242,21 @@ const Products = () => {
             <button className="quick-view-btn"><FiEye /> Quick View</button>
           </div>
           {product.isOrganic && <div className="organic-badge">🌱</div>}
+          <button 
+            className={`favorite-btn ${favorites.has(product._id) ? 'active' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(product);
+            }}
+            aria-label={favorites.has(product._id) ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {favorites.has(product._id) ? '❤️' : '🤍'}
+          </button>
         </div>
         <div className="product-info">
           <span className="product-category">{product.category.name}</span>
           <h3 className="product-name">{product.name}</h3>
+          <div className="product-description">{product.description}</div>
           <div className="product-price-container">
             <span className="original-price">₹{originalPrice}</span>
             <span className="current-price">₹{product.price}</span>
@@ -188,6 +281,7 @@ const Products = () => {
         <div className="skeleton-line" style={{ width: '40%' }}></div>
         <div className="skeleton-line" style={{ width: '80%' }}></div>
         <div className="skeleton-line" style={{ width: '60%' }}></div>
+        <div className="skeleton-line" style={{ width: '70%' }}></div>
         <div className="skeleton-button"></div>
       </div>
     </div>
@@ -236,14 +330,21 @@ const Products = () => {
               ? filteredProducts.map(product => (
                   <ProductCard key={product._id} product={product} />
                 ))
-              : activeCategory !== 'all'
+              : activeCategory === 'all' && products.length === 0
                 ? (
                   <div className="no-products-message">
                     <h3>Products Coming Soon!</h3>
-                    <p>We're working hard to bring you amazing {activeCategory.toLowerCase()} products. Stay tuned!</p>
+                    <p>We're working hard to bring you amazing fresh fruits products. Stay tuned!</p>
                   </div>
                 )
-                : Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
+                : activeCategory !== 'all'
+                  ? (
+                    <div className="no-products-message">
+                      <h3>Products Coming Soon!</h3>
+                      <p>We're working hard to bring you amazing {activeCategory.toLowerCase()} products. Stay tuned!</p>
+                    </div>
+                  )
+                  : Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
           }
         </motion.div>
 

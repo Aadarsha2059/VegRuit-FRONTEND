@@ -644,3 +644,22 @@ input:checked + .toggle-slider:before {
     grid-template-columns: 1fr;
   }
 }
+/* Force sidebar text color to black */
+.settings-nav .nav-item {
+  color: #000000;
+}
+
+.settings-nav .nav-item .nav-label,
+.settings-nav .nav-item .nav-icon {
+  color: #000000;
+}
+
+/* Keep active item readable */
+.settings-nav .nav-item.active {
+  color: #000000;
+}
+
+.settings-nav .nav-item.active .nav-label,
+.settings-nav .nav-item.active .nav-icon {
+  color: #000000;
+}

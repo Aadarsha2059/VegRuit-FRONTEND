@@ -13,9 +13,16 @@ const NepaliWelcomeDialog = () => {
       setIsOpen(true);
     }, 2500);
 
-    // Initialize audio
-    audioRef.current = new Audio(homepageSound);
-    audioRef.current.volume = 1.0; // Full volume
+    // Initialize audio with error handling
+    try {
+      audioRef.current = new Audio(homepageSound);
+      audioRef.current.volume = 1.0; // Full volume
+      // Preload audio
+      audioRef.current.load();
+    } catch (error) {
+      console.log('Audio initialization failed:', error);
+      audioRef.current = null;
+    }
 
     return () => {
       clearTimeout(timer);
@@ -31,6 +38,7 @@ const NepaliWelcomeDialog = () => {
     // Play sound when dialog closes
     if (audioRef.current) {
       audioRef.current.play().catch(error => {
+        // Silently handle audio playback errors
         console.log('Audio playback failed:', error);
       });
     }

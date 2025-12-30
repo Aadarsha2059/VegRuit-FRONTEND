@@ -156,7 +156,7 @@ function App() {
                 <NepaliWelcomeDialog />
                 <main>
                   <EnhancedHero />
-                  <Products />
+                  <Products onAuthClick={handleAuthClick} />
                   <Farmers />
                   <Testimonials />
                   <About />

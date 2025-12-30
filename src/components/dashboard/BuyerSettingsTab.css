@@ -47,7 +47,7 @@
 
 /* Settings Navigation */
 .settings-nav {
-  background: white;
+  background: rgb(224, 244, 136);
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -72,13 +72,13 @@
 }
 
 .nav-item:hover {
-  background: #f3f4f6;
+  background: #87a4dc;
   transform: translateX(4px);
 }
 
 .nav-item.active {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: rgb(11, 11, 11);
   box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
@@ -95,7 +95,7 @@
 
 /* Settings Content */
 .settings-content {
-  background: white;
+  background: rgb(222, 158, 158);
   border-radius: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
@@ -111,7 +111,7 @@
   align-items: center;
   margin-bottom: 32px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #f3f4f6;
+  border-bottom: 2px solid #b7c8ec;
 }
 
 .section-header h3 {
@@ -529,4 +529,23 @@ input:checked + .toggle-slider:before {
   .settings-nav {
     grid-template-columns: 1fr;
   }
+}
+/* Force sidebar text color to black */
+.settings-nav .nav-item {
+  color: #000000;
+}
+
+.settings-nav .nav-item .nav-label,
+.settings-nav .nav-item .nav-icon {
+  color: #000000;
+}
+
+/* Keep active item readable */
+.settings-nav .nav-item.active {
+  color: #000000;
+}
+
+.settings-nav .nav-item.active .nav-label,
+.settings-nav .nav-item.active .nav-icon {
+  color: #000000;
 }

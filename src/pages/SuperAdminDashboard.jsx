@@ -867,7 +867,7 @@ const SuperAdminDashboard = () => {
             <div className="header-logo-section">
               <img src={logoFinal} alt="TarkariShop" className="header-logo-img" />
               <div className="header-brand">
-                <h2>TarkariShop</h2>
+                <h2>VegRuit Website</h2>
                 <span>Super Admin Dashboard</span>
               </div>
             </div>
